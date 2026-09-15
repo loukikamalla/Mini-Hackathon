@@ -206,6 +206,9 @@ export class App {
       this.authenticatedUser.set(result.user);
       if (result.user.assignedMillId) {
         this.selectedMillId.set(result.user.assignedMillId);
+        this.reconcileService.switchActiveMill(result.user.assignedMillId);
+      } else {
+        this.reconcileService.switchActiveMill(this.selectedMillId());
       }
       this.currentView.set("PORTAL");
       if (result.user.role === 'MILL_OPERATOR') {
@@ -257,6 +260,9 @@ export class App {
     this.authenticatedUser.set(user);
     if (user.assignedMillId) {
       this.selectedMillId.set(user.assignedMillId);
+      this.reconcileService.switchActiveMill(user.assignedMillId);
+    } else {
+      this.reconcileService.switchActiveMill(this.selectedMillId());
     }
     this.currentView.set("PORTAL");
     if (user.role === 'MILL_OPERATOR') {
@@ -277,6 +283,7 @@ export class App {
 
   switchDistrictMill(millId: string) {
     this.selectedMillId.set(millId);
+    this.reconcileService.switchActiveMill(millId);
     const mill = this.currentActiveMill();
     this.showToast(`Switched to ${mill.millName} (${mill.millId})`);
   }
