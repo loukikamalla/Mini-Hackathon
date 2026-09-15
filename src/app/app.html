@@ -654,20 +654,65 @@
 
               <!-- 3 ACTION BUTTONS -->
               <div class="pt-4 border-t border-slate-100">
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
-                  <button (click)="executeApproveBatch()" class="py-4 px-6 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-base rounded-2xl shadow-lg transition flex flex-col items-center justify-center gap-1">
-                    <span>✓ Approve & Release Subsidy</span>
-                    <span class="text-xs font-normal opacity-90">Issue JRC Certificate & SMS Alert</span>
-                  </button>
-                  <button (click)="executeRejectBatch()" class="py-4 px-6 bg-rose-700 hover:bg-rose-800 text-white font-black text-base rounded-2xl shadow-lg transition flex flex-col items-center justify-center gap-1">
-                    <span>✕ Reject Batch</span>
-                    <span class="text-xs font-normal opacity-90">Halt subsidy disbursement</span>
-                  </button>
-                  <button (click)="executeRequestCorrection()" class="py-4 px-6 bg-amber-600 hover:bg-amber-700 text-white font-black text-base rounded-2xl shadow-lg transition flex flex-col items-center justify-center gap-1">
-                    <span>⚠️ Request Correction</span>
-                    <span class="text-xs font-normal opacity-90">Ask Miller for recalibration</span>
-                  </button>
-                </div>
+                @if (reconcileService.settlementSummary().approvalStatus === 'APPROVED') {
+                  <div class="bg-emerald-50 border-2 border-emerald-300 p-6 rounded-3xl space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div class="flex items-center gap-3.5">
+                        <div class="w-11 h-11 rounded-2xl bg-emerald-700 text-white flex items-center justify-center font-black text-2xl shadow">
+                          ✓
+                        </div>
+                        <div>
+                          <div class="flex items-center gap-2">
+                            <h4 class="text-base sm:text-lg font-black text-emerald-950">Statutory Subsidy Already Approved & Released</h4>
+                            <span class="px-2.5 py-0.5 text-xs font-black uppercase bg-emerald-200 text-emerald-900 rounded-full">Cleared</span>
+                          </div>
+                          <p class="text-xs text-emerald-800 font-medium mt-0.5">Digital JRC endorsement authorized by {{ reconcileService.settlementSummary().approvedBy || 'Officer R. Kumar (DCSO)' }} • Direct Farmer DBT SMS Broadcast Delivered</p>
+                        </div>
+                      </div>
+
+                      <div class="flex flex-wrap items-center gap-3">
+                        <button (click)="showCertificateModal.set(true)" class="px-5 py-3 bg-emerald-800 hover:bg-emerald-700 text-white font-black text-xs sm:text-sm rounded-xl shadow transition flex items-center gap-1.5">
+                          <span>📄 View JRC Certificate</span>
+                        </button>
+                        <button (click)="openNotificationModal()" class="px-5 py-3 bg-white hover:bg-slate-50 text-emerald-900 border border-emerald-300 font-black text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center gap-1.5">
+                          <span>📱 View SMS Logs (6)</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div class="pt-3 border-t border-emerald-200/80 flex items-center justify-between text-xs">
+                      <span class="font-mono text-emerald-700 font-semibold">Payment Token: PFMS-TS-2025-CLEAR-4412</span>
+                      <button (click)="executeRequestCorrection()" class="font-bold text-amber-800 hover:text-amber-950 underline">
+                        Need to change? Reopen & Request Recalibration →
+                      </button>
+                    </div>
+                  </div>
+                } @else {
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                    <button 
+                      (click)="executeApproveBatch()" 
+                      class="py-4 px-6 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-base rounded-2xl shadow-lg transition flex flex-col items-center justify-center gap-1">
+                      <span>✓ Approve & Release Subsidy</span>
+                      <span class="text-xs font-normal opacity-90">Issue JRC Certificate & SMS Alert</span>
+                    </button>
+                    
+                    <button 
+                      (click)="executeRejectBatch()" 
+                      [class]="reconcileService.settlementSummary().approvalStatus === 'REJECTED' ? 'bg-rose-900 border-2 border-rose-400' : 'bg-rose-700 hover:bg-rose-800'"
+                      class="py-4 px-6 text-white font-black text-base rounded-2xl shadow-lg transition flex flex-col items-center justify-center gap-1">
+                      <span>{{ reconcileService.settlementSummary().approvalStatus === 'REJECTED' ? '✕ Currently Rejected' : '✕ Reject Batch' }}</span>
+                      <span class="text-xs font-normal opacity-90">Halt subsidy disbursement</span>
+                    </button>
+
+                    <button 
+                      (click)="executeRequestCorrection()" 
+                      [class]="reconcileService.settlementSummary().approvalStatus === 'CORRECTION_REQUESTED' ? 'bg-amber-800 border-2 border-amber-300' : 'bg-amber-600 hover:bg-amber-700'"
+                      class="py-4 px-6 text-white font-black text-base rounded-2xl shadow-lg transition flex flex-col items-center justify-center gap-1">
+                      <span>{{ reconcileService.settlementSummary().approvalStatus === 'CORRECTION_REQUESTED' ? '⚠️ Notice Already Sent' : '⚠️ Request Correction' }}</span>
+                      <span class="text-xs font-normal opacity-90">Ask Miller for recalibration</span>
+                    </button>
+                  </div>
+                }
               </div>
 
             </div>
