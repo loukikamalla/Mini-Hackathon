@@ -43,7 +43,7 @@ export class App {
   loginPassword = signal<string>("Govt@Civil2025");
 
   // Tab Navigation
-  activeTab = signal<"mills-directory" | "auto-compare" | "live-api" | "discrepancies" | "approval" | "audit">("auto-compare");
+  activeTab = signal<"mills-directory" | "auto-compare" | "live-api" | "discrepancies" | "approval" | "audit" | "scale-entry" | "production" | "fci-deliveries" | "claims">("auto-compare");
   
   // Table Filters & Search
   filterCategory = signal<"ALL" | "MATCH" | "MISMATCH">("ALL");
@@ -208,10 +208,47 @@ export class App {
         this.selectedMillId.set(result.user.assignedMillId);
       }
       this.currentView.set("PORTAL");
+      if (result.user.role === 'MILL_OPERATOR') {
+        this.activeTab.set('scale-entry');
+      } else {
+        this.activeTab.set('mills-directory');
+      }
       this.showToast(`Welcome ${result.user.name} (${result.user.designation})`);
     } else {
       this.authErrorMessage.set(result.error || "Authentication failed.");
     }
+  }
+
+  
+  // Miller CMR Dispatch Form States
+  newCmrAckNo = signal<string>("FCI-CMR-ACK-903");
+  newCmrDepot = signal<string>("Civil Supplies MLS Point Depot #12, Warangal");
+  newCmrQty = signal<number>(500);
+  newCmrBags = signal<number>(1000);
+  newCmrGrade = signal<string>("FAQ Grade A (Passed 100%)");
+
+  submitMillerCmrDispatch() {
+    if (this.newCmrQty() <= 0) {
+      this.showToast("Please enter valid Rice Quantity.");
+      return;
+    }
+
+    this.reconcileService.cmrDeliveries.update((list) => [
+      {
+        ackNo: this.newCmrAckNo(),
+        depotName: this.newCmrDepot(),
+        deliveryDate: new Date().toISOString().split('T')[0],
+        riceVariety: "Raw Rice Grade-A (FAQ)",
+        riceDeliveredQtl: this.newCmrQty(),
+        gunnyDelivered: this.newCmrBags(),
+        qcGrade: this.newCmrGrade(),
+        status: "VERIFIED_ACCEPTED"
+      },
+      ...list
+    ]);
+
+    this.showToast(`CMR Delivery ${this.newCmrAckNo()} (${this.newCmrQty()} Qtl) recorded successfully!`);
+    this.newCmrAckNo.set("FCI-CMR-ACK-" + Math.floor(904 + Math.random() * 90));
   }
 
   performQuickLogin(role: "MILL_OPERATOR" | "GOVT_OFFICER", millId?: string) {
@@ -222,6 +259,11 @@ export class App {
       this.selectedMillId.set(user.assignedMillId);
     }
     this.currentView.set("PORTAL");
+    if (user.role === 'MILL_OPERATOR') {
+      this.activeTab.set('scale-entry');
+    } else {
+      this.activeTab.set('mills-directory');
+    }
     this.showToast(`⚡ Fast Sign-in: ${user.name}`);
   }
 

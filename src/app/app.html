@@ -28,7 +28,7 @@
 
       <div class="hidden sm:flex items-center gap-3 text-xs font-extrabold text-slate-700 bg-slate-100 px-4 py-2.5 rounded-xl border border-slate-200">
         <span class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
-        <span>Civil Supplies OPMS: Live Active</span>
+        <span>Civil Supplies Gateway: Live Active</span>
       </div>
     </header>
 
@@ -66,7 +66,7 @@
           
           <div>
             <h2 class="text-2xl font-black text-slate-900">Portal Authentication</h2>
-            <p class="text-sm text-slate-500 mt-1">Select your official role to access the dedicated workspace</p>
+            <p class="text-sm text-slate-500 mt-1">Select your official role to access your dedicated workspace</p>
           </div>
 
           <!-- Role Toggle Buttons -->
@@ -89,7 +89,6 @@
             </button>
           </div>
 
-          <!-- Login Form -->
           <!-- 1-Click Fast Login Access Bar -->
           <div class="space-y-2 pt-1">
             <span class="text-xs font-black uppercase text-slate-400 tracking-wider block">1-Click Fast Sign-In:</span>
@@ -114,6 +113,7 @@
             <span class="bg-white px-3 text-[11px] font-bold text-slate-400 uppercase">Or Enter Credentials</span>
           </div>
 
+          <!-- Login Form -->
           <form (submit)="performDirectLogin($event)" class="space-y-4">
             
             @if (authErrorMessage()) {
@@ -149,7 +149,7 @@
             <!-- Demo Credentials Helper Pill -->
             <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-600 flex justify-between items-center">
               <div>
-                <span class="font-bold block text-slate-800">Demo Credentials:</span>
+                <span class="font-bold block text-slate-800">Demo Account:</span>
                 <span class="font-mono text-slate-500 font-semibold">{{ selectedLoginRole() === 'GOVT_OFFICER' ? 'dcso.wgl@telangana.gov.in / Govt@Civil2025' : 'TS-WGL-MR-4412 / Miller@2025' }}</span>
               </div>
               <button 
@@ -201,24 +201,25 @@
               <span class="font-black text-xl tracking-tight text-slate-900">DHANYA</span>
               <span class="px-2.5 py-0.5 text-xs font-black uppercase rounded-full tracking-wider"
                 [class]="authenticatedUser()?.role === 'GOVT_OFFICER' ? 'bg-purple-100 text-purple-800 border border-purple-200' : 'bg-emerald-100 text-emerald-800 border border-emerald-200'">
-                {{ authenticatedUser()?.role === 'GOVT_OFFICER' ? 'Civil Supplies Officer' : 'Rice Mill Operator' }}
+                {{ authenticatedUser()?.role === 'GOVT_OFFICER' ? 'Civil Supplies Officer Portal' : 'Rice Mill Operator Portal' }}
               </span>
             </div>
             <span class="text-xs sm:text-sm text-slate-500 font-semibold block">{{ authenticatedUser()?.org }}</span>
           </div>
         </div>
 
-        <!-- Live Sync Status & User Profile Action -->
+        <!-- Right Side User & Sync Controls -->
         <div class="flex items-center gap-3">
           
-          <!-- Live API Direct Fetch Button -->
-          <button 
-            (click)="syncGovtDataFromApi()"
-            [disabled]="isApiSyncing()"
-            class="px-4 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-300 rounded-xl text-xs sm:text-sm font-extrabold flex items-center gap-2 transition shadow-sm">
-            <span [class.animate-spin]="isApiSyncing()">⚡</span>
-            <span>{{ isApiSyncing() ? 'Fetching Live API...' : 'Live Govt Sync' }}</span>
-          </button>
+          @if (authenticatedUser()?.role === 'GOVT_OFFICER') {
+            <button 
+              (click)="syncGovtDataFromApi()"
+              [disabled]="isApiSyncing()"
+              class="px-4 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-300 rounded-xl text-xs sm:text-sm font-extrabold flex items-center gap-2 transition shadow-sm">
+              <span [class.animate-spin]="isApiSyncing()">⚡</span>
+              <span>{{ isApiSyncing() ? 'Fetching Live API...' : 'Live Govt Sync' }}</span>
+            </button>
+          }
 
           <!-- User Badge -->
           <div class="bg-slate-50 border border-slate-200 px-4 py-2 rounded-xl text-right hidden sm:block">
@@ -237,70 +238,125 @@
 
       </div>
 
-      <!-- Navigation Tabs Bar -->
-      <div class="max-w-7xl mx-auto px-6 border-t border-slate-100 overflow-x-auto flex items-center gap-2 py-2.5">
-        @if (authenticatedUser()?.role === 'GOVT_OFFICER') {
+      <!-- =================================================================== -->
+      <!-- NAVIGATION TABS (DEDICATED FOR CIVIL SUPPLIES OFFICER)              -->
+      <!-- =================================================================== -->
+      @if (authenticatedUser()?.role === 'GOVT_OFFICER') {
+        <div class="max-w-7xl mx-auto px-6 border-t border-slate-100 overflow-x-auto flex items-center gap-2 py-2.5">
+          
           <button 
             (click)="activeTab.set('mills-directory')"
             [class]="activeTab() === 'mills-directory' ? 'bg-purple-900 text-white shadow font-black' : 'text-purple-950 bg-purple-50 hover:bg-purple-100 border border-purple-200 font-bold'"
             class="px-4 py-2.5 rounded-xl text-xs sm:text-sm transition whitespace-nowrap flex items-center gap-2">
             <span>🏭 District Mills Directory (4)</span>
           </button>
-        }
 
-        <button 
-          (click)="activeTab.set('auto-compare')"
-          [class]="activeTab() === 'auto-compare' ? 'bg-slate-900 text-white shadow font-black' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 font-bold'"
-          class="px-4 py-2.5 rounded-xl text-xs sm:text-sm transition whitespace-nowrap flex items-center gap-2">
-          <span>⚖️ Auto-Compare Engine</span>
-          <span class="px-2 py-0.5 text-xs rounded-full" [class]="activeTab() === 'auto-compare' ? 'bg-slate-700 text-white font-bold' : 'bg-slate-200 text-slate-700 font-bold'">
-            {{ reconcileService.reconciledItems().length }}
-          </span>
-        </button>
-
-        <button 
-          (click)="activeTab.set('live-api')"
-          [class]="activeTab() === 'live-api' ? 'bg-slate-900 text-white shadow font-black' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 font-bold'"
-          class="px-4 py-2.5 rounded-xl text-xs sm:text-sm transition whitespace-nowrap flex items-center gap-2">
-          <span>🏛️ Mandi PPC Dispatches</span>
-          <span class="px-2 py-0.5 text-xs rounded-full bg-emerald-100 text-emerald-800 font-black">API Live</span>
-        </button>
-
-        <button 
-          (click)="activeTab.set('discrepancies')"
-          [class]="activeTab() === 'discrepancies' ? 'bg-slate-900 text-white shadow font-black' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 font-bold'"
-          class="px-4 py-2.5 rounded-xl text-xs sm:text-sm transition whitespace-nowrap flex items-center gap-2">
-          <span>⚠️ Dispute Resolver</span>
-          @if (reconcileService.settlementSummary().mismatchCount > 0) {
-            <span class="px-2 py-0.5 text-xs rounded-full bg-amber-500 text-white font-black">
-              {{ reconcileService.settlementSummary().mismatchCount }} Flagged
+          <button 
+            (click)="activeTab.set('auto-compare')"
+            [class]="activeTab() === 'auto-compare' ? 'bg-slate-900 text-white shadow font-black' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 font-bold'"
+            class="px-4 py-2.5 rounded-xl text-xs sm:text-sm transition whitespace-nowrap flex items-center gap-2">
+            <span>⚖️ Auto-Compare Engine</span>
+            <span class="px-2 py-0.5 text-xs rounded-full" [class]="activeTab() === 'auto-compare' ? 'bg-slate-700 text-white font-bold' : 'bg-slate-200 text-slate-700 font-bold'">
+              {{ reconcileService.reconciledItems().length }}
             </span>
-          }
-        </button>
+          </button>
 
-        <button 
-          (click)="activeTab.set('approval')"
-          [class]="activeTab() === 'approval' ? 'bg-slate-900 text-white shadow font-black' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 font-bold'"
-          class="px-4 py-2.5 rounded-xl text-xs sm:text-sm transition whitespace-nowrap flex items-center gap-2">
-          <span>📜 Statutory Decision & Subsidy</span>
-          <span class="px-2 py-0.5 text-xs rounded-full font-black"
-            [class]="reconcileService.settlementSummary().approvalStatus === 'APPROVED' ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-700'">
-            {{ reconcileService.settlementSummary().approvalStatus }}
-          </span>
-        </button>
+          <button 
+            (click)="activeTab.set('live-api')"
+            [class]="activeTab() === 'live-api' ? 'bg-slate-900 text-white shadow font-black' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 font-bold'"
+            class="px-4 py-2.5 rounded-xl text-xs sm:text-sm transition whitespace-nowrap flex items-center gap-2">
+            <span>🏛️ Mandi PPC Dispatches</span>
+            <span class="px-2 py-0.5 text-xs rounded-full bg-emerald-100 text-emerald-800 font-black">API Live</span>
+          </button>
 
-        <button 
-          (click)="activeTab.set('audit')"
-          [class]="activeTab() === 'audit' ? 'bg-slate-900 text-white shadow font-black' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 font-bold'"
-          class="px-4 py-2.5 rounded-xl text-xs sm:text-sm transition whitespace-nowrap flex items-center gap-2">
-          <span>🔍 Audit Trail Log</span>
-        </button>
-      </div>
+          <button 
+            (click)="activeTab.set('discrepancies')"
+            [class]="activeTab() === 'discrepancies' ? 'bg-slate-900 text-white shadow font-black' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 font-bold'"
+            class="px-4 py-2.5 rounded-xl text-xs sm:text-sm transition whitespace-nowrap flex items-center gap-2">
+            <span>⚠️ Dispute Resolver</span>
+            @if (reconcileService.settlementSummary().mismatchCount > 0) {
+              <span class="px-2 py-0.5 text-xs rounded-full bg-amber-500 text-white font-black">
+                {{ reconcileService.settlementSummary().mismatchCount }} Flagged
+              </span>
+            }
+          </button>
+
+          <button 
+            (click)="activeTab.set('approval')"
+            [class]="activeTab() === 'approval' ? 'bg-slate-900 text-white shadow font-black' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 font-bold'"
+            class="px-4 py-2.5 rounded-xl text-xs sm:text-sm transition whitespace-nowrap flex items-center gap-2">
+            <span>📜 Statutory Decision & Subsidy</span>
+            <span class="px-2 py-0.5 text-xs rounded-full font-black"
+              [class]="reconcileService.settlementSummary().approvalStatus === 'APPROVED' ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-700'">
+              {{ reconcileService.settlementSummary().approvalStatus }}
+            </span>
+          </button>
+
+          <button 
+            (click)="activeTab.set('audit')"
+            [class]="activeTab() === 'audit' ? 'bg-slate-900 text-white shadow font-black' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 font-bold'"
+            class="px-4 py-2.5 rounded-xl text-xs sm:text-sm transition whitespace-nowrap flex items-center gap-2">
+            <span>🔍 Audit Trail Log</span>
+          </button>
+
+        </div>
+      }
+
+      <!-- =================================================================== -->
+      <!-- NAVIGATION TABS (DEDICATED FOR RICE MILL MANAGER)                   -->
+      <!-- =================================================================== -->
+      @if (authenticatedUser()?.role === 'MILL_OPERATOR') {
+        <div class="max-w-7xl mx-auto px-6 border-t border-slate-100 overflow-x-auto flex items-center gap-2 py-2.5">
+          
+          <button 
+            (click)="activeTab.set('scale-entry')"
+            [class]="activeTab() === 'scale-entry' ? 'bg-emerald-900 text-white shadow font-black' : 'text-emerald-950 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 font-bold'"
+            class="px-4 py-2.5 rounded-xl text-xs sm:text-sm transition whitespace-nowrap flex items-center gap-2">
+            <span>⚖️ Weighbridge Inward & OCR</span>
+            <span class="px-2 py-0.5 text-xs rounded-full bg-emerald-700 text-white font-bold">{{ reconcileService.millSlips().length }} Slips</span>
+          </button>
+
+          <button 
+            (click)="activeTab.set('production')"
+            [class]="activeTab() === 'production' ? 'bg-slate-900 text-white shadow font-black' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 font-bold'"
+            class="px-4 py-2.5 rounded-xl text-xs sm:text-sm transition whitespace-nowrap flex items-center gap-2">
+            <span>🏭 67% CMR Processing & Silos</span>
+          </button>
+
+          <button 
+            (click)="activeTab.set('fci-deliveries')"
+            [class]="activeTab() === 'fci-deliveries' ? 'bg-slate-900 text-white shadow font-black' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 font-bold'"
+            class="px-4 py-2.5 rounded-xl text-xs sm:text-sm transition whitespace-nowrap flex items-center gap-2">
+            <span>🚚 FCI Godown Deliveries</span>
+            <span class="px-2 py-0.5 text-xs rounded-full bg-purple-100 text-purple-800 font-bold">{{ reconcileService.cmrDeliveries().length }} Acks</span>
+          </button>
+
+          <button 
+            (click)="activeTab.set('claims')"
+            [class]="activeTab() === 'claims' ? 'bg-slate-900 text-white shadow font-black' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 font-bold'"
+            class="px-4 py-2.5 rounded-xl text-xs sm:text-sm transition whitespace-nowrap flex items-center gap-2">
+            <span>💰 Milling Subsidy Invoice & Claims</span>
+          </button>
+
+          <button 
+            (click)="activeTab.set('discrepancies')"
+            [class]="activeTab() === 'discrepancies' ? 'bg-slate-900 text-white shadow font-black' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 font-bold'"
+            class="px-4 py-2.5 rounded-xl text-xs sm:text-sm transition whitespace-nowrap flex items-center gap-2">
+            <span>⚠️ Tare & Moisture Explanations</span>
+          </button>
+
+        </div>
+      }
+
     </header>
 
 
-    <!-- District Rice Mill Switcher Banner for Civil Supplies Officer -->
+    <!-- ========================================================================= -->
+    <!-- WORKSPACE A: CIVIL SUPPLIES OFFICER DASHBOARD                             -->
+    <!-- ========================================================================= -->
     @if (authenticatedUser()?.role === 'GOVT_OFFICER') {
+      
+      <!-- District Multi-Mill Switcher Bar -->
       <section class="max-w-7xl mx-auto px-6 pt-5 w-full">
         <div class="bg-gradient-to-r from-purple-900 via-slate-900 to-slate-900 text-white p-5 sm:p-6 rounded-3xl shadow-xl border border-purple-900/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
           
@@ -333,655 +389,749 @@
 
         </div>
       </section>
-    }
 
-    <!-- Top Operational Summary Metrics Strip -->
-    <section class="max-w-7xl mx-auto px-6 pt-5 w-full">
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-5">
+      <!-- Officer Metrics Strip -->
+      <section class="max-w-7xl mx-auto px-6 pt-5 w-full">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-5">
+          <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <span class="text-xs sm:text-sm font-bold text-slate-500 uppercase tracking-wider block">District Total Inward</span>
+            <span class="text-2xl sm:text-3xl font-black text-slate-900 font-mono mt-1.5 block">{{ formatNum(reconcileService.settlementSummary().totalPaddyQtl) }} Qtl</span>
+            <span class="text-xs text-slate-400 font-semibold mt-1 block">Net Reconciled Raw Paddy</span>
+          </div>
+
+          <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <span class="text-xs sm:text-sm font-bold text-slate-500 uppercase tracking-wider block">67% CMR Target</span>
+            <span class="text-2xl sm:text-3xl font-black text-emerald-800 font-mono mt-1.5 block">{{ formatNum(reconcileService.settlementSummary().totalRiceQtl) }} Qtl</span>
+            <span class="text-xs text-slate-400 font-semibold mt-1 block">Mandatory Delivery Target</span>
+          </div>
+
+          <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <span class="text-xs sm:text-sm font-bold text-slate-500 uppercase tracking-wider block">Delivered CMR</span>
+            <span class="text-2xl sm:text-3xl font-black text-slate-900 font-mono mt-1.5 block">{{ formatNum(reconcileService.settlementSummary().totalDeliveredRiceQtl) }} Qtl</span>
+            <span class="text-xs text-amber-600 font-bold mt-1 block">Pending: {{ formatNum(reconcileService.settlementSummary().totalPendingRiceQtl) }} Qtl</span>
+          </div>
+
+          <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <span class="text-xs sm:text-sm font-bold text-slate-500 uppercase tracking-wider block">Statutory Subsidy</span>
+            <span class="text-2xl sm:text-3xl font-black text-slate-900 font-mono mt-1.5 block">{{ formatInr(reconcileService.settlementSummary().totalPayableAmount) }}</span>
+            <span class="text-xs font-bold mt-1 block" [class]="reconcileService.settlementSummary().approvalStatus === 'APPROVED' ? 'text-emerald-600' : 'text-slate-400'">
+              Status: {{ reconcileService.settlementSummary().approvalStatus }}
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Main Tab Content Area (Officer) -->
+      <main class="max-w-7xl mx-auto px-6 pt-6 w-full">
         
-        <!-- Total Paddy Inward -->
-        <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <div class="flex items-center justify-between text-xs sm:text-sm font-bold text-slate-500 uppercase tracking-wider">
-            <span>Total Paddy Inward</span>
-            <span class="text-base">🌾</span>
-          </div>
-          <div class="mt-2.5 flex items-baseline gap-1.5">
-            <span class="text-2xl sm:text-3xl font-black text-slate-900 font-mono">{{ formatNum(reconcileService.settlementSummary().totalPaddyQtl) }}</span>
-            <span class="text-sm font-bold text-slate-500">Qtl</span>
-          </div>
-          <span class="text-xs text-slate-400 font-semibold mt-1 block">Net Reconciled Raw Paddy</span>
-        </div>
-
-        <!-- 67% CMR Rice Target -->
-        <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <div class="flex items-center justify-between text-xs sm:text-sm font-bold text-slate-500 uppercase tracking-wider">
-            <span>67% CMR Target</span>
-            <span class="text-emerald-700 font-black">67% Norm</span>
-          </div>
-          <div class="mt-2.5 flex items-baseline gap-1.5">
-            <span class="text-2xl sm:text-3xl font-black text-emerald-800 font-mono">{{ formatNum(reconcileService.settlementSummary().totalRiceQtl) }}</span>
-            <span class="text-sm font-bold text-emerald-700">Qtl</span>
-          </div>
-          <span class="text-xs text-slate-400 font-semibold mt-1 block">Mandatory Delivery to Godowns</span>
-        </div>
-
-        <!-- Delivered Rice & Pending -->
-        <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <div class="flex items-center justify-between text-xs sm:text-sm font-bold text-slate-500 uppercase tracking-wider">
-            <span>Delivered CMR</span>
-            <span class="text-purple-700 font-bold">Godown Acks</span>
-          </div>
-          <div class="mt-2.5 flex items-baseline gap-1.5">
-            <span class="text-2xl sm:text-3xl font-black text-slate-900 font-mono">{{ formatNum(reconcileService.settlementSummary().totalDeliveredRiceQtl) }}</span>
-            <span class="text-sm font-bold text-slate-500">Qtl</span>
-          </div>
-          <span class="text-xs text-amber-600 font-bold mt-1 block">Pending: {{ formatNum(reconcileService.settlementSummary().totalPendingRiceQtl) }} Qtl</span>
-        </div>
-
-        <!-- Statutory Subsidy Amount -->
-        <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <div class="flex items-center justify-between text-xs sm:text-sm font-bold text-slate-500 uppercase tracking-wider">
-            <span>Statutory Subsidy</span>
-            <span class="text-base">💰</span>
-          </div>
-          <div class="mt-2.5 flex items-baseline gap-1">
-            <span class="text-2xl sm:text-3xl font-black text-slate-900 font-mono">{{ formatInr(reconcileService.settlementSummary().totalPayableAmount) }}</span>
-          </div>
-          <span class="text-xs font-bold mt-1 block"
-            [class]="reconcileService.settlementSummary().approvalStatus === 'APPROVED' ? 'text-emerald-600' : 'text-slate-400'">
-            Status: {{ reconcileService.settlementSummary().approvalStatus }}
-          </span>
-        </div>
-
-      </div>
-    </section>
-
-
-    <!-- Main Tab Content Area -->
-    <main class="max-w-7xl mx-auto px-6 pt-6 w-full">
-      
-      <!-- ========================================================= -->
-      <!-- TAB 1: AUTO-COMPARE ENGINE TABLE                          -->
-      <!-- ========================================================= -->
-      @if (activeTab() === 'auto-compare') {
-        <div class="space-y-6">
-          
-          <!-- Table Header Toolbar -->
-          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <h3 class="text-lg font-black text-slate-900">Auto-Reconciliation Comparison Ledger</h3>
-              <p class="text-xs sm:text-sm text-slate-500 mt-1">Click on any Farmer Name to view complete load history, quantity details, and DBT payment status.</p>
+        <!-- Tab 0: Mills Directory -->
+        @if (activeTab() === 'mills-directory') {
+          <div class="space-y-6">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <h3 class="text-lg font-black text-slate-900">District Authorized Rice Mills Directory</h3>
+                <p class="text-xs sm:text-sm text-slate-500 mt-1">Select any Rice Industry below to inspect their live weighbridge inward slips, 67% CMR delivery compliance, and dispute resolution.</p>
+              </div>
+              <span class="text-xs font-mono font-bold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200">Warangal District • 4 Mills Active</span>
             </div>
 
-            <!-- Filters & Search -->
-            <div class="flex flex-wrap items-center gap-3">
-              
-              <!-- Category Filter -->
-              <div class="flex items-center bg-slate-100 p-1.5 rounded-xl border border-slate-200 text-xs sm:text-sm font-bold">
-                <button 
-                  (click)="filterCategory.set('ALL')"
-                  [class]="filterCategory() === 'ALL' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'"
-                  class="px-3.5 py-1.5 rounded-lg transition">All</button>
-                <button 
-                  (click)="filterCategory.set('MATCH')"
-                  [class]="filterCategory() === 'MATCH' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'"
-                  class="px-3.5 py-1.5 rounded-lg transition">Matches</button>
-                <button 
-                  (click)="filterCategory.set('MISMATCH')"
-                  [class]="filterCategory() === 'MISMATCH' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'"
-                  class="px-3.5 py-1.5 rounded-lg transition">Disputes</button>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              @for (mill of districtMills(); track mill.millId) {
+                <div class="bg-white p-7 rounded-3xl border shadow-sm space-y-5 transition hover:shadow-md"
+                  [class]="selectedMillId() === mill.millId ? 'border-purple-500 ring-2 ring-purple-500/20' : 'border-slate-200 hover:border-slate-300'">
+                  
+                  <div class="flex items-start justify-between">
+                    <div>
+                      <span class="text-xs font-mono font-bold text-purple-900 bg-purple-50 px-2.5 py-1 rounded-lg border border-purple-200">{{ mill.millId }}</span>
+                      <h4 class="text-xl font-black text-slate-900 mt-2">{{ mill.millName }}</h4>
+                      <span class="text-xs text-slate-500 font-semibold block mt-0.5">{{ mill.location }}</span>
+                    </div>
+
+                    <span class="px-3 py-1 rounded-full text-xs font-black"
+                      [class]="mill.status === 'COMPLIANT' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : mill.status === 'UNDER_REVIEW' ? 'bg-amber-100 text-amber-800 border border-amber-200' : 'bg-rose-100 text-rose-800 border border-rose-200'">
+                      {{ mill.status }}
+                    </span>
+                  </div>
+
+                  <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-200 text-center text-xs">
+                    <div>
+                      <span class="text-slate-400 font-bold block">Paddy Allocated</span>
+                      <span class="text-base font-black text-slate-900 font-mono mt-0.5 block">{{ formatNum(mill.paddyAllocatedQtl) }}</span>
+                      <span class="text-[10px] text-slate-400">Qtl</span>
+                    </div>
+                    <div>
+                      <span class="text-slate-400 font-bold block">67% Rice Target</span>
+                      <span class="text-base font-black text-emerald-800 font-mono mt-0.5 block">{{ formatNum(mill.riceTargetQtl) }}</span>
+                      <span class="text-[10px] text-slate-400">Qtl</span>
+                    </div>
+                    <div>
+                      <span class="text-slate-400 font-bold block">Compliance</span>
+                      <span class="text-base font-black text-purple-900 font-mono mt-0.5 block">{{ mill.complianceRate }}</span>
+                      <span class="text-[10px] text-slate-400">{{ formatNum(mill.deliveredRiceQtl) }} Qtl</span>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center justify-between pt-1">
+                    <span class="text-xs font-bold" [class]="mill.pendingDisputes > 0 ? 'text-amber-600' : 'text-emerald-700'">
+                      {{ mill.pendingDisputes > 0 ? '⚠️ ' + mill.pendingDisputes + ' Pending Disputes' : '✓ 0 Pending Disputes' }}
+                    </span>
+
+                    <button 
+                      (click)="switchDistrictMill(mill.millId); activeTab.set('auto-compare')"
+                      class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-black text-xs rounded-xl shadow transition">
+                      Inspect & Reconcile Mill →
+                    </button>
+                  </div>
+
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Tab 1: Auto-Compare Engine Table -->
+        @if (activeTab() === 'auto-compare') {
+          <div class="space-y-6">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <h3 class="text-lg font-black text-slate-900">Auto-Reconciliation Comparison Ledger</h3>
+                <p class="text-xs sm:text-sm text-slate-500 mt-1">Cross-matching Government Mandi Electronic Passes with Mill Gate Scales.</p>
               </div>
 
-              <!-- Search Bar -->
-              <input 
-                type="text"
-                [ngModel]="searchQuery()"
-                (ngModelChange)="searchQuery.set($event)"
-                placeholder="Search Farmer, TP, Truck..."
-                class="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900 w-52 sm:w-72" />
+              <div class="flex flex-wrap items-center gap-3">
+                <div class="flex items-center bg-slate-100 p-1.5 rounded-xl border border-slate-200 text-xs sm:text-sm font-bold">
+                  <button (click)="filterCategory.set('ALL')" [class]="filterCategory() === 'ALL' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'" class="px-3.5 py-1.5 rounded-lg transition">All</button>
+                  <button (click)="filterCategory.set('MATCH')" [class]="filterCategory() === 'MATCH' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'" class="px-3.5 py-1.5 rounded-lg transition">Matches</button>
+                  <button (click)="filterCategory.set('MISMATCH')" [class]="filterCategory() === 'MISMATCH' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'" class="px-3.5 py-1.5 rounded-lg transition">Disputes</button>
+                </div>
+                <input type="text" [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" placeholder="Search Farmer, TP, Truck..." class="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900 w-52 sm:w-72" />
+              </div>
             </div>
-          </div>
 
-          <!-- Comparison Table -->
-          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <div class="overflow-x-auto">
-              <table class="w-full text-left text-sm border-collapse">
-                <thead>
-                  <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-black text-xs uppercase tracking-wider">
-                    <th class="py-4 px-6">Farmer Name</th>
-                    <th class="py-4 px-5">Govt Transit Pass</th>
-                    <th class="py-4 px-5">Truck / Vehicle</th>
-                    <th class="py-4 px-5 text-right">Govt Mandi Qty</th>
-                    <th class="py-4 px-5 text-right">Mill Scale Qty</th>
-                    <th class="py-4 px-5 text-right">Difference</th>
-                    <th class="py-4 px-5 text-center">Status</th>
-                    <th class="py-4 px-6 text-center">Action</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100 font-medium">
-                  @for (item of filteredReconciledList(); track item.id) {
-                    <tr class="hover:bg-slate-50/90 transition">
-                      
-                      <!-- Farmer Name (Clean Clickable Link - Passbook badge removed) -->
-                      <td class="py-4 px-6">
-                        <button 
-                          (click)="openFarmerProfile(item.farmerName)" 
-                          class="group text-left cursor-pointer">
-                          <span class="text-sm sm:text-base font-black text-slate-900 group-hover:text-emerald-700 underline decoration-slate-300 underline-offset-4 group-hover:decoration-emerald-500 transition block">
-                            {{ item.farmerName }}
-                          </span>
-                          <span class="text-xs text-slate-400 font-semibold block mt-0.5">
-                            {{ item.govtRecord?.ppcCenter || 'Direct Mill Inward' }}
-                          </span>
-                        </button>
-                      </td>
-
-                      <!-- Govt Transit Pass -->
-                      <td class="py-4 px-5">
-                        <span class="font-mono font-bold text-slate-800 text-sm block">{{ item.govtRecord?.transitPass || 'UNREGISTERED' }}</span>
-                        <span class="text-xs text-slate-400 font-semibold">{{ item.govtRecord?.dispatchDate || 'N/A' }}</span>
-                      </td>
-
-                      <!-- Truck Reg No -->
-                      <td class="py-4 px-5 font-mono font-bold text-slate-700 text-sm">
-                        {{ item.govtRecord?.truckNo || item.millRecord?.vehicleRegNo || 'N/A' }}
-                      </td>
-
-                      <!-- Govt Mandi Qty -->
-                      <td class="py-4 px-5 text-right font-mono font-black text-slate-900 text-sm sm:text-base">
-                        {{ formatNum(item.govtQty) }} <span class="text-xs text-slate-400 font-normal">Qtl</span>
-                      </td>
-
-                      <!-- Mill Scale Qty -->
-                      <td class="py-4 px-5 text-right font-mono font-black text-slate-900 text-sm sm:text-base">
-                        {{ formatNum(item.millQty) }} <span class="text-xs text-slate-400 font-normal">Qtl</span>
-                      </td>
-
-                      <!-- Difference -->
-                      <td class="py-4 px-5 text-right font-mono font-black text-sm sm:text-base"
-                        [class]="item.qtyDiff === 0 ? 'text-slate-400' : 'text-amber-600'">
-                        {{ item.qtyDiff === 0 ? '0.00' : formatNum(item.qtyDiff) }} <span class="text-xs font-normal">Qtl</span>
-                      </td>
-
-                      <!-- Status Badge -->
-                      <td class="py-4 px-5 text-center">
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-black"
-                          [class]="item.status === 'Match' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-amber-100 text-amber-800 border border-amber-200'">
-                          {{ item.status === 'Match' ? '✓ Reconciled' : '⚠️ ' + item.status }}
-                        </span>
-                      </td>
-
-                      <!-- Action Button -->
-                      <td class="py-4 px-6 text-center">
-                        @if (item.status !== 'Match') {
-                          <button 
-                            (click)="openDiscrepancyModal(item)"
-                            class="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold text-xs transition shadow-sm">
-                            Resolve Dispute
-                          </button>
-                        } @else {
-                          <button 
-                            (click)="openFarmerProfile(item.farmerName)"
-                            class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl font-bold text-xs transition">
-                            View Details
-                          </button>
-                        }
-                      </td>
-
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm border-collapse">
+                  <thead>
+                    <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-black text-xs uppercase tracking-wider">
+                      <th class="py-4 px-6">Farmer Name</th>
+                      <th class="py-4 px-5">Govt Transit Pass</th>
+                      <th class="py-4 px-5">Truck / Vehicle</th>
+                      <th class="py-4 px-5 text-right">Govt Mandi Qty</th>
+                      <th class="py-4 px-5 text-right">Mill Scale Qty</th>
+                      <th class="py-4 px-5 text-right">Difference</th>
+                      <th class="py-4 px-5 text-center">Status</th>
+                      <th class="py-4 px-6 text-center">Action</th>
                     </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-        </div>
-      }
-
-
-      <!-- ========================================================= -->
-      <!-- TAB 2: LIVE GOVT OPMS MANDI DISPATCH FEEDS                -->
-      <!-- ========================================================= -->
-      @if (activeTab() === 'live-api') {
-        <div class="space-y-6">
-          
-          <!-- Live API Status Card -->
-          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <div class="flex items-center gap-2">
-                <span class="w-3.5 h-3.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                <h3 class="text-lg font-black text-slate-900">Government Mandi PPC Electronic Transit Feeds</h3>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100 font-medium">
+                    @for (item of filteredReconciledList(); track item.id) {
+                      <tr class="hover:bg-slate-50/90 transition">
+                        <td class="py-4 px-6">
+                          <button (click)="openFarmerProfile(item.farmerName)" class="group text-left cursor-pointer">
+                            <span class="text-sm sm:text-base font-black text-slate-900 group-hover:text-emerald-700 underline decoration-slate-300 underline-offset-4 group-hover:decoration-emerald-500 transition block">
+                              {{ item.farmerName }}
+                            </span>
+                            <span class="text-xs text-slate-400 font-semibold block mt-0.5">{{ item.govtRecord?.ppcCenter || 'Direct Mill Inward' }}</span>
+                          </button>
+                        </td>
+                        <td class="py-4 px-5">
+                          <span class="font-mono font-bold text-slate-800 text-sm block">{{ item.govtRecord?.transitPass || 'UNREGISTERED' }}</span>
+                          <span class="text-xs text-slate-400 font-semibold">{{ item.govtRecord?.dispatchDate || 'N/A' }}</span>
+                        </td>
+                        <td class="py-4 px-5 font-mono font-bold text-slate-700 text-sm">{{ item.govtRecord?.truckNo || item.millRecord?.vehicleRegNo || 'N/A' }}</td>
+                        <td class="py-4 px-5 text-right font-mono font-black text-slate-900 text-sm sm:text-base">{{ formatNum(item.govtQty) }} <span class="text-xs text-slate-400 font-normal">Qtl</span></td>
+                        <td class="py-4 px-5 text-right font-mono font-black text-slate-900 text-sm sm:text-base">{{ formatNum(item.millQty) }} <span class="text-xs text-slate-400 font-normal">Qtl</span></td>
+                        <td class="py-4 px-5 text-right font-mono font-black text-sm sm:text-base" [class]="item.qtyDiff === 0 ? 'text-slate-400' : 'text-amber-600'">{{ item.qtyDiff === 0 ? '0.00' : formatNum(item.qtyDiff) }} <span class="text-xs font-normal">Qtl</span></td>
+                        <td class="py-4 px-5 text-center">
+                          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-black" [class]="item.status === 'Match' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-amber-100 text-amber-800 border border-amber-200'">{{ item.status === 'Match' ? '✓ Reconciled' : '⚠️ ' + item.status }}</span>
+                        </td>
+                        <td class="py-4 px-6 text-center">
+                          @if (item.status !== 'Match') {
+                            <button (click)="openDiscrepancyModal(item)" class="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold text-xs transition shadow-sm">Resolve Dispute</button>
+                          } @else {
+                            <button (click)="openFarmerProfile(item.farmerName)" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl font-bold text-xs transition">View Details</button>
+                          }
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
               </div>
-              <p class="text-xs sm:text-sm text-slate-500 mt-1">Live data streams directly from Civil Supplies OPMS Gateway. Click farmer name to view full records.</p>
-            </div>
-
-            <button 
-              (click)="syncGovtDataFromApi()"
-              [disabled]="isApiSyncing()"
-              class="px-5 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold text-xs sm:text-sm rounded-xl transition shadow">
-              {{ isApiSyncing() ? 'Synchronizing Gateway...' : '⚡ Re-Fetch Live Feeds' }}
-            </button>
-          </div>
-
-          <!-- Mandi Lots Grid -->
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            @for (lot of reconcileService.govtLots(); track lot.id) {
-              <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4 hover:border-slate-300 transition">
-                
-                <div class="flex items-start justify-between">
-                  <div>
-                    <span class="text-xs font-mono font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">{{ lot.transitPass }}</span>
-                    <button 
-                      (click)="openFarmerProfile(lot.farmerName)" 
-                      class="text-left font-black text-base sm:text-lg text-slate-900 block mt-2 hover:text-emerald-700 underline decoration-slate-300 underline-offset-4">
-                      {{ lot.farmerName }}
-                    </button>
-                  </div>
-                  <span class="text-xs font-mono font-bold text-slate-500">{{ lot.dispatchDate }}</span>
-                </div>
-
-                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs sm:text-sm space-y-2">
-                  <div class="flex justify-between">
-                    <span class="text-slate-500">PPC Center:</span>
-                    <span class="font-bold text-slate-900 text-right">{{ lot.ppcCenter }}</span>
-                  </div>
-                  <div class="flex justify-between">
-                    <span class="text-slate-500">Truck Number:</span>
-                    <span class="font-mono font-bold text-slate-900">{{ lot.truckNo }}</span>
-                  </div>
-                  <div class="flex justify-between">
-                    <span class="text-slate-500">Paddy Quantity:</span>
-                    <span class="font-mono font-black text-emerald-800 text-sm sm:text-base">{{ formatNum(lot.paddyQtyQtl) }} Qtl</span>
-                  </div>
-                  <div class="flex justify-between">
-                    <span class="text-slate-500">Moisture Content:</span>
-                    <span class="font-bold" [class]="lot.moisturePercent > 17 ? 'text-amber-600' : 'text-slate-700'">{{ lot.moisturePercent }}%</span>
-                  </div>
-                  <div class="flex justify-between">
-                    <span class="text-slate-500">MSP Rate:</span>
-                    <span class="font-mono font-bold text-slate-900">₹{{ lot.mspRatePerQtl }}/Qtl</span>
-                  </div>
-                </div>
-
-                <button 
-                  (click)="openFarmerProfile(lot.farmerName)"
-                  class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-xs sm:text-sm rounded-xl transition flex items-center justify-center gap-1.5">
-                  <span>View Farmer Details & Load History →</span>
-                </button>
-
-              </div>
-            }
-          </div>
-
-        </div>
-      }
-
-
-      <!-- ========================================================= -->
-      <!-- TAB 3: DISPUTE RESOLVER & DISCREPANCY CARDS               -->
-      <!-- ========================================================= -->
-      @if (activeTab() === 'discrepancies') {
-        <div class="space-y-6">
-          
-          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <h3 class="text-lg font-black text-slate-900">Quantity Discrepancy & Moisture Cut Resolver</h3>
-              <p class="text-xs sm:text-sm text-slate-500 mt-1">Review moisture cuts, tare weight variances, and authorize official adjustments.</p>
-            </div>
-
-            <!-- Direct Link to Decision Hub -->
-            <button 
-              (click)="activeTab.set('approval')"
-              class="px-5 py-3 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs sm:text-sm rounded-xl shadow transition flex items-center gap-2">
-              <span>Proceed to Subsidy Release →</span>
-            </button>
-          </div>
-
-          <!-- Dispute Cards Grid -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            @for (item of discrepancyList(); track item.id) {
-              <div class="bg-white p-7 rounded-3xl border border-slate-200 shadow-sm space-y-5 hover:border-slate-300 transition">
-                
-                <div class="flex items-start justify-between">
-                  <div>
-                    <span class="font-bold text-xs text-slate-400 font-mono block">{{ item.id }}</span>
-                    <button 
-                      (click)="openFarmerProfile(item.farmerName)" 
-                      class="text-left font-black text-lg text-slate-900 hover:text-emerald-700 underline decoration-slate-300 underline-offset-4 mt-0.5">
-                      {{ item.farmerName }}
-                    </button>
-                  </div>
-                  <span class="px-3 py-1 rounded-full text-xs font-black"
-                    [class]="item.status === 'Match' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-amber-100 text-amber-800 border border-amber-200'">
-                    {{ item.status === 'Match' ? 'Resolved' : 'Dispute Flagged' }}
-                  </span>
-                </div>
-
-                <!-- Quantities Comparison Grid -->
-                <div class="grid grid-cols-3 gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-200 text-center">
-                  <div>
-                    <span class="text-xs text-slate-500 font-bold uppercase block">Govt Official</span>
-                    <span class="text-lg sm:text-xl font-black text-slate-900 font-mono mt-1 block">{{ formatNum(item.govtQty) }}</span>
-                    <span class="text-xs text-slate-400">Qtl</span>
-                  </div>
-                  <div>
-                    <span class="text-xs text-slate-500 font-bold uppercase block">Mill Scale</span>
-                    <span class="text-lg sm:text-xl font-black text-slate-900 font-mono mt-1 block">{{ formatNum(item.millQty) }}</span>
-                    <span class="text-xs text-slate-400">Qtl</span>
-                  </div>
-                  <div>
-                    <span class="text-xs text-amber-700 font-bold uppercase block">Difference</span>
-                    <span class="text-lg sm:text-xl font-black text-amber-600 font-mono mt-1 block">{{ Math.abs(item.qtyDiff) }}</span>
-                    <span class="text-xs text-amber-700 font-bold">Qtl ({{ Math.abs(item.qtyDiff) * 100 }} kg)</span>
-                  </div>
-                </div>
-
-                <!-- Inspection Findings -->
-                <div class="bg-amber-50/80 border border-amber-200 p-4 rounded-2xl text-xs sm:text-sm text-amber-950 space-y-1">
-                  <span class="font-extrabold block text-amber-900">Inspection Findings:</span>
-                  <p class="leading-relaxed font-medium">{{ item.aiReasoning }}</p>
-                </div>
-
-                <!-- Action Button -->
-                <button 
-                  (click)="openDiscrepancyModal(item)"
-                  [class]="item.status === 'Match' 
-                    ? 'w-full py-3.5 bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-emerald-100 font-extrabold text-xs sm:text-sm rounded-xl transition flex items-center justify-center gap-2 shadow-sm' 
-                    : 'w-full py-3.5 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs sm:text-sm rounded-xl transition shadow-sm'">
-                  @if (item.status === 'Match') {
-                    <span>✓ Authorized & Reconciled (Click to Modify)</span>
-                  } @else {
-                    <span>{{ authenticatedUser()?.role === 'GOVT_OFFICER' ? 'Authorize Adjusted Quantity →' : 'Resolve Quantity Dispute →' }}</span>
-                  }
-                </button>
-
-              </div>
-            }
-          </div>
-
-          <!-- Bottom Action Banner for Decision Hub -->
-          <div class="mt-8 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white p-7 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl border border-slate-700">
-            <div>
-              <div class="flex items-center gap-2.5">
-                <span class="inline-flex h-3.5 w-3.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                <h4 class="font-black text-xl">Next Step: Statutory Decision & Subsidy Release</h4>
-              </div>
-              <p class="text-xs sm:text-sm text-slate-300 mt-1">Ready to authorize statutory clearance for {{ currentActiveMill().millName }} and generate official JRC Certificate.</p>
-            </div>
-            <button 
-              (click)="activeTab.set('approval')" 
-              class="px-7 py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm sm:text-base rounded-2xl shadow-lg transition whitespace-nowrap">
-              Proceed to Decision Hub →
-            </button>
-          </div>
-
-        </div>
-      }
-
-
-      <!-- ========================================================= -->
-      <!-- TAB 4: STATUTORY OFFICER DECISION HUB                     -->
-      @if (activeTab() === 'approval') {
-        <div class="space-y-6">
-          
-          <!-- Top Header with Batch ID and Current Decision Status -->
-          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <div class="flex items-center gap-2">
-                <span class="text-xs font-black bg-purple-100 text-purple-900 px-2.5 py-1 rounded-lg border border-purple-200 font-mono">BATCH #CMR-2025-WGL-01</span>
-                <span class="text-xs font-bold text-slate-400">Kharif Procurement Season 2025-26</span>
-              </div>
-              <h3 class="text-xl font-black text-slate-900 mt-1">Civil Supplies Officer Statutory Decision Hub</h3>
-              <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Statutory subsidy release authorization for Sri Lakshmi Rice Industries (TS-WGL-MR-4412).</p>
-            </div>
-
-            <div class="flex items-center gap-3">
-              <span class="text-xs sm:text-sm font-bold text-slate-500">Decision Status:</span>
-              <span class="px-4 py-1.5 rounded-full text-xs sm:text-sm font-black uppercase tracking-wider"
-                [class]="reconcileService.settlementSummary().approvalStatus === 'APPROVED' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : reconcileService.settlementSummary().approvalStatus === 'REJECTED' ? 'bg-rose-100 text-rose-800 border border-rose-300' : reconcileService.settlementSummary().approvalStatus === 'CORRECTION_REQUESTED' ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-slate-100 text-slate-700 border border-slate-200'">
-                {{ reconcileService.settlementSummary().approvalStatus }}
-              </span>
             </div>
           </div>
+        }
 
-          <!-- BATCH OVERVIEW & AUDIT SUMMARY CARD -->
-          <div class="bg-slate-900 text-white p-7 sm:p-8 rounded-3xl shadow-xl border border-slate-800 space-y-6">
-            
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+        <!-- Tab 2: Live Mandi PPC Feeds -->
+        @if (activeTab() === 'live-api') {
+          <div class="space-y-6">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
-                <span class="text-xs font-bold uppercase tracking-widest text-emerald-400">Target Rice Mill & Batch Details Under Review:</span>
-                <h2 class="text-2xl font-black text-white mt-1">Sri Lakshmi Rice Industries</h2>
-                <span class="text-xs font-mono text-slate-400 font-semibold">Mill Code: {{ currentActiveMill().millId }} • {{ currentActiveMill().location }}</span>
+                <div class="flex items-center gap-2">
+                  <span class="w-3.5 h-3.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <h3 class="text-lg font-black text-slate-900">Government Mandi PPC Electronic Transit Feeds</h3>
+                </div>
+                <p class="text-xs sm:text-sm text-slate-500 mt-1">Live data streams directly from Civil Supplies OPMS Gateway.</p>
               </div>
-
-              <div class="bg-slate-800/80 border border-slate-700 p-3.5 rounded-2xl text-right">
-                <span class="text-xs text-slate-400 font-bold block">Current Batch Allocation</span>
-                <span class="text-xl font-black text-emerald-400 font-mono">6,350.00 Qtl Paddy</span>
-              </div>
+              <button (click)="syncGovtDataFromApi()" [disabled]="isApiSyncing()" class="px-5 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold text-xs sm:text-sm rounded-xl transition shadow">{{ isApiSyncing() ? 'Synchronizing Gateway...' : '⚡ Re-Fetch Live Feeds' }}</button>
             </div>
 
-            <!-- 4 Quantitative Metrics of this Batch -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-              
-              <div class="bg-slate-800/60 p-4 rounded-2xl border border-slate-700/80">
-                <span class="text-xs font-bold text-slate-400 block">Total Paddy Inward:</span>
-                <span class="text-xl font-black text-white font-mono mt-1 block">{{ formatNum(reconcileService.settlementSummary().totalPaddyQtl) }} Qtl</span>
-                <span class="text-[11px] text-slate-400 mt-0.5 block">7 Mandi Truck Dispatches</span>
-              </div>
-
-              <div class="bg-slate-800/60 p-4 rounded-2xl border border-slate-700/80">
-                <span class="text-xs font-bold text-slate-400 block">67% CMR Rice Target:</span>
-                <span class="text-xl font-black text-emerald-400 font-mono mt-1 block">{{ formatNum(reconcileService.settlementSummary().totalRiceQtl) }} Qtl</span>
-                <span class="text-[11px] text-slate-400 mt-0.5 block">Statutory Raw Rice Due</span>
-              </div>
-
-              <div class="bg-slate-800/60 p-4 rounded-2xl border border-slate-700/80">
-                <span class="text-xs font-bold text-slate-400 block">FCI Godown Delivered:</span>
-                <span class="text-xl font-black text-white font-mono mt-1 block">{{ formatNum(reconcileService.settlementSummary().totalDeliveredRiceQtl) }} Qtl</span>
-                <span class="text-[11px] text-emerald-400 font-bold mt-0.5 block">71.7% Delivered</span>
-              </div>
-
-              <div class="bg-slate-800/60 p-4 rounded-2xl border border-slate-700/80">
-                <span class="text-xs font-bold text-slate-400 block">Pending Rice:</span>
-                <span class="text-xl font-black text-amber-400 font-mono mt-1 block">{{ formatNum(reconcileService.settlementSummary().totalPendingRiceQtl) }} Qtl</span>
-                <span class="text-[11px] text-slate-400 mt-0.5 block">To complete 100% quota</span>
-              </div>
-
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              @for (lot of reconcileService.govtLots(); track lot.id) {
+                <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4 hover:border-slate-300 transition">
+                  <div class="flex items-start justify-between">
+                    <div>
+                      <span class="text-xs font-mono font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">{{ lot.transitPass }}</span>
+                      <button (click)="openFarmerProfile(lot.farmerName)" class="text-left font-black text-base sm:text-lg text-slate-900 block mt-2 hover:text-emerald-700 underline decoration-slate-300 underline-offset-4">{{ lot.farmerName }}</button>
+                    </div>
+                    <span class="text-xs font-mono font-bold text-slate-500">{{ lot.dispatchDate }}</span>
+                  </div>
+                  <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs sm:text-sm space-y-2">
+                    <div class="flex justify-between"><span class="text-slate-500">PPC Center:</span><span class="font-bold text-slate-900 text-right">{{ lot.ppcCenter }}</span></div>
+                    <div class="flex justify-between"><span class="text-slate-500">Truck Number:</span><span class="font-mono font-bold text-slate-900">{{ lot.truckNo }}</span></div>
+                    <div class="flex justify-between"><span class="text-slate-500">Paddy Quantity:</span><span class="font-mono font-black text-emerald-800 text-sm sm:text-base">{{ formatNum(lot.paddyQtyQtl) }} Qtl</span></div>
+                    <div class="flex justify-between"><span class="text-slate-500">Moisture Content:</span><span class="font-bold" [class]="lot.moisturePercent > 17 ? 'text-amber-600' : 'text-slate-700'">{{ lot.moisturePercent }}%</span></div>
+                  </div>
+                  <button (click)="openFarmerProfile(lot.farmerName)" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-xs sm:text-sm rounded-xl transition">View Farmer Load History →</button>
+                </div>
+              }
             </div>
-
-            <!-- Batch Verification Checklist -->
-            <div class="bg-slate-800/40 p-4 rounded-2xl border border-slate-700 flex flex-wrap items-center justify-between gap-3 text-xs">
-              <div class="flex items-center gap-2">
-                <span class="text-emerald-400 font-bold">✓</span>
-                <span>Weighbridge Scales Calibrated</span>
-              </div>
-              <div class="flex items-center gap-2">
-                <span class="text-emerald-400 font-bold">✓</span>
-                <span>Moisture Cuts Authorized</span>
-              </div>
-              <div class="flex items-center gap-2">
-                <span class="text-emerald-400 font-bold">✓</span>
-                <span>FCI Godown Acknowledgments Verified</span>
-              </div>
-              <div class="flex items-center gap-2">
-                <span class="text-emerald-400 font-bold">✓</span>
-                <span>Direct Live Mandi API Match</span>
-              </div>
-            </div>
-
           </div>
+        }
 
-          <!-- Financial Settlement Breakdown Card -->
-          <div class="bg-white p-8 sm:p-10 rounded-3xl border border-slate-200 shadow-sm space-y-7">
-            
-            <h4 class="text-xs sm:text-sm font-black uppercase tracking-wider text-slate-500">Statutory Subsidy & Milling Charges for Batch #CMR-2025-WGL-01</h4>
-            
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
-              <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200">
-                <span class="text-xs sm:text-sm text-slate-500 font-bold block">Milling Charges (₹10/Qtl)</span>
-                <span class="text-2xl font-black text-slate-900 font-mono mt-1.5 block">{{ formatInr(reconcileService.settlementSummary().millingCharges) }}</span>
+        <!-- Tab 3: Dispute Resolver -->
+        @if (activeTab() === 'discrepancies') {
+          <div class="space-y-6">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <h3 class="text-lg font-black text-slate-900">Quantity Discrepancy & Moisture Cut Resolver</h3>
+                <p class="text-xs sm:text-sm text-slate-500 mt-1">Review moisture cuts, tare weight variances, and authorize official adjustments.</p>
               </div>
-              <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200">
-                <span class="text-xs sm:text-sm text-slate-500 font-bold block">Handling Charges (₹4.50/Qtl)</span>
-                <span class="text-2xl font-black text-slate-900 font-mono mt-1.5 block">{{ formatInr(reconcileService.settlementSummary().handlingCharges) }}</span>
-              </div>
-              <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200">
-                <span class="text-xs sm:text-sm text-slate-500 font-bold block">Gunny Depreciation Credit</span>
-                <span class="text-2xl font-black text-slate-900 font-mono mt-1.5 block">{{ formatInr(reconcileService.settlementSummary().gunnyCredit) }}</span>
-              </div>
+              <button (click)="activeTab.set('approval')" class="px-5 py-3 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs sm:text-sm rounded-xl shadow transition flex items-center gap-2"><span>Proceed to Subsidy Release →</span></button>
             </div>
 
-            <div class="bg-emerald-50 border border-emerald-200 p-7 rounded-3xl flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div>
-                <span class="text-xs sm:text-sm font-extrabold text-emerald-800 uppercase tracking-wider block">Total Net Statutory Subsidy Payable to Miller</span>
-                <span class="text-3xl sm:text-4xl font-black text-emerald-950 font-mono mt-1.5 block">{{ formatInr(reconcileService.settlementSummary().totalPayableAmount) }}</span>
-              </div>
-              @if (reconcileService.settlementSummary().approvalStatus === 'APPROVED') {
-                <div class="flex flex-wrap items-center gap-3">
-                  <button 
-                    (click)="openNotificationModal()"
-                    class="px-5 py-3.5 bg-white hover:bg-slate-100 text-emerald-900 border border-emerald-300 font-black text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center gap-2">
-                    <span>📱 Farmer SMS Broadcast (6)</span>
-                  </button>
-                  <button 
-                    (click)="showCertificateModal.set(true)"
-                    class="px-6 py-3.5 bg-emerald-800 hover:bg-emerald-700 text-white font-black text-xs sm:text-sm rounded-xl shadow transition">
-                    📄 View JRC Certificate
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              @for (item of discrepancyList(); track item.id) {
+                <div class="bg-white p-7 rounded-3xl border border-slate-200 shadow-sm space-y-5 hover:border-slate-300 transition">
+                  <div class="flex items-start justify-between">
+                    <div>
+                      <span class="font-bold text-xs text-slate-400 font-mono block">{{ item.id }}</span>
+                      <button (click)="openFarmerProfile(item.farmerName)" class="text-left font-black text-lg text-slate-900 hover:text-emerald-700 underline decoration-slate-300 underline-offset-4 mt-0.5">{{ item.farmerName }}</button>
+                    </div>
+                    <span class="px-3 py-1 rounded-full text-xs font-black" [class]="item.status === 'Match' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-amber-100 text-amber-800 border border-amber-200'">{{ item.status === 'Match' ? 'Resolved' : 'Dispute Flagged' }}</span>
+                  </div>
+                  <div class="grid grid-cols-3 gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-200 text-center">
+                    <div><span class="text-xs text-slate-500 font-bold uppercase block">Govt Official</span><span class="text-lg sm:text-xl font-black text-slate-900 font-mono mt-1 block">{{ formatNum(item.govtQty) }}</span><span class="text-xs text-slate-400">Qtl</span></div>
+                    <div><span class="text-xs text-slate-500 font-bold uppercase block">Mill Scale</span><span class="text-lg sm:text-xl font-black text-slate-900 font-mono mt-1 block">{{ formatNum(item.millQty) }}</span><span class="text-xs text-slate-400">Qtl</span></div>
+                    <div><span class="text-xs text-amber-700 font-bold uppercase block">Difference</span><span class="text-lg sm:text-xl font-black text-amber-600 font-mono mt-1 block">{{ Math.abs(item.qtyDiff) }}</span><span class="text-xs text-amber-700 font-bold">Qtl ({{ Math.abs(item.qtyDiff) * 100 }} kg)</span></div>
+                  </div>
+                  <div class="bg-amber-50/80 border border-amber-200 p-4 rounded-2xl text-xs sm:text-sm text-amber-950 space-y-1">
+                    <span class="font-extrabold block text-amber-900">Inspection Findings:</span>
+                    <p class="leading-relaxed font-medium">{{ item.aiReasoning }}</p>
+                  </div>
+                  <button (click)="openDiscrepancyModal(item)" [class]="item.status === 'Match' ? 'w-full py-3.5 bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-emerald-100 font-extrabold text-xs sm:text-sm rounded-xl transition flex items-center justify-center gap-2 shadow-sm' : 'w-full py-3.5 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs sm:text-sm rounded-xl transition shadow-sm'">
+                    @if (item.status === 'Match') { <span>✓ Authorized & Reconciled (Click to Modify)</span> } @else { <span>Authorize Adjusted Quantity →</span> }
                   </button>
                 </div>
               }
             </div>
+          </div>
+        }
 
-            @if (reconcileService.settlementSummary().approvalStatus === 'APPROVED') {
-              <div class="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 p-5 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-xl bg-emerald-700 text-white flex items-center justify-center text-lg shadow">
-                    📢
-                  </div>
-                  <div>
-                    <span class="text-xs font-bold uppercase tracking-wider text-emerald-800 block">Direct Benefit Transfer (DBT) SMS Gateway Active</span>
-                    <h4 class="text-sm sm:text-base font-black text-emerald-950">6 Verified Farmers Notified with MSP Sanction Details</h4>
-                  </div>
+        <!-- Tab 4: Statutory Decision Hub -->
+        @if (activeTab() === 'approval') {
+          <div class="space-y-6">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-black bg-purple-100 text-purple-900 px-2.5 py-1 rounded-lg border border-purple-200 font-mono">BATCH #CMR-2025-WGL-01</span>
+                  <span class="text-xs font-bold text-slate-400">Kharif Procurement Season 2025-26</span>
                 </div>
-                <button 
-                  (click)="openNotificationModal()" 
-                  class="px-5 py-2.5 bg-emerald-800 hover:bg-emerald-700 text-white font-black text-xs rounded-xl shadow transition whitespace-nowrap">
-                  📱 View Dispatched SMS Logs →
-                </button>
+                <h3 class="text-xl font-black text-slate-900 mt-1">Civil Supplies Officer Statutory Decision Hub</h3>
+                <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Statutory subsidy release authorization for {{ currentActiveMill().millName }} ({{ currentActiveMill().millId }}).</p>
               </div>
-            }
 
-            <!-- Remarks Input -->
-            <div class="space-y-2 pt-2">
-              <label class="block text-xs sm:text-sm font-bold text-slate-700">Official Decision Rationale / Endorsement Remarks</label>
-              <textarea 
-                [ngModel]="officerRemarksInput()"
-                (ngModelChange)="officerRemarksInput.set($event)"
-                rows="3"
-                class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs sm:text-sm font-semibold text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900"></textarea>
-            </div>
-
-            <!-- DECISION GUIDELINES (Clear Matrix on When to Approve vs Reject) -->
-            <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200 space-y-3">
-              <span class="text-xs font-black uppercase text-slate-600 tracking-wider block">Official Decision Guidelines for Officers:</span>
-              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
-                <div class="p-3.5 bg-emerald-50 rounded-2xl border border-emerald-200 text-emerald-900 space-y-1">
-                  <strong class="font-black block text-emerald-800">🟢 When to Click "Approve":</strong>
-                  <p class="leading-relaxed">When weighments match, moisture cuts are authorized, and CMR rice is delivered to FCI. Clears ₹1,27,000 subsidy & issues JRC Certificate.</p>
-                </div>
-                <div class="p-3.5 bg-rose-50 rounded-2xl border border-rose-200 text-rose-900 space-y-1">
-                  <strong class="font-black block text-rose-800">🔴 When to Click "Reject":</strong>
-                  <p class="leading-relaxed">When there are fraudulent lorry entries, fake transit passes, or major unaccounted shortages. Blocks subsidy payment completely.</p>
-                </div>
-                <div class="p-3.5 bg-amber-50 rounded-2xl border border-amber-200 text-amber-900 space-y-1">
-                  <strong class="font-black block text-amber-800">🟡 When to Click "Correction":</strong>
-                  <p class="leading-relaxed">When physical tare weight recalibration or moisture re-testing is needed by the joint inspection team.</p>
-                </div>
+              <div class="flex items-center gap-3">
+                <span class="text-xs sm:text-sm font-bold text-slate-500">Decision Status:</span>
+                <span class="px-4 py-1.5 rounded-full text-xs sm:text-sm font-black uppercase tracking-wider"
+                  [class]="reconcileService.settlementSummary().approvalStatus === 'APPROVED' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-slate-100 text-slate-700 border border-slate-200'">
+                  {{ reconcileService.settlementSummary().approvalStatus }}
+                </span>
               </div>
             </div>
 
-            <!-- THE 3 STATUTORY DECISION BUTTONS -->
-            <div class="pt-4 border-t border-slate-100">
-              <span class="block text-xs sm:text-sm font-black text-slate-500 uppercase tracking-wider mb-4">Execute Statutory Action on Batch #CMR-2025-WGL-01:</span>
+            <!-- Financial Settlement Card -->
+            <div class="bg-white p-8 sm:p-10 rounded-3xl border border-slate-200 shadow-sm space-y-7">
+              <h4 class="text-xs sm:text-sm font-black uppercase tracking-wider text-slate-500">Statutory Subsidy & Milling Charges Calculation</h4>
               
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
-                
-                <!-- 1. Approve Button -->
-                <button 
-                  (click)="executeApproveBatch()"
-                  class="py-4 px-6 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-base rounded-2xl shadow-lg transition flex flex-col items-center justify-center gap-1">
-                  <span>✓ Approve & Release Subsidy</span>
-                  <span class="text-xs font-normal opacity-90">Issue Joint Clearance Certificate (JRC)</span>
-                </button>
+                <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200"><span class="text-xs sm:text-sm text-slate-500 font-bold block">Milling Charges (₹10/Qtl)</span><span class="text-2xl font-black text-slate-900 font-mono mt-1.5 block">{{ formatInr(reconcileService.settlementSummary().millingCharges) }}</span></div>
+                <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200"><span class="text-xs sm:text-sm text-slate-500 font-bold block">Handling Charges (₹4.50/Qtl)</span><span class="text-2xl font-black text-slate-900 font-mono mt-1.5 block">{{ formatInr(reconcileService.settlementSummary().handlingCharges) }}</span></div>
+                <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200"><span class="text-xs sm:text-sm text-slate-500 font-bold block">Gunny Depreciation Credit</span><span class="text-2xl font-black text-slate-900 font-mono mt-1.5 block">{{ formatInr(reconcileService.settlementSummary().gunnyCredit) }}</span></div>
+              </div>
 
-                <!-- 2. Reject Button -->
-                <button 
-                  (click)="executeRejectBatch()"
-                  class="py-4 px-6 bg-rose-700 hover:bg-rose-800 text-white font-black text-base rounded-2xl shadow-lg transition flex flex-col items-center justify-center gap-1">
-                  <span>✕ Reject Batch</span>
-                  <span class="text-xs font-normal opacity-90">Halt subsidy disbursement</span>
-                </button>
+              <div class="bg-emerald-50 border border-emerald-200 p-7 rounded-3xl flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div>
+                  <span class="text-xs sm:text-sm font-extrabold text-emerald-800 uppercase tracking-wider block">Total Net Statutory Subsidy Payable to Miller</span>
+                  <span class="text-3xl sm:text-4xl font-black text-emerald-950 font-mono mt-1.5 block">{{ formatInr(reconcileService.settlementSummary().totalPayableAmount) }}</span>
+                </div>
+                @if (reconcileService.settlementSummary().approvalStatus === 'APPROVED') {
+                  <div class="flex flex-wrap items-center gap-3">
+                    <button (click)="openNotificationModal()" class="px-5 py-3.5 bg-white hover:bg-slate-100 text-emerald-900 border border-emerald-300 font-black text-xs sm:text-sm rounded-xl shadow-sm transition">📱 Farmer SMS Broadcast (6)</button>
+                    <button (click)="showCertificateModal.set(true)" class="px-6 py-3.5 bg-emerald-800 hover:bg-emerald-700 text-white font-black text-xs sm:text-sm rounded-xl shadow transition">📄 View JRC Certificate</button>
+                  </div>
+                }
+              </div>
 
-                <!-- 3. Request Correction Button -->
-                <button 
-                  (click)="executeRequestCorrection()"
-                  class="py-4 px-6 bg-amber-600 hover:bg-amber-700 text-white font-black text-base rounded-2xl shadow-lg transition flex flex-col items-center justify-center gap-1">
-                  <span>⚠️ Request Correction</span>
-                  <span class="text-xs font-normal opacity-90">Ask Miller for tare recalibration</span>
-                </button>
+              <div class="space-y-2 pt-2">
+                <label class="block text-xs sm:text-sm font-bold text-slate-700">Official Decision Rationale / Endorsement Remarks</label>
+                <textarea [ngModel]="officerRemarksInput()" (ngModelChange)="officerRemarksInput.set($event)" rows="3" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs sm:text-sm font-semibold text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900"></textarea>
+              </div>
 
+              <!-- 3 ACTION BUTTONS -->
+              <div class="pt-4 border-t border-slate-100">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                  <button (click)="executeApproveBatch()" class="py-4 px-6 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-base rounded-2xl shadow-lg transition flex flex-col items-center justify-center gap-1">
+                    <span>✓ Approve & Release Subsidy</span>
+                    <span class="text-xs font-normal opacity-90">Issue JRC Certificate & SMS Alert</span>
+                  </button>
+                  <button (click)="executeRejectBatch()" class="py-4 px-6 bg-rose-700 hover:bg-rose-800 text-white font-black text-base rounded-2xl shadow-lg transition flex flex-col items-center justify-center gap-1">
+                    <span>✕ Reject Batch</span>
+                    <span class="text-xs font-normal opacity-90">Halt subsidy disbursement</span>
+                  </button>
+                  <button (click)="executeRequestCorrection()" class="py-4 px-6 bg-amber-600 hover:bg-amber-700 text-white font-black text-base rounded-2xl shadow-lg transition flex flex-col items-center justify-center gap-1">
+                    <span>⚠️ Request Correction</span>
+                    <span class="text-xs font-normal opacity-90">Ask Miller for recalibration</span>
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        }
+
+        <!-- Tab 5: Audit Trail -->
+        @if (activeTab() === 'audit') {
+          <div class="space-y-6">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+              <div>
+                <h3 class="text-lg font-black text-slate-900">Official Chronological Audit Trail</h3>
+                <p class="text-xs sm:text-sm text-slate-500 mt-1">Immutable vigilance log recording all API feeds, scale entries, and approvals.</p>
+              </div>
+              <span class="text-xs sm:text-sm font-mono font-bold text-slate-500">{{ reconcileService.auditLogs().length }} Recorded Events</span>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm divide-y divide-slate-100">
+              @for (log of reconcileService.auditLogs(); track log.id) {
+                <div class="p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50 transition">
+                  <div class="space-y-1.5">
+                    <div class="flex items-center gap-2.5">
+                      <span class="font-mono text-xs sm:text-sm font-bold text-slate-400">{{ log.id }}</span>
+                      <span class="text-xs sm:text-sm font-mono text-slate-500 font-semibold">{{ log.dateStr }}</span>
+                    </div>
+                    <p class="text-sm font-extrabold text-slate-900">{{ log.changeDescription }}</p>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-sm font-extrabold text-slate-800 block">{{ log.changedBy }}</span>
+                    <span class="text-xs text-slate-400 font-semibold block">{{ log.role }}</span>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+      </main>
+
+    }
+
+
+    <!-- ========================================================================= -->
+    <!-- WORKSPACE B: RICE MILL MANAGER / WEIGHBRIDGE OPERATOR DASHBOARD           -->
+    <!-- ========================================================================= -->
+    @if (authenticatedUser()?.role === 'MILL_OPERATOR') {
+      
+      <!-- Miller Header Banner -->
+      <section class="max-w-7xl mx-auto px-6 pt-5 w-full">
+        <div class="bg-gradient-to-r from-emerald-950 via-slate-900 to-slate-900 text-white p-5 sm:p-6 rounded-3xl shadow-xl border border-emerald-900/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div class="flex items-center gap-3.5">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-600/30 border border-emerald-400/40 text-white flex items-center justify-center text-2xl shadow">
+              🏭
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-black uppercase tracking-widest text-emerald-400">Rice Mill Plant Operations & Weighbridge Console</span>
+                <span class="px-2 py-0.5 text-[10px] font-black uppercase bg-emerald-500/30 text-emerald-200 rounded-full border border-emerald-400/30">Active Plant</span>
+              </div>
+              <h3 class="text-lg sm:text-xl font-black text-white mt-0.5">Sri Lakshmi Rice Industries (TS-WGL-MR-4412)</h3>
+              <span class="text-xs text-slate-300 font-mono font-semibold">Manager: S. Murthy • Electronic Gate Weighbridge Scale Active</span>
+            </div>
+          </div>
+
+          <div class="bg-slate-800/80 border border-slate-700 p-3.5 rounded-2xl text-right">
+            <span class="text-xs text-slate-400 font-bold block">Current Kharif Quota</span>
+            <span class="text-xl font-black text-emerald-400 font-mono">6,350.00 Qtl Paddy</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Miller Key Metrics Strip -->
+      <section class="max-w-7xl mx-auto px-6 pt-5 w-full">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-5">
+          <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <span class="text-xs sm:text-sm font-bold text-slate-500 uppercase tracking-wider block">Mill Gate Paddy Inward</span>
+            <span class="text-2xl sm:text-3xl font-black text-slate-900 font-mono mt-1.5 block">{{ formatNum(reconcileService.settlementSummary().totalPaddyQtl) }} Qtl</span>
+            <span class="text-xs text-slate-400 font-semibold mt-1 block">7 Lorry Slips Weighed</span>
+          </div>
+
+          <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <span class="text-xs sm:text-sm font-bold text-slate-500 uppercase tracking-wider block">67% CMR Rice Target</span>
+            <span class="text-2xl sm:text-3xl font-black text-emerald-800 font-mono mt-1.5 block">{{ formatNum(reconcileService.settlementSummary().totalRiceQtl) }} Qtl</span>
+            <span class="text-xs text-slate-400 font-semibold mt-1 block">Raw Rice Production Target</span>
+          </div>
+
+          <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <span class="text-xs sm:text-sm font-bold text-slate-500 uppercase tracking-wider block">CMR Delivered to FCI</span>
+            <span class="text-2xl sm:text-3xl font-black text-slate-900 font-mono mt-1.5 block">{{ formatNum(reconcileService.settlementSummary().totalDeliveredRiceQtl) }} Qtl</span>
+            <span class="text-xs text-emerald-700 font-bold mt-1 block">71.7% Delivered (2 Acks)</span>
+          </div>
+
+          <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <span class="text-xs sm:text-sm font-bold text-slate-500 uppercase tracking-wider block">Miller Claimable Subsidy</span>
+            <span class="text-2xl sm:text-3xl font-black text-emerald-950 font-mono mt-1.5 block">{{ formatInr(reconcileService.settlementSummary().totalPayableAmount) }}</span>
+            <span class="text-xs font-bold text-purple-700 mt-1 block">Invoice Ready for DCSO</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Main Tab Content Area (Miller) -->
+      <main class="max-w-7xl mx-auto px-6 pt-6 w-full">
+        
+        <!-- Tab 1: Mill Weighbridge Scale Inward & OCR -->
+        @if (activeTab() === 'scale-entry') {
+          <div class="space-y-6">
+            
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+              
+              <!-- Scale Inward Entry Form -->
+              <div class="lg:col-span-7 bg-white p-7 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-xl">⚖️</span>
+                    <h3 class="text-lg font-black text-slate-900">Mill Gate Weighbridge Scale Inward Form</h3>
+                  </div>
+                  <p class="text-xs sm:text-sm text-slate-500 mt-1">Enter lorry gross/tare weighment slip upon gate arrival.</p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm">
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1">Transit Pass Reference</label>
+                    <input type="text" [ngModel]="manualPass()" (ngModelChange)="manualPass.set($event)" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-mono font-bold text-slate-900" placeholder="TP-2025-8806" />
+                  </div>
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1">Truck / Vehicle Reg No</label>
+                    <input type="text" [ngModel]="manualTruck()" (ngModelChange)="manualTruck.set($event)" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-mono font-bold text-slate-900" placeholder="TS-03-UC-5509" />
+                  </div>
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1">Farmer Name</label>
+                    <input type="text" [ngModel]="manualFarmer()" (ngModelChange)="manualFarmer.set($event)" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900" placeholder="K. Venkatesh" />
+                  </div>
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1">Net Mill Weight (Qtl)</label>
+                    <input type="number" [ngModel]="manualQty()" (ngModelChange)="manualQty.set($event)" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-mono font-black text-slate-900" placeholder="650" />
+                  </div>
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1">Moisture Test (%)</label>
+                    <input type="number" [ngModel]="manualMoisture()" (ngModelChange)="manualMoisture.set($event)" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900" placeholder="16.5" />
+                  </div>
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1">Gunny Bags Count</label>
+                    <input type="number" [ngModel]="manualBags()" (ngModelChange)="manualBags.set($event)" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900" placeholder="1625" />
+                  </div>
+                </div>
+
+                <button (click)="submitManualScaleEntry()" class="w-full py-4 bg-emerald-800 hover:bg-emerald-700 text-white font-black text-sm rounded-xl shadow-lg transition">
+                  + Submit & Record Scale Inward Slip
+                </button>
+              </div>
+
+              <!-- Camera Physical Slip OCR Card -->
+              <div class="lg:col-span-5 bg-white p-7 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-5">
+                <div class="flex items-center gap-2">
+                  <span class="text-xl">📷</span>
+                  <h3 class="text-lg font-black text-slate-900">Physical Weighment Slip OCR</h3>
+                </div>
+                <p class="text-xs sm:text-sm text-slate-500">Scan paper scale printouts with AI OCR to automatically extract truck, net weight, and moisture.</p>
+
+                <div class="border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center space-y-3 bg-slate-50">
+                  <span class="text-3xl block">📄</span>
+                  <span class="text-xs font-bold text-slate-600 block">Weighbridge Thermal Scale Printout</span>
+                  <button (click)="simulateCameraOcrScan()" [disabled]="isOcrScanning()" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-black text-xs rounded-xl shadow transition">
+                    {{ isOcrScanning() ? 'Scanning Slip with OCR...' : '📸 Scan Scale Slip (OCR)' }}
+                  </button>
+                </div>
+
+                @if (ocrSuccessMsg()) {
+                  <div class="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs font-bold text-emerald-900">
+                    {{ ocrSuccessMsg() }}
+                  </div>
+                }
+              </div>
+
+            </div>
+
+            <!-- Today's Scale Inward Registry -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+              <div class="p-5 border-b border-slate-200 flex items-center justify-between">
+                <h4 class="text-base font-black text-slate-900">Recorded Mill Gate Weighbridge Slips</h4>
+                <span class="text-xs font-mono font-bold text-slate-500">{{ reconcileService.millSlips().length }} Recorded Inwards</span>
+              </div>
+
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs sm:text-sm border-collapse">
+                  <thead>
+                    <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-black uppercase text-xs">
+                      <th class="py-3.5 px-5">Slip No & Date</th>
+                      <th class="py-3.5 px-4">Transit Pass</th>
+                      <th class="py-3.5 px-4">Truck Reg No</th>
+                      <th class="py-3.5 px-4">Farmer Name</th>
+                      <th class="py-3.5 px-4 text-right">Net Paddy Qtl</th>
+                      <th class="py-3.5 px-4 text-center">Moisture %</th>
+                      <th class="py-3.5 px-5">Remarks</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100">
+                    @for (slip of reconcileService.millSlips(); track slip.slipNo) {
+                      <tr class="hover:bg-slate-50/80 transition">
+                        <td class="py-3.5 px-5 font-mono">
+                          <strong class="text-slate-900 block">{{ slip.slipNo }}</strong>
+                          <span class="text-xs text-slate-400">{{ slip.inwardDate }}</span>
+                        </td>
+                        <td class="py-3.5 px-4 font-mono font-bold text-slate-800">{{ slip.transitPassRef }}</td>
+                        <td class="py-3.5 px-4 font-mono font-bold text-slate-700">{{ slip.vehicleRegNo }}</td>
+                        <td class="py-3.5 px-4 font-bold text-slate-900">{{ slip.farmerName || 'Unregistered' }}</td>
+                        <td class="py-3.5 px-4 text-right font-mono font-black text-slate-900">{{ formatNum(slip.netPaddyQtl) }} Qtl</td>
+                        <td class="py-3.5 px-4 text-center font-bold" [class]="slip.moisturePercent > 17 ? 'text-amber-600' : 'text-slate-700'">{{ slip.moisturePercent }}%</td>
+                        <td class="py-3.5 px-5 text-xs text-slate-500">{{ slip.millerRemarks }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
               </div>
             </div>
 
           </div>
+        }
 
-        </div>
-      }
+        <!-- Tab 2: 67% CMR Processing & Silos -->
+        @if (activeTab() === 'production') {
+          <div class="space-y-6">
+            <div class="bg-white p-7 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+              <div>
+                <h3 class="text-xl font-black text-slate-900">Custom Milled Rice (CMR) 67% Production & Silos Tracker</h3>
+                <p class="text-xs sm:text-sm text-slate-500 mt-1">Government statutory norm requires 67.0 kg of FAQ Raw Rice per 100 kg of Raw Paddy milled.</p>
+              </div>
 
+              <!-- Conversion Balance Sheet -->
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 text-center">
+                  <span class="text-xs font-bold text-slate-400 uppercase block">Raw Paddy Stock</span>
+                  <span class="text-2xl font-black text-slate-900 font-mono mt-1 block">{{ formatNum(reconcileService.settlementSummary().totalPaddyQtl) }} Qtl</span>
+                  <span class="text-xs text-slate-500">100% Inward Volume</span>
+                </div>
+                <div class="bg-emerald-50 p-5 rounded-2xl border border-emerald-200 text-center">
+                  <span class="text-xs font-bold text-emerald-800 uppercase block">67% Raw Rice Produced</span>
+                  <span class="text-2xl font-black text-emerald-900 font-mono mt-1 block">{{ formatNum(reconcileService.settlementSummary().totalRiceQtl) }} Qtl</span>
+                  <span class="text-xs text-emerald-700 font-bold">85,090 Bags (50kg)</span>
+                </div>
+                <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 text-center">
+                  <span class="text-xs font-bold text-slate-400 uppercase block">Husk Yield (25%)</span>
+                  <span class="text-2xl font-black text-slate-800 font-mono mt-1 block">{{ formatNum(reconcileService.settlementSummary().totalPaddyQtl * 0.25) }} Qtl</span>
+                  <span class="text-xs text-slate-400">Boiler Fuel / By-Product</span>
+                </div>
+                <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 text-center">
+                  <span class="text-xs font-bold text-slate-400 uppercase block">Rice Bran (8%)</span>
+                  <span class="text-2xl font-black text-slate-800 font-mono mt-1 block">{{ formatNum(reconcileService.settlementSummary().totalPaddyQtl * 0.08) }} Qtl</span>
+                  <span class="text-xs text-slate-400">Oil Extraction Quality</span>
+                </div>
+              </div>
 
-      <!-- ========================================================= -->
-      <!-- TAB 5: AUDIT TRAIL LOG                                    -->
-      <!-- ========================================================= -->
-      @if (activeTab() === 'audit') {
-        <div class="space-y-6">
-          
-          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
-            <div>
-              <h3 class="text-lg font-black text-slate-900">Official Chronological Audit Trail</h3>
-              <p class="text-xs sm:text-sm text-slate-500 mt-1">Immutable log recording all API feeds, weighbridge scale entries, and officer approvals.</p>
+              <!-- Storage Stacks -->
+              <div class="border border-slate-200 rounded-2xl p-6 bg-slate-50/50 space-y-3">
+                <h4 class="text-sm font-black text-slate-900">Plant Storage Silos Status</h4>
+                <div class="w-full bg-slate-200 rounded-full h-4 overflow-hidden flex">
+                  <div class="bg-emerald-600 h-full" style="width: 71.7%"></div>
+                  <div class="bg-amber-400 h-full" style="width: 28.3%"></div>
+                </div>
+                <div class="flex justify-between text-xs font-bold">
+                  <span class="text-emerald-800">✓ 3,050.00 Qtl (71.7%) Delivered to FCI MLS Warehouses</span>
+                  <span class="text-amber-700">⏳ 1,204.50 Qtl (28.3%) Stacked in Mill Godown Stack #03</span>
+                </div>
+              </div>
             </div>
-            <span class="text-xs sm:text-sm font-mono font-bold text-slate-500">{{ reconcileService.auditLogs().length }} Recorded Events</span>
           </div>
+        }
 
-          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm divide-y divide-slate-100">
-            @for (log of reconcileService.auditLogs(); track log.id) {
-              <div class="p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50 transition">
-                <div class="space-y-1.5">
-                  <div class="flex items-center gap-2.5">
-                    <span class="font-mono text-xs sm:text-sm font-bold text-slate-400">{{ log.id }}</span>
-                    <span class="text-xs sm:text-sm font-mono text-slate-500 font-semibold">{{ log.dateStr }}</span>
-                    <span class="px-2.5 py-0.5 text-xs font-bold rounded-full"
-                      [class]="log.category === 'APPROVAL' ? 'bg-purple-100 text-purple-800' : log.category === 'DISPUTE' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-700'">
-                      {{ log.category }}
+        <!-- Tab 3: FCI Godown Deliveries -->
+        @if (activeTab() === 'fci-deliveries') {
+          <div class="space-y-6">
+            
+            <!-- Outward Dispatch Form -->
+            <div class="bg-white p-7 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xl">🚚</span>
+                  <h3 class="text-lg font-black text-slate-900">Record Outward CMR Rice Dispatch to FCI / CSC Depot</h3>
+                </div>
+                <p class="text-xs sm:text-sm text-slate-500 mt-1">Log dispatched rice lorries to Government MLS Point warehouses.</p>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs sm:text-sm">
+                <div>
+                  <label class="block font-bold text-slate-700 mb-1">FCI Delivery Challan / Ack No</label>
+                  <input type="text" [ngModel]="newCmrAckNo()" (ngModelChange)="newCmrAckNo.set($event)" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-mono font-bold text-slate-900" />
+                </div>
+                <div>
+                  <label class="block font-bold text-slate-700 mb-1">Destination Godown Depot</label>
+                  <input type="text" [ngModel]="newCmrDepot()" (ngModelChange)="newCmrDepot.set($event)" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900" />
+                </div>
+                <div>
+                  <label class="block font-bold text-slate-700 mb-1">Delivered Rice Quantity (Qtl)</label>
+                  <input type="number" [ngModel]="newCmrQty()" (ngModelChange)="newCmrQty.set($event)" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-mono font-black text-slate-900" />
+                </div>
+              </div>
+
+              <button (click)="submitMillerCmrDispatch()" class="py-3 px-6 bg-purple-900 hover:bg-purple-800 text-white font-black text-xs sm:text-sm rounded-xl shadow transition">
+                + Record FCI Outward Delivery
+              </button>
+            </div>
+
+            <!-- Deliveries Table -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+              <div class="p-5 border-b border-slate-200">
+                <h4 class="text-base font-black text-slate-900">Official FCI Godown Acceptance Acknowledgments</h4>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs sm:text-sm border-collapse">
+                  <thead>
+                    <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-black uppercase text-xs">
+                      <th class="py-3.5 px-5">Ack No & Date</th>
+                      <th class="py-3.5 px-4">Destination Depot</th>
+                      <th class="py-3.5 px-4">Variety & Grade</th>
+                      <th class="py-3.5 px-4 text-right">Rice Delivered Qtl</th>
+                      <th class="py-3.5 px-4 text-center">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100">
+                    @for (ack of reconcileService.cmrDeliveries(); track ack.ackNo) {
+                      <tr class="hover:bg-slate-50/80 transition">
+                        <td class="py-3.5 px-5 font-mono">
+                          <strong class="text-slate-900 block">{{ ack.ackNo }}</strong>
+                          <span class="text-xs text-slate-400">{{ ack.deliveryDate }}</span>
+                        </td>
+                        <td class="py-3.5 px-4 font-bold text-slate-800">{{ ack.depotName }}</td>
+                        <td class="py-3.5 px-4 font-semibold text-slate-700">{{ ack.riceVariety }} • {{ ack.qcGrade }}</td>
+                        <td class="py-3.5 px-4 text-right font-mono font-black text-emerald-800 text-base">{{ formatNum(ack.riceDeliveredQtl) }} Qtl</td>
+                        <td class="py-3.5 px-4 text-center">
+                          <span class="px-3 py-1 rounded-full text-xs font-black bg-emerald-100 text-emerald-800 border border-emerald-200">
+                            ✓ {{ ack.status }}
+                          </span>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+        }
+
+        <!-- Tab 4: Milling Subsidy Invoice & Claims -->
+        @if (activeTab() === 'claims') {
+          <div class="space-y-6">
+            <div class="bg-white p-8 sm:p-10 rounded-3xl border border-slate-200 shadow-sm space-y-7">
+              <div>
+                <span class="text-xs font-mono font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">INVOICE #INV-MILL-2025-4412</span>
+                <h3 class="text-2xl font-black text-slate-900 mt-2">Miller Statutory Milling Charges & Subsidy Claim</h3>
+                <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Civil Supplies statutory reimbursement bill for custom milling Kharif Batch #CMR-2025-WGL-01.</p>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200">
+                  <span class="text-xs sm:text-sm text-slate-500 font-bold block">Milling Charges (₹10/Qtl)</span>
+                  <span class="text-2xl font-black text-slate-900 font-mono mt-1.5 block">{{ formatInr(reconcileService.settlementSummary().millingCharges) }}</span>
+                </div>
+                <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200">
+                  <span class="text-xs sm:text-sm text-slate-500 font-bold block">Handling Charges (₹4.50/Qtl)</span>
+                  <span class="text-2xl font-black text-slate-900 font-mono mt-1.5 block">{{ formatInr(reconcileService.settlementSummary().handlingCharges) }}</span>
+                </div>
+                <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200">
+                  <span class="text-xs sm:text-sm text-slate-500 font-bold block">Gunny Depreciation Credit</span>
+                  <span class="text-2xl font-black text-slate-900 font-mono mt-1.5 block">{{ formatInr(reconcileService.settlementSummary().gunnyCredit) }}</span>
+                </div>
+              </div>
+
+              <div class="bg-emerald-50 border border-emerald-200 p-7 rounded-3xl flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div>
+                  <span class="text-xs sm:text-sm font-extrabold text-emerald-800 uppercase tracking-wider block">Total Statutory Claim Amount Payable to Sri Lakshmi Rice Industries</span>
+                  <span class="text-3xl sm:text-4xl font-black text-emerald-950 font-mono mt-1.5 block">{{ formatInr(reconcileService.settlementSummary().totalPayableAmount) }}</span>
+                </div>
+                <span class="px-4 py-2 rounded-xl text-xs sm:text-sm font-black uppercase" [class]="reconcileService.settlementSummary().approvalStatus === 'APPROVED' ? 'bg-emerald-800 text-white shadow' : 'bg-amber-100 text-amber-900 border border-amber-300'">
+                  Claim Status: {{ reconcileService.settlementSummary().approvalStatus }}
+                </span>
+              </div>
+
+              <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-xs sm:text-sm text-slate-600 flex items-center justify-between">
+                <span>Direct Bank Credit Account: <strong>State Bank of India (A/C: XXXXXX4412, IFSC: SBIN0020188)</strong></span>
+                <span class="text-emerald-700 font-bold">✓ DCSO Direct Settlement Active</span>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Tab 5: Tare & Moisture Explanations (Miller View) -->
+        @if (activeTab() === 'discrepancies') {
+          <div class="space-y-6">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+              <h3 class="text-lg font-black text-slate-900">Quantity Discrepancies & Tare Calibration Responses</h3>
+              <p class="text-xs sm:text-sm text-slate-500 mt-1">Review Mandi quantity differences and submit calibration proof to the Civil Supplies Officer.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              @for (item of discrepancyList(); track item.id) {
+                <div class="bg-white p-7 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+                  <div class="flex items-start justify-between">
+                    <div>
+                      <span class="text-xs font-mono font-bold text-slate-400 block">{{ item.id }}</span>
+                      <h4 class="text-lg font-black text-slate-900">{{ item.farmerName }}</h4>
+                    </div>
+                    <span class="px-3 py-1 rounded-full text-xs font-black" [class]="item.status === 'Match' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'">
+                      {{ item.status === 'Match' ? 'Resolved' : 'Dispute Flagged' }}
                     </span>
                   </div>
-                  <p class="text-sm font-extrabold text-slate-900">{{ log.changeDescription }}</p>
-                  <div class="text-xs sm:text-sm text-slate-500">
-                    <span class="text-slate-400">Before:</span> {{ log.oldValue }} &rarr; <span class="text-slate-800 font-bold">After:</span> {{ log.newValue }}
+
+                  <div class="grid grid-cols-3 gap-2 bg-slate-50 p-3.5 rounded-2xl border border-slate-200 text-center text-xs">
+                    <div><span class="text-slate-400 block">Govt Mandi</span><strong class="text-slate-900 text-sm block mt-0.5">{{ formatNum(item.govtQty) }} Qtl</strong></div>
+                    <div><span class="text-slate-400 block">Mill Scale</span><strong class="text-slate-900 text-sm block mt-0.5">{{ formatNum(item.millQty) }} Qtl</strong></div>
+                    <div><span class="text-amber-700 font-bold block">Difference</span><strong class="text-amber-600 text-sm block mt-0.5">{{ Math.abs(item.qtyDiff) }} Qtl</strong></div>
                   </div>
+
+                  <div class="bg-amber-50 p-3 rounded-xl border border-amber-200 text-xs text-amber-950">
+                    <strong>Inspector Findings:</strong> {{ item.aiReasoning }}
+                  </div>
+
+                  <button (click)="openDiscrepancyModal(item)" class="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white font-black text-xs rounded-xl transition">
+                    Submit Calibration Response →
+                  </button>
                 </div>
-                <div class="text-right">
-                  <span class="text-sm font-extrabold text-slate-800 block">{{ log.changedBy }}</span>
-                  <span class="text-xs text-slate-400 font-semibold block">{{ log.role }}</span>
-                </div>
-              </div>
-            }
+              }
+            </div>
           </div>
+        }
 
-        </div>
-      }
+      </main>
 
-    </main>
+    }
 
   </div>
 }
@@ -994,7 +1144,6 @@
   <div class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 overflow-y-auto animate-fade-in">
     <div class="bg-white w-full max-w-4xl rounded-3xl shadow-2xl border border-slate-200 overflow-hidden my-8 space-y-6">
       
-      <!-- Modal Top Bar -->
       <div class="bg-slate-900 text-white p-7 sm:p-9 flex items-start justify-between">
         <div>
           <div class="flex items-center gap-2">
@@ -1013,133 +1162,34 @@
           </div>
         </div>
 
-        <button 
-          (click)="closeFarmerProfile()"
-          class="w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center text-base font-bold transition">
-          ✕
-        </button>
+        <button (click)="closeFarmerProfile()" class="w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center text-base font-bold transition">✕</button>
       </div>
 
-      <!-- Modal Content Body -->
       <div class="p-7 sm:p-9 space-y-6">
-        
-        <!-- 4 KPI Summary Cards -->
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-5">
-          
-          <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200">
-            <span class="text-xs font-bold text-slate-500 uppercase block">Total Deliveries</span>
-            <span class="text-2xl sm:text-3xl font-black text-slate-900 font-mono mt-1.5 block">{{ selectedFarmerProfile()?.totalLoadsDelivered }} Loads</span>
-            <span class="text-xs text-slate-400 font-semibold">PPC Mandi Gate Feeds</span>
-          </div>
-
-          <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200">
-            <span class="text-xs font-bold text-slate-500 uppercase block">Total Paddy Supplied</span>
-            <span class="text-2xl sm:text-3xl font-black text-emerald-800 font-mono mt-1.5 block">{{ formatNum(selectedFarmerProfile()?.totalPaddyQtyQtl || 0) }}</span>
-            <span class="text-xs text-slate-500 font-semibold">Quintals (Qtl)</span>
-          </div>
-
-          <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200">
-            <span class="text-xs font-bold text-slate-500 uppercase block">Total Gross MSP</span>
-            <span class="text-xl sm:text-2xl font-black text-slate-900 font-mono mt-1.5 block">{{ formatInr(selectedFarmerProfile()?.totalMspGrossAmount || 0) }}</span>
-            <span class="text-xs text-slate-400 font-semibold">Govt MSP Price</span>
-          </div>
-
-          <div class="bg-emerald-50 p-5 rounded-2xl border border-emerald-200">
-            <span class="text-xs font-extrabold text-emerald-800 uppercase block">DBT Disbursal</span>
-            <span class="text-xl font-black text-emerald-950 font-mono mt-1.5 block">{{ selectedFarmerProfile()?.overallDbtStatus }}</span>
-            <span class="text-xs text-emerald-700 font-bold">PFMS / e-Kuber Active</span>
-          </div>
-
+          <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200"><span class="text-xs font-bold text-slate-500 uppercase block">Total Deliveries</span><span class="text-2xl sm:text-3xl font-black text-slate-900 font-mono mt-1.5 block">{{ selectedFarmerProfile()?.totalLoadsDelivered }} Loads</span></div>
+          <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200"><span class="text-xs font-bold text-slate-500 uppercase block">Total Paddy Supplied</span><span class="text-2xl sm:text-3xl font-black text-emerald-800 font-mono mt-1.5 block">{{ formatNum(selectedFarmerProfile()?.totalPaddyQtyQtl || 0) }} Qtl</span></div>
+          <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200"><span class="text-xs font-bold text-slate-500 uppercase block">Total Gross MSP</span><span class="text-xl sm:text-2xl font-black text-slate-900 font-mono mt-1.5 block">{{ formatInr(selectedFarmerProfile()?.totalMspGrossAmount || 0) }}</span></div>
+          <div class="bg-emerald-50 p-5 rounded-2xl border border-emerald-200"><span class="text-xs font-extrabold text-emerald-800 uppercase block">DBT Disbursal</span><span class="text-xl font-black text-emerald-950 font-mono mt-1.5 block">{{ selectedFarmerProfile()?.overallDbtStatus }}</span></div>
         </div>
 
-        <!-- Bank & Direct Benefit Transfer (DBT) Info Box -->
         <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200 space-y-4">
           <div class="flex items-center justify-between">
             <span class="text-xs sm:text-sm font-black uppercase tracking-wider text-slate-700">🏦 Bank Account & Direct Benefit Transfer (DBT)</span>
-            <span class="text-xs font-bold bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full border border-emerald-200">
-              ✓ Aadhaar NPCI Seeding Verified
-            </span>
+            <span class="text-xs font-bold bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full border border-emerald-200">✓ Aadhaar NPCI Seeding Verified</span>
           </div>
-
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs sm:text-sm">
-            <div>
-              <span class="text-slate-400 block font-medium">Bank Name:</span>
-              <strong class="text-slate-900 font-bold text-sm">{{ selectedFarmerProfile()?.bankName }}</strong>
-            </div>
-            <div>
-              <span class="text-slate-400 block font-medium">Account Number:</span>
-              <strong class="text-slate-900 font-mono font-bold text-sm">{{ selectedFarmerProfile()?.accountNoMasked }}</strong>
-            </div>
-            <div>
-              <span class="text-slate-400 block font-medium">IFSC Code:</span>
-              <strong class="text-slate-900 font-mono font-bold text-sm">{{ selectedFarmerProfile()?.ifscCode }}</strong>
-            </div>
-            <div>
-              <span class="text-slate-400 block font-medium">Location:</span>
-              <strong class="text-slate-900 font-bold text-sm">{{ selectedFarmerProfile()?.village }}, {{ selectedFarmerProfile()?.mandal }}</strong>
-            </div>
+            <div><span class="text-slate-400 block font-medium">Bank Name:</span><strong class="text-slate-900 font-bold text-sm">{{ selectedFarmerProfile()?.bankName }}</strong></div>
+            <div><span class="text-slate-400 block font-medium">Account Number:</span><strong class="text-slate-900 font-mono font-bold text-sm">{{ selectedFarmerProfile()?.accountNoMasked }}</strong></div>
+            <div><span class="text-slate-400 block font-medium">IFSC Code:</span><strong class="text-slate-900 font-mono font-bold text-sm">{{ selectedFarmerProfile()?.ifscCode }}</strong></div>
+            <div><span class="text-slate-400 block font-medium">Location:</span><strong class="text-slate-900 font-bold text-sm">{{ selectedFarmerProfile()?.village }}, {{ selectedFarmerProfile()?.mandal }}</strong></div>
           </div>
         </div>
-
-        <!-- Multi-Load Procurement History Table -->
-        <div class="space-y-3">
-          <div class="flex items-center justify-between">
-            <h4 class="text-sm sm:text-base font-black text-slate-900">Historical Paddy Delivery Loads & Pricing Breakdown</h4>
-            <span class="text-xs sm:text-sm font-bold text-slate-500">{{ selectedFarmerProfile()?.loads?.length }} Dispatches Recorded</span>
-          </div>
-
-          <div class="border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-            <table class="w-full text-left text-xs sm:text-sm border-collapse">
-              <thead>
-                <tr class="bg-slate-100 border-b border-slate-200 text-slate-600 font-black uppercase text-xs">
-                  <th class="py-3.5 px-4">Pass & Truck</th>
-                  <th class="py-3.5 px-4">PPC Mandi</th>
-                  <th class="py-3.5 px-4 text-right">Dispatched Qty</th>
-                  <th class="py-3.5 px-4 text-right">Mill Scale Qty</th>
-                  <th class="py-3.5 px-4 text-right">MSP Amount</th>
-                  <th class="py-3.5 px-4 text-center">DBT Status</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-100">
-                @for (ld of selectedFarmerProfile()?.loads; track ld.loadId) {
-                  <tr class="hover:bg-slate-50/80 transition">
-                    <td class="py-4 px-4 font-mono">
-                      <strong class="text-slate-900 font-black text-sm block">{{ ld.transitPass }}</strong>
-                      <span class="text-xs text-slate-500 font-medium">{{ ld.truckNo }} • {{ ld.dispatchDate }}</span>
-                    </td>
-                    <td class="py-4 px-4 text-slate-800 font-semibold">{{ ld.ppcCenter }}</td>
-                    <td class="py-4 px-4 text-right font-mono font-bold text-slate-900 text-sm">{{ formatNum(ld.dispatchedQtyQtl) }} Qtl</td>
-                    <td class="py-4 px-4 text-right font-mono font-bold text-slate-900 text-sm">{{ formatNum(ld.millWeighedQtyQtl) }} Qtl</td>
-                    <td class="py-4 px-4 text-right font-mono font-black text-emerald-800 text-sm">{{ formatInr(ld.totalMspAmount) }}</td>
-                    <td class="py-4 px-4 text-center">
-                      <span class="px-2.5 py-1 rounded-full text-xs font-black"
-                        [class]="ld.dbtPaymentStatus === 'PAID' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'">
-                        {{ ld.dbtPaymentStatus }}
-                      </span>
-                      <span class="block font-mono text-[10px] text-slate-400 mt-1">{{ ld.pfmsTxnRef }}</span>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        </div>
-
       </div>
 
-      <!-- Modal Footer -->
       <div class="bg-slate-50 border-t border-slate-200 px-8 py-5 flex items-center justify-between">
-        <button 
-          (click)="printFarmerPassbook()"
-          class="px-5 py-2.5 bg-white hover:bg-slate-100 border border-slate-300 text-slate-800 text-xs sm:text-sm font-bold rounded-xl transition flex items-center gap-2">
-          <span>🖨️ Print Farmer Ledger / Receipt</span>
-        </button>
-
-        <button 
-          (click)="closeFarmerProfile()"
-          class="px-7 py-3 bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-extrabold rounded-xl transition">
-          Close
-        </button>
+        <button (click)="printFarmerPassbook()" class="px-5 py-2.5 bg-white hover:bg-slate-100 border border-slate-300 text-slate-800 text-xs sm:text-sm font-bold rounded-xl transition flex items-center gap-2"><span>🖨️ Print Farmer Ledger / Receipt</span></button>
+        <button (click)="closeFarmerProfile()" class="px-7 py-3 bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-extrabold rounded-xl transition">Close</button>
       </div>
 
     </div>
@@ -1153,7 +1203,6 @@
 @if (selectedDiscrepancyItem()) {
   <div class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-200 p-7 sm:p-9 space-y-6 animate-scale-in">
-      
       <div class="flex items-start justify-between">
         <div>
           <h3 class="text-xl font-black text-slate-900">Dispute Verification: {{ selectedDiscrepancyItem()?.id }}</h3>
@@ -1162,125 +1211,69 @@
         <button (click)="closeDiscrepancyModal()" class="text-slate-400 hover:text-slate-600 font-bold text-lg">✕</button>
       </div>
 
-      <!-- Comparison Stats Box -->
       <div class="grid grid-cols-3 gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-200 text-center">
-        <div>
-          <span class="text-xs text-slate-500 font-bold uppercase block">Govt Qty</span>
-          <span class="text-base sm:text-lg font-black text-slate-900 font-mono mt-0.5 block">{{ formatNum(selectedDiscrepancyItem()?.govtQty || 0) }} Qtl</span>
-        </div>
-        <div>
-          <span class="text-xs text-slate-500 font-bold uppercase block">Mill Qty</span>
-          <span class="text-base sm:text-lg font-black text-slate-900 font-mono mt-0.5 block">{{ formatNum(selectedDiscrepancyItem()?.millQty || 0) }} Qtl</span>
-        </div>
-        <div>
-          <span class="text-xs text-amber-700 font-bold uppercase block">Difference</span>
-          <span class="text-base sm:text-lg font-black text-amber-600 font-mono mt-0.5 block">{{ Math.abs(selectedDiscrepancyItem()?.qtyDiff || 0) }} Qtl</span>
-        </div>
+        <div><span class="text-xs text-slate-500 font-bold uppercase block">Govt Qty</span><span class="text-base sm:text-lg font-black text-slate-900 font-mono mt-0.5 block">{{ formatNum(selectedDiscrepancyItem()?.govtQty || 0) }} Qtl</span></div>
+        <div><span class="text-xs text-slate-500 font-bold uppercase block">Mill Qty</span><span class="text-base sm:text-lg font-black text-slate-900 font-mono mt-0.5 block">{{ formatNum(selectedDiscrepancyItem()?.millQty || 0) }} Qtl</span></div>
+        <div><span class="text-xs text-amber-700 font-bold uppercase block">Difference</span><span class="text-base sm:text-lg font-black text-amber-600 font-mono mt-0.5 block">{{ Math.abs(selectedDiscrepancyItem()?.qtyDiff || 0) }} Qtl</span></div>
       </div>
 
-      <!-- Findings Box -->
       <div class="bg-amber-50 border border-amber-200 p-4 rounded-xl text-xs sm:text-sm text-amber-900">
         <span class="font-extrabold block text-amber-950">Official Inspector Note:</span>
         <p class="mt-1 font-medium">{{ selectedDiscrepancyItem()?.aiReasoning }}</p>
       </div>
 
-      <!-- Inputs -->
       <div class="space-y-4">
         <div>
           <label class="block text-xs sm:text-sm font-bold text-slate-700 mb-1">Authorized Reconciled Quantity (Qtl)</label>
-          <input 
-            type="number"
-            [ngModel]="resolveAgreedQty()"
-            (ngModelChange)="resolveAgreedQty.set($event)"
-            class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm sm:text-base font-bold text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900" />
+          <input type="number" [ngModel]="resolveAgreedQty()" (ngModelChange)="resolveAgreedQty.set($event)" class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm sm:text-base font-bold text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900" />
         </div>
-
         <div>
           <label class="block text-xs sm:text-sm font-bold text-slate-700 mb-1">Joint Certification Notes</label>
-          <textarea 
-            [ngModel]="resolveNotes()"
-            (ngModelChange)="resolveNotes.set($event)"
-            rows="2"
-            class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900"></textarea>
+          <textarea [ngModel]="resolveNotes()" (ngModelChange)="resolveNotes.set($event)" rows="2" class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900"></textarea>
         </div>
       </div>
 
       <div class="flex items-center justify-end gap-3 pt-2">
-        <button 
-          (click)="closeDiscrepancyModal()"
-          class="px-4 py-2.5 text-xs sm:text-sm font-bold text-slate-600 hover:text-slate-800">
-          Cancel
-        </button>
-        <button 
-          (click)="submitResolution()"
-          class="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs sm:text-sm rounded-xl shadow transition">
-          Authorize Quantity
-        </button>
+        <button (click)="closeDiscrepancyModal()" class="px-4 py-2.5 text-xs sm:text-sm font-bold text-slate-600 hover:text-slate-800">Cancel</button>
+        <button (click)="submitResolution()" class="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs sm:text-sm rounded-xl shadow transition">Authorize Quantity</button>
       </div>
-
     </div>
   </div>
 }
 
 
-<!-- ========================================================= -->
+<!-- ========================================================================= -->
 <!-- 5. JOINT RECONCILIATION CERTIFICATE (JRC) MODAL                           -->
-<!-- ========================================================= -->
+<!-- ========================================================================= -->
 @if (showCertificateModal()) {
   <div class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl border border-slate-200 p-8 sm:p-10 space-y-7">
-      
-      <!-- Certificate Header -->
       <div class="text-center border-b border-slate-200 pb-6 space-y-2">
-        <div class="w-14 h-14 rounded-2xl bg-emerald-800 text-white text-3xl flex items-center justify-center mx-auto shadow">
-          🏛️
-        </div>
+        <div class="w-14 h-14 rounded-2xl bg-emerald-800 text-white text-3xl flex items-center justify-center mx-auto shadow">🏛️</div>
         <h3 class="text-2xl font-black text-slate-900">Government of Telangana • Civil Supplies Department</h3>
         <span class="text-xs sm:text-sm font-extrabold uppercase tracking-widest text-emerald-800 block">Joint Statutory Reconciliation Certificate (JRC)</span>
         <span class="text-xs font-mono text-slate-400 block font-semibold">Certificate No: JRC-TS-2025-WGL-4412</span>
       </div>
 
-      <!-- Certificate Details -->
       <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200 text-xs sm:text-sm space-y-3">
-        <div class="flex justify-between">
-          <span class="text-slate-500">Authorized Rice Mill:</span>
-          <strong class="text-slate-900">Sri Lakshmi Rice Industries (TS-WGL-MR-4412)</strong>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-slate-500">Reconciled Paddy Volume:</span>
-          <strong class="font-mono text-slate-900 text-sm sm:text-base">{{ formatNum(reconcileService.settlementSummary().totalPaddyQtl) }} Qtl</strong>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-slate-500">67% CMR Rice Out-Turn:</span>
-          <strong class="font-mono text-emerald-800 text-sm sm:text-base">{{ formatNum(reconcileService.settlementSummary().totalRiceQtl) }} Qtl</strong>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-slate-500">Approved Statutory Subsidy:</span>
-          <strong class="font-mono text-emerald-900 text-base sm:text-lg font-black">{{ formatInr(reconcileService.settlementSummary().totalPayableAmount) }}</strong>
-        </div>
+        <div class="flex justify-between"><span class="text-slate-500">Authorized Rice Mill:</span><strong class="text-slate-900">Sri Lakshmi Rice Industries (TS-WGL-MR-4412)</strong></div>
+        <div class="flex justify-between"><span class="text-slate-500">Reconciled Paddy Volume:</span><strong class="font-mono text-slate-900 text-sm sm:text-base">{{ formatNum(reconcileService.settlementSummary().totalPaddyQtl) }} Qtl</strong></div>
+        <div class="flex justify-between"><span class="text-slate-500">67% CMR Rice Out-Turn:</span><strong class="font-mono text-emerald-800 text-sm sm:text-base">{{ formatNum(reconcileService.settlementSummary().totalRiceQtl) }} Qtl</strong></div>
+        <div class="flex justify-between"><span class="text-slate-500">Approved Statutory Subsidy:</span><strong class="font-mono text-emerald-900 text-base sm:text-lg font-black">{{ formatInr(reconcileService.settlementSummary().totalPayableAmount) }}</strong></div>
       </div>
 
-      <!-- Signatures Box -->
       <div class="grid grid-cols-2 gap-4 pt-4 text-xs sm:text-sm text-center">
-        <div class="border-t border-slate-200 pt-3">
-          <span class="font-bold text-slate-900 block text-sm">S. Murthy</span>
-          <span class="text-slate-400 text-xs">Authorized Mill Signatory</span>
-        </div>
-        <div class="border-t border-slate-200 pt-3">
-          <span class="font-bold text-slate-900 block text-sm">District Civil Supplies Officer (DCSO)</span>
-          <span class="text-emerald-700 text-xs font-extrabold">✓ Digitally Signed & Approved</span>
-        </div>
+        <div class="border-t border-slate-200 pt-3"><span class="font-bold text-slate-900 block text-sm">S. Murthy</span><span class="text-slate-400 text-xs">Authorized Mill Signatory</span></div>
+        <div class="border-t border-slate-200 pt-3"><span class="font-bold text-slate-900 block text-sm">District Civil Supplies Officer (DCSO)</span><span class="text-emerald-700 text-xs font-extrabold">✓ Digitally Signed & Approved</span></div>
       </div>
 
       <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
-        <button (click)="showCertificateModal.set(false)" class="px-7 py-3 bg-slate-900 text-white font-black text-sm rounded-xl shadow">
-          Close Certificate
-        </button>
+        <button (click)="showCertificateModal.set(false)" class="px-7 py-3 bg-slate-900 text-white font-black text-sm rounded-xl shadow">Close Certificate</button>
       </div>
-
     </div>
   </div>
 }
+
 
 <!-- ========================================================================= -->
 <!-- 6. LIVE FARMER DBT SMS NOTIFICATION BROADCAST MODAL                       -->
@@ -1289,71 +1282,41 @@
   <div class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 overflow-y-auto animate-fade-in">
     <div class="bg-white w-full max-w-3xl rounded-3xl shadow-2xl border border-slate-200 overflow-hidden my-8 space-y-6">
       
-      <!-- Modal Header -->
       <div class="bg-slate-900 text-white p-7 sm:p-9 flex items-start justify-between">
         <div>
-          <div class="flex items-center gap-2">
-            <span class="text-2xl">📱</span>
-            <span class="text-xs font-black uppercase tracking-widest text-emerald-400">Telangana Civil Supplies • Direct DBT SMS Broadcast Gateway</span>
-          </div>
+          <div class="flex items-center gap-2"><span class="text-2xl">📱</span><span class="text-xs font-black uppercase tracking-widest text-emerald-400">Telangana Civil Supplies • Direct DBT SMS Broadcast Gateway</span></div>
           <h3 class="text-2xl sm:text-3xl font-black mt-2">Farmer MSP Approval SMS Logs</h3>
           <p class="text-xs sm:text-sm text-slate-300 mt-1">Direct DBT approval and bank credit notification alerts delivered to 6 farmers.</p>
         </div>
         <button (click)="closeNotificationModal()" class="w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center text-base font-bold transition">✕</button>
       </div>
 
-      <!-- Modal Body with 6 Farmer SMS Cards -->
       <div class="p-6 sm:p-9 space-y-4 max-h-[60vh] overflow-y-auto">
         @for (notif of reconcileService.farmerNotifications(); track notif.id) {
           <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-2.5 hover:border-slate-300 transition">
-            
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-2.5">
-              <div>
-                <strong class="text-slate-900 font-black text-base">{{ notif.farmerName }}</strong>
-                <span class="text-xs font-bold text-slate-500 font-mono ml-2">({{ notif.mobile }})</span>
-              </div>
-              <div class="flex items-center gap-2">
-                <span class="px-3 py-0.5 rounded-full text-xs font-black bg-emerald-100 text-emerald-800 border border-emerald-200">
-                  ✓ SMS DELIVERED
-                </span>
-                <span class="text-xs font-mono text-slate-400 font-semibold">{{ notif.sentTimestamp }}</span>
-              </div>
+              <div><strong class="text-slate-900 font-black text-base">{{ notif.farmerName }}</strong><span class="text-xs font-bold text-slate-500 font-mono ml-2">({{ notif.mobile }})</span></div>
+              <div class="flex items-center gap-2"><span class="px-3 py-0.5 rounded-full text-xs font-black bg-emerald-100 text-emerald-800 border border-emerald-200">✓ SMS DELIVERED</span><span class="text-xs font-mono text-slate-400 font-semibold">{{ notif.sentTimestamp }}</span></div>
             </div>
 
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs sm:text-sm py-1">
-              <div>
-                <span class="text-slate-400 block font-medium">Transit Pass:</span>
-                <strong class="font-mono text-slate-900 font-bold">{{ notif.transitPass }}</strong>
-              </div>
-              <div>
-                <span class="text-slate-400 block font-medium">Paddy Qty:</span>
-                <strong class="font-mono text-slate-900 font-bold">{{ formatNum(notif.quantityQtl) }} Qtl</strong>
-              </div>
-              <div>
-                <span class="text-slate-400 block font-medium">MSP Sanctioned:</span>
-                <strong class="font-mono text-emerald-800 font-black">{{ formatInr(notif.mspAmount) }}</strong>
-              </div>
-              <div>
-                <span class="text-slate-400 block font-medium">Bank Account:</span>
-                <strong class="text-slate-900 font-bold">{{ notif.bankName }} ({{ notif.bankAccountMasked }})</strong>
-              </div>
+              <div><span class="text-slate-400 block font-medium">Transit Pass:</span><strong class="font-mono text-slate-900 font-bold">{{ notif.transitPass }}</strong></div>
+              <div><span class="text-slate-400 block font-medium">Paddy Qty:</span><strong class="font-mono text-slate-900 font-bold">{{ formatNum(notif.quantityQtl) }} Qtl</strong></div>
+              <div><span class="text-slate-400 block font-medium">MSP Sanctioned:</span><strong class="font-mono text-emerald-800 font-black">{{ formatInr(notif.mspAmount) }}</strong></div>
+              <div><span class="text-slate-400 block font-medium">Bank Account:</span><strong class="text-slate-900 font-bold">{{ notif.bankName }} ({{ notif.bankAccountMasked }})</strong></div>
             </div>
 
             <div class="bg-white p-3.5 rounded-xl border border-slate-200 text-xs sm:text-sm text-slate-700 font-mono leading-relaxed">
               <span class="text-slate-400 font-bold block text-[10px] uppercase font-sans tracking-wider mb-1">Delivered SMS Content:</span>
               "{{ notif.messageText }}"
             </div>
-
           </div>
         }
       </div>
 
-      <!-- Modal Footer -->
       <div class="bg-slate-50 border-t border-slate-200 px-8 py-5 flex items-center justify-between">
         <span class="text-xs sm:text-sm text-slate-500 font-bold">6 Farmer Notifications Dispatched • Telangana SMS Gateway Status: 100% OK</span>
-        <button (click)="closeNotificationModal()" class="px-7 py-3 bg-slate-900 text-white font-black text-xs sm:text-sm rounded-xl shadow transition">
-          Close SMS Feed
-        </button>
+        <button (click)="closeNotificationModal()" class="px-7 py-3 bg-slate-900 text-white font-black text-xs sm:text-sm rounded-xl shadow transition">Close SMS Feed</button>
       </div>
 
     </div>
