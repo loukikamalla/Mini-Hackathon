@@ -129,3 +129,18 @@ export interface FarmerProfile {
   overallDbtStatus: "COMPLETED" | "PARTIAL_PROCESSED" | "ON_HOLD";
   loads: FarmerLoadRecord[];
 }
+
+export interface FarmerNotification {
+  id: string;
+  farmerName: string;
+  mobile: string;
+  transitPass: string;
+  quantityQtl: number;
+  mspAmount: number;
+  bankAccountMasked: string;
+  bankName: string;
+  pfmsTxnRef: string;
+  sentTimestamp: string;
+  status: "DELIVERED_SMS" | "DISPATCHING";
+  messageText: string;
+}

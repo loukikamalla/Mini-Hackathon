@@ -7,6 +7,7 @@ import {
   SettlementSummary, 
   AuditLogEntry,
   FarmerProfile,
+  FarmerNotification,
   FarmerLoadRecord
 } from "../models/cmr.model";
 
@@ -670,6 +671,7 @@ export class ReconcileService {
   millSlips = signal<MillGateRecord[]>([...this.baseMillSlips]);
   cmrDeliveries = signal<CMRDeliveryRecord[]>([...this.initialCmrDeliveries]);
   farmerProfiles = signal<FarmerProfile[]>([...this.farmerProfilesDb]);
+  farmerNotifications = signal<FarmerNotification[]>([]);
 
   // Dynamic Audit Trail Log
   auditLogs = signal<AuditLogEntry[]>([
@@ -940,6 +942,100 @@ export class ReconcileService {
     this.auditLogs.update((logs) => [log, ...logs]);
   }
 
+  // Generate Live Farmer SMS & DBT Notifications upon batch approval
+  generateFarmerApprovalNotifications(officerName: string): FarmerNotification[] {
+    const timeNow = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+    const notifications: FarmerNotification[] = [
+      {
+        id: "SMS-F-101",
+        farmerName: "Ramesh (B. Venkanna)",
+        mobile: "+91 98480 11234",
+        transitPass: "TP-2025-8801",
+        quantityQtl: 1000.00,
+        mspAmount: 2320000.00,
+        bankName: "State Bank of India",
+        bankAccountMasked: "XXXXXX8890",
+        pfmsTxnRef: "PFMS-TS-2025-899120",
+        sentTimestamp: timeNow,
+        status: "DELIVERED_SMS",
+        messageText: "Govt of Telangana: Your Paddy MSP of ₹23,20,000 for 1000.00 Qtl (TP-2025-8801) has been approved by DCSO Warangal & credited to SBI A/C XXXXXX8890."
+      },
+      {
+        id: "SMS-F-102",
+        farmerName: "Suresh (K. Rameshwara)",
+        mobile: "+91 94401 22890",
+        transitPass: "TP-2025-8802",
+        quantityQtl: 1450.00,
+        mspAmount: 3393000.00,
+        bankName: "Union Bank of India",
+        bankAccountMasked: "XXXXXX4419",
+        pfmsTxnRef: "PFMS-TS-2025-992104",
+        sentTimestamp: timeNow,
+        status: "DELIVERED_SMS",
+        messageText: "Govt of Telangana: Your Reconciled Paddy MSP of ₹33,93,000 (1450.00 Qtl) is approved by DCSO Warangal. DBT payment initiated to UBI A/C XXXXXX4419."
+      },
+      {
+        id: "SMS-F-103",
+        farmerName: "M. Thirupathi",
+        mobile: "+91 97011 55667",
+        transitPass: "TP-2025-8825",
+        quantityQtl: 950.00,
+        mspAmount: 2204000.00,
+        bankName: "Telangana Grameena Bank",
+        bankAccountMasked: "XXXXXX1104",
+        pfmsTxnRef: "PFMS-TS-2025-INPR-881",
+        sentTimestamp: timeNow,
+        status: "DELIVERED_SMS",
+        messageText: "Govt of Telangana: Your Paddy MSP payment of ₹22,04,000 (950.00 Qtl - Moisture Cut Authorized) is approved & released to TGB A/C XXXXXX1104."
+      },
+      {
+        id: "SMS-F-104",
+        farmerName: "Ch. Srinivas",
+        mobile: "+91 99890 44556",
+        transitPass: "TP-2025-8804",
+        quantityQtl: 800.00,
+        mspAmount: 1856000.00,
+        bankName: "Canara Bank",
+        bankAccountMasked: "XXXXXX5520",
+        pfmsTxnRef: "PFMS-TS-2025-993310",
+        sentTimestamp: timeNow,
+        status: "DELIVERED_SMS",
+        messageText: "Govt of Telangana: Your Paddy MSP of ₹18,56,000 (800.00 Qtl - TP-2025-8804) has been approved by Civil Supplies Officer & released to Canara Bank."
+      },
+      {
+        id: "SMS-F-105",
+        farmerName: "G. Shankaraiah",
+        mobile: "+91 98661 77889",
+        transitPass: "TP-2025-8805",
+        quantityQtl: 1200.00,
+        mspAmount: 2784000.00,
+        bankName: "State Bank of India",
+        bankAccountMasked: "XXXXXX7781",
+        pfmsTxnRef: "PFMS-TS-2025-998812",
+        sentTimestamp: timeNow,
+        status: "DELIVERED_SMS",
+        messageText: "Govt of Telangana: Your Paddy MSP of ₹27,84,000 (1200.00 Qtl) has been approved by DCSO Warangal & credited to SBI A/C XXXXXX7781."
+      },
+      {
+        id: "SMS-F-106",
+        farmerName: "K. Venkatesh",
+        mobile: "+91 93902 33441",
+        transitPass: "TP-2025-8806",
+        quantityQtl: 650.00,
+        mspAmount: 1508000.00,
+        bankName: "AP Grameena Vikas Bank",
+        bankAccountMasked: "XXXXXX3390",
+        pfmsTxnRef: "PFMS-TS-2025-994411",
+        sentTimestamp: timeNow,
+        status: "DELIVERED_SMS",
+        messageText: "Govt of Telangana: Your Scale Inward Paddy MSP of ₹15,08,000 (650.00 Qtl) has been approved by DCSO & dispatched via APGVB."
+      }
+    ];
+
+    this.farmerNotifications.set(notifications);
+    return notifications;
+  }
+
   // Statutory Decision Actions
   approveBatch(officerName: string, remarks: string): void {
     this.statutoryApprovalStatus.set("APPROVED");
@@ -947,12 +1043,31 @@ export class ReconcileService {
     this.approvedOfficerName.set(officerName);
     this.approvedTimestamp.set(new Date().toLocaleString('en-IN'));
 
+    // Trigger SMS to all farmers
+    this.generateFarmerApprovalNotifications(officerName);
+
+    // Update all farmer profiles to PAID / COMPLETED
+    this.farmerProfiles.update((profiles) => {
+      return profiles.map((p) => ({
+        ...p,
+        overallDbtStatus: "COMPLETED",
+        subsidiesApprovedAmount: p.totalMspGrossAmount,
+        subsidiesInProcessAmount: 0,
+        pendingPaymentAmount: 0,
+        loads: p.loads.map((l) => ({
+          ...l,
+          dbtPaymentStatus: "PAID",
+          paymentDisbursedDate: "Today (DCSO Approved)"
+        }))
+      }));
+    });
+
     const log: AuditLogEntry = {
       id: "LOG-" + (this.auditLogs().length + 1).toString().padStart(3, '0'),
       dateStr: new Date().toLocaleString('en-IN'),
-      changeDescription: "Statutory Approval & Subsidy Clearance Certificate issued by Civil Supplies Officer",
+      changeDescription: "Statutory Approval Issued. Direct DBT SMS Notifications dispatched to 6 verified Farmers via Telangana SMS Gateway",
       oldValue: "PENDING",
-      newValue: "APPROVED - Joint Reconciliation Certificate (JRC) Generated",
+      newValue: "APPROVED - JRC Generated & DBT SMS Sent",
       changedBy: officerName,
       role: "GOVT_OFFICER",
       category: "APPROVAL"

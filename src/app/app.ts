@@ -125,6 +125,7 @@ export class App {
   // Notifications & Modals
   showSuccessToast = signal<string | null>(null);
   showCertificateModal = signal<boolean>(false);
+  showNotificationModal = signal<boolean>(false);
 
   // Computed Auto Compare List (Filtered by category, search & center)
   filteredReconciledList = computed(() => {
@@ -305,6 +306,14 @@ export class App {
     this.selectedFarmerProfile.set(null);
   }
 
+  openNotificationModal() {
+    this.showNotificationModal.set(true);
+  }
+
+  closeNotificationModal() {
+    this.showNotificationModal.set(false);
+  }
+
   printFarmerPassbook() {
     window.print();
   }
@@ -346,7 +355,7 @@ export class App {
     const user = this.authenticatedUser();
     this.reconcileService.approveBatch(user?.name || "District Civil Supplies Officer", this.officerRemarksInput());
     this.showCertificateModal.set(true);
-    this.showToast("Batch Approved! Statutory Subsidy Release of " + this.formatInr(this.reconcileService.settlementSummary().totalPayableAmount) + " authorized.");
+    this.showToast("📢 Batch Approved! Direct DBT SMS Payment Notifications dispatched to 6 verified Farmers via Telangana SMS Gateway.");
   }
 
   executeRejectBatch() {
