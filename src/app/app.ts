@@ -48,7 +48,7 @@ export class App {
   loginPassword = signal<string>("Govt@Civil2025");
 
   // Tab Navigation
-  activeTab = signal<"auto-compare" | "live-api" | "discrepancies" | "approval" | "audit">("auto-compare");
+  activeTab = signal<"mills-directory" | "auto-compare" | "live-api" | "discrepancies" | "approval" | "audit">("auto-compare");
   
   // Table Filters & Search
   filterCategory = signal<"ALL" | "MATCH" | "MISMATCH">("ALL");
@@ -59,7 +59,7 @@ export class App {
   selectedMillId = signal<string>("TS-WGL-MR-4412");
 
   // List of District Mills under Officer Jurisdiction
-  districtMills = signal<MillSummary[]>([
+    districtMills = signal<MillSummary[]>([
     {
       millId: "TS-WGL-MR-4412",
       millName: "Sri Lakshmi Rice Industries",
@@ -92,8 +92,23 @@ export class App {
       complianceRate: "57.0%",
       pendingDisputes: 2,
       status: "DISPUTE_FLAGGED"
+    },
+    {
+      millId: "TS-WGL-MR-2204",
+      millName: "Bhadrakali Agri Modern Foods",
+      location: "Chennaraopet Road, Warangal Rural",
+      paddyAllocatedQtl: 7200.00,
+      riceTargetQtl: 4824.00,
+      deliveredRiceQtl: 4500.00,
+      complianceRate: "93.2%",
+      pendingDisputes: 1,
+      status: "UNDER_REVIEW"
     }
   ]);
+
+  currentActiveMill = computed(() => {
+    return this.districtMills().find(m => m.millId === this.selectedMillId()) || this.districtMills()[0];
+  });
 
   // Live Govt API Sync States
   isApiSyncing = signal<boolean>(false);
@@ -241,6 +256,12 @@ export class App {
   }
 
   // DIRECT GOVT API LIVE FETCH METHOD
+  switchDistrictMill(millId: string) {
+    this.selectedMillId.set(millId);
+    const mill = this.currentActiveMill();
+    this.showToast(`Switched to ${mill.millName} (${mill.millId})`);
+  }
+
   syncGovtDataFromApi() {
     this.isApiSyncing.set(true);
     
