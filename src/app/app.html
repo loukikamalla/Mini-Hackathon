@@ -558,16 +558,17 @@
 
 
       <!-- ========================================================= -->
-      <!-- TAB 2: LIVE GOVT API GATEWAY HUB                          -->
+      <!-- TAB 2: ROLE-BASED DATA INTEGRATION HUB                    -->
       <!-- ========================================================= -->
       @if (activeTab() === 'live-api') {
         <div class="space-y-6">
           
+          <!-- Shared Government API Gateway Card -->
           <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
-                <h2 class="text-lg font-extrabold text-slate-900">Direct Government API Gateway Settings</h2>
-                <p class="text-sm text-slate-500 mt-1">Live connection to State Civil Supplies OPMS (Online Procurement Management System).</p>
+                <h2 class="text-lg font-extrabold text-slate-900">Direct Government OPMS API Gateway</h2>
+                <p class="text-sm text-slate-500 mt-1">Live synchronized connection to Telangana Civil Supplies Mandi Procurement Portal.</p>
               </div>
 
               <div class="flex items-center gap-2">
@@ -577,12 +578,11 @@
               </div>
             </div>
 
-            <!-- API Configuration Card -->
             <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 text-xs">
               <div class="space-y-1">
                 <div><strong>Official Server:</strong> <code class="text-emerald-800 font-mono">{{ reconcileService.apiEndpoint() }}</code></div>
                 <div><strong>Last Live Sync:</strong> <span class="text-slate-600 font-mono">{{ reconcileService.lastApiSyncTime() }}</span></div>
-                <div><strong>Active Center Filter:</strong> <span class="text-slate-900 font-semibold">Warangal Urban & Rural Mandi PPCs</span></div>
+                <div><strong>District Center Scope:</strong> <span class="text-slate-900 font-semibold">Warangal Mandi PPCs (#401, #402, #408, #412)</span></div>
               </div>
 
               <button 
@@ -590,67 +590,118 @@
                 [disabled]="isApiSyncing()"
                 class="px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition shadow-xs flex items-center gap-2">
                 <span [class]="isApiSyncing() ? 'animate-spin' : ''">🔄</span>
-                <span>{{ isApiSyncing() ? 'Fetching...' : 'Fetch Updated Lots Now' }}</span>
+                <span>{{ isApiSyncing() ? 'Syncing...' : 'Fetch Updated Mandi Lots' }}</span>
               </button>
             </div>
           </div>
 
-          <!-- Digital Scale Terminal & OCR -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            
-            <!-- Scale Entry -->
-            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
-              <h3 class="font-bold text-base text-slate-900">Digital Weighbridge Terminal (Scale Entry)</h3>
-              <p class="text-xs text-slate-500">Record inward weighment slip from Mill electronic scale.</p>
+          <!-- ==================================================== -->
+          <!-- A. FOR GOVERNMENT OFFICER: Official Mandi PPC Overview -->
+          <!-- ==================================================== -->
+          @if (authenticatedUser()?.role === 'GOVT_OFFICER') {
+            <div class="space-y-6">
               
-              <div class="grid grid-cols-2 gap-3 text-xs">
-                <div>
-                  <label class="block font-bold text-slate-700 mb-1">Farmer Name</label>
-                  <input type="text" [ngModel]="manualFarmer()" (ngModelChange)="manualFarmer.set($event)" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-slate-900 text-sm" />
+              <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <div>
+                    <h3 class="font-extrabold text-base text-slate-900">🏛️ Department Mandi Procurement Centers (PPC) Monitoring</h3>
+                    <p class="text-xs text-slate-500">Official Civil Supplies procurement centers feeding paddy to district mills.</p>
+                  </div>
+                  <span class="text-xs font-bold bg-blue-50 text-blue-800 px-3 py-1 rounded-full border border-blue-200">
+                    4 Active Mandi Centers
+                  </span>
                 </div>
-                <div>
-                  <label class="block font-bold text-slate-700 mb-1">Transit Pass Ref</label>
-                  <input type="text" [ngModel]="manualPass()" (ngModelChange)="manualPass.set($event)" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-slate-900 text-sm font-mono" />
-                </div>
-                <div>
-                  <label class="block font-bold text-slate-700 mb-1">Truck Number</label>
-                  <input type="text" [ngModel]="manualTruck()" (ngModelChange)="manualTruck.set($event)" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-slate-900 text-sm font-mono" />
-                </div>
-                <div>
-                  <label class="block font-bold text-slate-700 mb-1">Mill Qty (Qtl)</label>
-                  <input type="number" [ngModel]="manualQty()" (ngModelChange)="manualQty.set($event)" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-slate-900 text-sm font-mono font-bold" />
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+                  <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-1">
+                    <span class="font-bold text-slate-900 block text-sm">PPC Narsampet (#401)</span>
+                    <p class="text-slate-500">Lots: <strong>2 Lots (2,000 Qtl)</strong></p>
+                    <span class="text-emerald-700 font-semibold text-[11px]">✓ Weighbridge Active</span>
+                  </div>
+
+                  <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-1">
+                    <span class="font-bold text-slate-900 block text-sm">PPC Parkal Center (#402)</span>
+                    <p class="text-slate-500">Lots: <strong>2 Lots (2,150 Qtl)</strong></p>
+                    <span class="text-emerald-700 font-semibold text-[11px]">✓ Electronic Pass Active</span>
+                  </div>
+
+                  <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-1">
+                    <span class="font-bold text-slate-900 block text-sm">PPC Wardhannapet (#408)</span>
+                    <p class="text-slate-500">Lots: <strong>2 Lots (1,700 Qtl)</strong></p>
+                    <span class="text-emerald-700 font-semibold text-[11px]">✓ Godown Dispatch Online</span>
+                  </div>
+
+                  <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-1">
+                    <span class="font-bold text-slate-900 block text-sm">PPC Chennaraopet (#412)</span>
+                    <p class="text-slate-500">Lots: <strong>1 Lot (1,200 Qtl)</strong></p>
+                    <span class="text-emerald-700 font-semibold text-[11px]">✓ Mandi Scales Online</span>
+                  </div>
                 </div>
               </div>
 
-              <button 
-                (click)="submitManualMillEntry()"
-                class="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm rounded-xl transition">
-                + Submit Scale Inward Slip
-              </button>
             </div>
+          }
 
-            <!-- Photo OCR -->
-            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4 flex flex-col justify-between">
-              <div>
-                <h3 class="font-bold text-base text-slate-900">Photo / Handwritten Slip OCR</h3>
-                <p class="text-xs text-slate-500 mt-1">Automatic digitization of physical receipts when electronic terminal is offline.</p>
+          <!-- ==================================================== -->
+          <!-- B. FOR RICE MILL USER ONLY: Scale Inward & Photo OCR  -->
+          <!-- ==================================================== -->
+          @if (authenticatedUser()?.role === 'MILL_OPERATOR') {
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              
+              <!-- Scale Entry -->
+              <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+                <h3 class="font-bold text-base text-slate-900">Digital Weighbridge Terminal (Scale Entry)</h3>
+                <p class="text-xs text-slate-500">Record inward weighment slip from Mill electronic scale.</p>
+                
+                <div class="grid grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1">Farmer Name</label>
+                    <input type="text" [ngModel]="manualFarmer()" (ngModelChange)="manualFarmer.set($event)" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-slate-900 text-sm" />
+                  </div>
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1">Transit Pass Ref</label>
+                    <input type="text" [ngModel]="manualPass()" (ngModelChange)="manualPass.set($event)" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-slate-900 text-sm font-mono" />
+                  </div>
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1">Truck Number</label>
+                    <input type="text" [ngModel]="manualTruck()" (ngModelChange)="manualTruck.set($event)" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-slate-900 text-sm font-mono" />
+                  </div>
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1">Mill Qty (Qtl)</label>
+                    <input type="number" [ngModel]="manualQty()" (ngModelChange)="manualQty.set($event)" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-slate-900 text-sm font-mono font-bold" />
+                  </div>
+                </div>
+
+                <button 
+                  (click)="submitManualMillEntry()"
+                  class="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm rounded-xl transition">
+                  + Submit Scale Inward Slip
+                </button>
               </div>
 
-              @if (ocrSuccessMsg()) {
-                <div class="bg-emerald-50 border border-emerald-200 text-emerald-900 p-3 rounded-xl text-xs font-semibold">
-                  {{ ocrSuccessMsg() }}
+              <!-- Photo OCR -->
+              <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4 flex flex-col justify-between">
+                <div>
+                  <h3 class="font-bold text-base text-slate-900">Photo / Handwritten Slip OCR</h3>
+                  <p class="text-xs text-slate-500 mt-1">Automatic digitization of physical receipts when electronic terminal is offline.</p>
                 </div>
-              }
 
-              <button 
-                (click)="simulatePhotoOcr()"
-                [disabled]="isOcrScanning()"
-                class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl transition flex items-center justify-center gap-2">
-                <span>📸 {{ isOcrScanning() ? 'Extracting text via AI OCR...' : 'Scan Photo Slip #808' }}</span>
-              </button>
+                @if (ocrSuccessMsg()) {
+                  <div class="bg-emerald-50 border border-emerald-200 text-emerald-900 p-3 rounded-xl text-xs font-semibold">
+                    {{ ocrSuccessMsg() }}
+                  </div>
+                }
+
+                <button 
+                  (click)="simulatePhotoOcr()"
+                  [disabled]="isOcrScanning()"
+                  class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl transition flex items-center justify-center gap-2">
+                  <span>📸 {{ isOcrScanning() ? 'Extracting text via AI OCR...' : 'Scan Photo Slip #808' }}</span>
+                </button>
+              </div>
+
             </div>
-
-          </div>
+          }
 
         </div>
       }
