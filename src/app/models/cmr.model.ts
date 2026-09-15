@@ -88,3 +88,44 @@ export interface AuditLogEntry {
   role: string;
   category: "QUANTITY" | "APPROVAL" | "UPLOAD" | "DISPUTE";
 }
+
+export interface FarmerLoadRecord {
+  loadId: string;
+  transitPass: string;
+  dispatchDate: string;
+  ppcCenter: string;
+  truckNo: string;
+  paddyType: string;
+  dispatchedQtyQtl: number;
+  millWeighedQtyQtl: number;
+  moisturePercent: number;
+  mspRatePerQtl: number;
+  totalMspAmount: number;
+  loadStatus: "WEIGHED_MATCHED" | "DISPUTE_ADJUSTED" | "IN_TRANSIT" | "UNREGISTERED";
+  dbtPaymentStatus: "PAID" | "PROCESSING" | "PENDING_RECONCILIATION";
+  pfmsTxnRef?: string;
+  paymentDisbursedDate?: string;
+}
+
+export interface FarmerProfile {
+  farmerId: string;
+  farmerName: string;
+  fatherHusbandName: string;
+  aadhaarMasked: string;
+  pattaPassbookNo: string;
+  mobile: string;
+  village: string;
+  mandal: string;
+  district: string;
+  bankName: string;
+  accountNoMasked: string;
+  ifscCode: string;
+  totalLoadsDelivered: number;
+  totalPaddyQtyQtl: number;
+  totalMspGrossAmount: number;
+  subsidiesApprovedAmount: number;
+  subsidiesInProcessAmount: number;
+  pendingPaymentAmount: number;
+  overallDbtStatus: "COMPLETED" | "PARTIAL_PROCESSED" | "ON_HOLD";
+  loads: FarmerLoadRecord[];
+}

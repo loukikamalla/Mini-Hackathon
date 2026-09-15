@@ -5,7 +5,9 @@ import {
   CMRDeliveryRecord, 
   ReconciledItem, 
   SettlementSummary, 
-  AuditLogEntry 
+  AuditLogEntry,
+  FarmerProfile,
+  FarmerLoadRecord
 } from "../models/cmr.model";
 
 @Injectable({
@@ -101,51 +103,48 @@ export class ReconcileService {
     {
       id: "GOVT-LOT-1006",
       transitPass: "TP-2025-8806",
-      ppcCenter: "PPC Parkal Center (Center #402)",
+      ppcCenter: "PPC Narsampet Mandi (Center #401)",
       dispatchDate: "2025-11-06",
-      farmerName: "T. Rajamouli",
+      farmerName: "K. Venkatesh",
       truckNo: "TS-03-UC-5509",
-      paddyType: "Fine Grade (BPT-5204)",
+      paddyType: "Common Grade-A",
       paddyQtyQtl: 650.00,
       moisturePercent: 16.5,
       gunnyBags: 1625,
-      mspRatePerQtl: 2340.00,
-      officialRemarks: "Department transit pass active"
+      mspRatePerQtl: 2320.00,
+      officialRemarks: "Gate Dispatch confirmed via OPMS Mobile App"
     },
     {
       id: "GOVT-LOT-1007",
       transitPass: "TP-2025-8807",
-      ppcCenter: "PPC Wardhannapet (Center #408)",
+      ppcCenter: "PPC Parkal Center (Center #402)",
       dispatchDate: "2025-11-07",
       farmerName: "P. Laxman Rao",
-      truckNo: "TS-04-TB-9912",
+      truckNo: "TS-03-UB-8812",
       paddyType: "Common Grade-A",
       paddyQtyQtl: 900.00,
       moisturePercent: 16.9,
       gunnyBags: 2250,
       mspRatePerQtl: 2320.00,
-      officialRemarks: "Govt godown live dispatch"
+      officialRemarks: "Transit pass issued by Mandi officer, pending mill inward acknowledgment"
     }
   ];
 
-  // 1. Govt Records Dataset
-  govtRecords = signal<GovtLotRecord[]>([...this.baseGovtLots]);
-
-  // 2. Mill Records Dataset (From Digital IoT Weighbridge Scale / Inward System)
-  millRecords = signal<MillGateRecord[]>([
+  // Initial Base Mill Gate Records
+  private readonly baseMillSlips: MillGateRecord[] = [
     {
       slipNo: "MILL-WB-501",
       transitPassRef: "TP-2025-8801",
       vehicleRegNo: "TS-03-UB-4491",
       inwardDate: "2025-11-04",
       farmerName: "Ramesh (B. Venkanna)",
-      grossWtKg: 38200,
-      tareWtKg: 10200,
+      grossWtKg: 42500,
+      tareWtKg: 12500,
       netPaddyQtl: 1000.00,
       moisturePercent: 16.5,
       gunnyBags: 2500,
-      driverName: "Ramulu",
-      millerRemarks: "Weighed on digital weighbridge #1. Clean match with Govt API feed."
+      driverName: "S. Raju",
+      millerRemarks: "Gross and tare verified via digital weighbridge. Exact match."
     },
     {
       slipNo: "MILL-WB-502",
@@ -153,13 +152,13 @@ export class ReconcileService {
       vehicleRegNo: "TS-03-UC-1102",
       inwardDate: "2025-11-04",
       farmerName: "Suresh (K. Rameshwara)",
-      grossWtKg: 52100,
-      tareWtKg: 10100,
+      grossWtKg: 58500,
+      tareWtKg: 15000,
       netPaddyQtl: 1450.00,
       moisturePercent: 17.0,
       gunnyBags: 3750,
-      driverName: "K. Raju",
-      millerRemarks: "50 Qtl tare weight difference noted on digital weighbridge."
+      driverName: "M. Satyam",
+      millerRemarks: "50 Qtl discrepancy observed against Mandi manifest. Tare weight adjusted."
     },
     {
       slipNo: "MILL-WB-525",
@@ -167,13 +166,13 @@ export class ReconcileService {
       vehicleRegNo: "AP-04-TX-9021",
       inwardDate: "2025-11-05",
       farmerName: "M. Thirupathi",
-      grossWtKg: 37500,
-      tareWtKg: 10300,
+      grossWtKg: 41000,
+      tareWtKg: 12500,
       netPaddyQtl: 950.00,
       moisturePercent: 18.2,
       gunnyBags: 2500,
-      driverName: "S. Mohan",
-      millerRemarks: "High moisture 18.2%. 50 Qtl standard moisture cut deduction applied."
+      driverName: "K. Mohan",
+      millerRemarks: "High moisture 18.2%. Standard 50 Qtl cut deducted as per civil supplies moisture chart."
     },
     {
       slipNo: "MILL-WB-504",
@@ -181,13 +180,13 @@ export class ReconcileService {
       vehicleRegNo: "TS-04-TA-3390",
       inwardDate: "2025-11-05",
       farmerName: "Ch. Srinivas",
-      grossWtKg: 31000,
+      grossWtKg: 34000,
       tareWtKg: 10000,
       netPaddyQtl: 800.00,
       moisturePercent: 16.8,
       gunnyBags: 2000,
-      driverName: "Yadagiri",
-      millerRemarks: "Matched Govt pass accurately."
+      driverName: "B. Naresh",
+      millerRemarks: "Weighment matching Mandi transit pass."
     },
     {
       slipNo: "MILL-WB-505",
@@ -195,197 +194,604 @@ export class ReconcileService {
       vehicleRegNo: "TS-03-UB-7782",
       inwardDate: "2025-11-06",
       farmerName: "G. Shankaraiah",
-      grossWtKg: 44200,
-      tareWtKg: 10200,
+      grossWtKg: 49000,
+      tareWtKg: 13000,
       netPaddyQtl: 1200.00,
       moisturePercent: 16.4,
       gunnyBags: 3000,
-      driverName: "B. Sambaiah",
-      millerRemarks: "Weighment verified. Stacked in Silo #2."
+      driverName: "V. Ravi",
+      millerRemarks: "Verified and accepted."
     },
     {
-      slipNo: "MILL-OCR-808",
+      slipNo: "MILL-WB-506",
       transitPassRef: "TP-2025-8806",
       vehicleRegNo: "TS-03-UC-5509",
       inwardDate: "2025-11-06",
-      farmerName: "T. Rajamouli",
-      grossWtKg: 35850,
-      tareWtKg: 10000,
+      farmerName: "K. Venkatesh",
+      grossWtKg: 28000,
+      tareWtKg: 8500,
       netPaddyQtl: 650.00,
       moisturePercent: 16.5,
       gunnyBags: 1625,
-      driverName: "G. Ravi",
-      millerRemarks: "Digitized from physical slip #808 via Photo OCR."
+      driverName: "P. Ganesh",
+      millerRemarks: "Entered via Gate Weighbridge Operator."
     },
     {
       slipNo: "MILL-WB-599-UNREG",
-      transitPassRef: "PENDING-PASS",
-      vehicleRegNo: "TS-04-TC-8822",
-      inwardDate: "2025-11-08",
+      transitPassRef: "UNREG-NO-TP",
+      vehicleRegNo: "TS-03-UD-9999",
+      inwardDate: "2025-11-07",
       farmerName: "K. Lingaiah",
-      grossWtKg: 25000,
-      tareWtKg: 9500,
+      grossWtKg: 18000,
+      tareWtKg: 6000,
       netPaddyQtl: 300.00,
-      moisturePercent: 16.2,
+      moisturePercent: 17.5,
       gunnyBags: 750,
-      driverName: "K. Lingaiah",
-      millerRemarks: "Direct gate entry without online PPC pass. Held in quarantine."
+      driverName: "G. Mahesh",
+      millerRemarks: "Emergency offload. Mandi TP yet to be linked from procurement portal."
     }
-  ]);
+  ];
 
-  // CMR Deliveries
-  cmrDeliveries = signal<CMRDeliveryRecord[]>([
+  // CMR Delivery Acknowledgments (FCI / State Civil Supplies Godowns)
+  private readonly initialCmrDeliveries: CMRDeliveryRecord[] = [
     {
-      ackNo: "FCI-ACK-2025-091",
-      depotName: "FCI Godown Warangal Road",
-      deliveryDate: "2025-11-12",
-      riceVariety: "Raw Rice (Common)",
-      riceDeliveredQtl: 1800.00,
-      gunnyDelivered: 3600,
-      qcGrade: "Grade A (Moisture 13.8%)",
-      status: "ACCEPTED_BY_FCI"
+      ackNo: "FCI-CMR-ACK-901",
+      depotName: "Civil Supplies MLS Point Depot #12, Warangal",
+      deliveryDate: "2025-11-08",
+      riceVariety: "Raw Rice Grade-A (FAQ)",
+      riceDeliveredQtl: 1500.00,
+      gunnyDelivered: 3000,
+      qcGrade: "FAQ Grade A (Passed 100%)",
+      status: "VERIFIED_ACCEPTED"
     },
     {
-      ackNo: "FCI-ACK-2025-092",
-      depotName: "Civil Supplies MLS Point Kazipet",
-      deliveryDate: "2025-11-15",
-      riceVariety: "Raw Rice (Grade-A)",
-      riceDeliveredQtl: 1250.00,
-      gunnyDelivered: 2500,
-      qcGrade: "Grade A (Moisture 13.9%)",
-      status: "ACCEPTED_BY_FCI"
+      ackNo: "FCI-CMR-ACK-902",
+      depotName: "State Warehousing Corp Depot #04, Narsampet",
+      deliveryDate: "2025-11-10",
+      riceVariety: "Raw Rice Grade-A (FAQ)",
+      riceDeliveredQtl: 1550.00,
+      gunnyDelivered: 3100,
+      qcGrade: "FAQ Grade A (Passed 100%)",
+      status: "VERIFIED_ACCEPTED"
     }
-  ]);
+  ];
 
-  // Overrides & Decisions
-  resolvedOverrides = signal<{ [key: string]: any }>({});
-  officerApprovalStatus = signal<"PENDING" | "APPROVED" | "REJECTED" | "CORRECTION_REQUESTED">("PENDING");
-  officerApprovalRemarks = signal<string>("");
-  officerApprovedBy = signal<string>("");
-  officerApprovedAt = signal<string>("");
+  // Comprehensive Farmer Passbook / Ledger Profiles
+  private readonly farmerProfilesDb: FarmerProfile[] = [
+    {
+      farmerId: "TS-PPC-F-882190",
+      farmerName: "Ramesh (B. Venkanna)",
+      fatherHusbandName: "B. Venkanna",
+      aadhaarMasked: "XXXX-XXXX-4812",
+      pattaPassbookNo: "T2908004128",
+      mobile: "+91 98480 11234",
+      village: "Maheshwaram",
+      mandal: "Narsampet",
+      district: "Warangal Rural",
+      bankName: "State Bank of India",
+      accountNoMasked: "XXXXXX8890",
+      ifscCode: "SBIN0020188",
+      totalLoadsDelivered: 3,
+      totalPaddyQtyQtl: 2450.00,
+      totalMspGrossAmount: 5684000.00,
+      subsidiesApprovedAmount: 5684000.00,
+      subsidiesInProcessAmount: 0.00,
+      pendingPaymentAmount: 0.00,
+      overallDbtStatus: "COMPLETED",
+      loads: [
+        {
+          loadId: "LOAD-2025-01",
+          transitPass: "TP-2025-8801",
+          dispatchDate: "2025-11-04",
+          ppcCenter: "PPC Narsampet Mandi (Center #401)",
+          truckNo: "TS-03-UB-4491",
+          paddyType: "Common Grade-A",
+          dispatchedQtyQtl: 1000.00,
+          millWeighedQtyQtl: 1000.00,
+          moisturePercent: 16.5,
+          mspRatePerQtl: 2320.00,
+          totalMspAmount: 2320000.00,
+          loadStatus: "WEIGHED_MATCHED",
+          dbtPaymentStatus: "PAID",
+          pfmsTxnRef: "PFMS-TS-2025-899120",
+          paymentDisbursedDate: "2025-11-06"
+        },
+        {
+          loadId: "LOAD-2025-02",
+          transitPass: "TP-2025-8740",
+          dispatchDate: "2025-10-28",
+          ppcCenter: "PPC Narsampet Mandi (Center #401)",
+          truckNo: "TS-03-UA-2210",
+          paddyType: "Common Grade-A",
+          dispatchedQtyQtl: 850.00,
+          millWeighedQtyQtl: 850.00,
+          moisturePercent: 16.0,
+          mspRatePerQtl: 2320.00,
+          totalMspAmount: 1972000.00,
+          loadStatus: "WEIGHED_MATCHED",
+          dbtPaymentStatus: "PAID",
+          pfmsTxnRef: "PFMS-TS-2025-782109",
+          paymentDisbursedDate: "2025-10-31"
+        },
+        {
+          loadId: "LOAD-2025-03",
+          transitPass: "TP-2025-8690",
+          dispatchDate: "2025-10-20",
+          ppcCenter: "PPC Narsampet Mandi (Center #401)",
+          truckNo: "TS-03-UC-1190",
+          paddyType: "Common Grade-A",
+          dispatchedQtyQtl: 600.00,
+          millWeighedQtyQtl: 600.00,
+          moisturePercent: 15.8,
+          mspRatePerQtl: 2320.00,
+          totalMspAmount: 1392000.00,
+          loadStatus: "WEIGHED_MATCHED",
+          dbtPaymentStatus: "PAID",
+          pfmsTxnRef: "PFMS-TS-2025-661021",
+          paymentDisbursedDate: "2025-10-23"
+        }
+      ]
+    },
+    {
+      farmerId: "TS-PPC-F-882191",
+      farmerName: "Suresh (K. Rameshwara)",
+      fatherHusbandName: "K. Rameshwara",
+      aadhaarMasked: "XXXX-XXXX-9934",
+      pattaPassbookNo: "T2908005519",
+      mobile: "+91 94401 22890",
+      village: "Kistampet",
+      mandal: "Parkal",
+      district: "Warangal Rural",
+      bankName: "Union Bank of India",
+      accountNoMasked: "XXXXXX4419",
+      ifscCode: "UBIN0544190",
+      totalLoadsDelivered: 2,
+      totalPaddyQtyQtl: 2700.00,
+      totalMspGrossAmount: 6318000.00,
+      subsidiesApprovedAmount: 6318000.00,
+      subsidiesInProcessAmount: 0.00,
+      pendingPaymentAmount: 0.00,
+      overallDbtStatus: "COMPLETED",
+      loads: [
+        {
+          loadId: "LOAD-2025-01",
+          transitPass: "TP-2025-8802",
+          dispatchDate: "2025-11-04",
+          ppcCenter: "PPC Parkal Center (Center #402)",
+          truckNo: "TS-03-UC-1102",
+          paddyType: "Fine Grade (BPT-5204)",
+          dispatchedQtyQtl: 1500.00,
+          millWeighedQtyQtl: 1450.00,
+          moisturePercent: 17.0,
+          mspRatePerQtl: 2340.00,
+          totalMspAmount: 3510000.00,
+          loadStatus: "DISPUTE_ADJUSTED",
+          dbtPaymentStatus: "PAID",
+          pfmsTxnRef: "PFMS-TS-2025-992104",
+          paymentDisbursedDate: "2025-11-07"
+        },
+        {
+          loadId: "LOAD-2025-02",
+          transitPass: "TP-2025-8711",
+          dispatchDate: "2025-10-25",
+          ppcCenter: "PPC Parkal Center (Center #402)",
+          truckNo: "TS-03-UA-9081",
+          paddyType: "Fine Grade (BPT-5204)",
+          dispatchedQtyQtl: 1200.00,
+          millWeighedQtyQtl: 1200.00,
+          moisturePercent: 16.2,
+          mspRatePerQtl: 2340.00,
+          totalMspAmount: 2808000.00,
+          loadStatus: "WEIGHED_MATCHED",
+          dbtPaymentStatus: "PAID",
+          pfmsTxnRef: "PFMS-TS-2025-810992",
+          paymentDisbursedDate: "2025-10-29"
+        }
+      ]
+    },
+    {
+      farmerId: "TS-PPC-F-882192",
+      farmerName: "M. Thirupathi",
+      fatherHusbandName: "M. Ramulu",
+      aadhaarMasked: "XXXX-XXXX-6671",
+      pattaPassbookNo: "T2908007781",
+      mobile: "+91 97011 55667",
+      village: "Dharmaraopet",
+      mandal: "Narsampet",
+      district: "Warangal Rural",
+      bankName: "Telangana Grameena Bank",
+      accountNoMasked: "XXXXXX1104",
+      ifscCode: "TGB0001104",
+      totalLoadsDelivered: 2,
+      totalPaddyQtyQtl: 1800.00,
+      totalMspGrossAmount: 4176000.00,
+      subsidiesApprovedAmount: 2204000.00,
+      subsidiesInProcessAmount: 1972000.00,
+      pendingPaymentAmount: 0.00,
+      overallDbtStatus: "PARTIAL_PROCESSED",
+      loads: [
+        {
+          loadId: "LOAD-2025-01",
+          transitPass: "TP-2025-8825",
+          dispatchDate: "2025-11-05",
+          ppcCenter: "PPC Narsampet Mandi (Center #401)",
+          truckNo: "AP-04-TX-9021",
+          paddyType: "Common Grade-A",
+          dispatchedQtyQtl: 1000.00,
+          millWeighedQtyQtl: 950.00,
+          moisturePercent: 18.2,
+          mspRatePerQtl: 2320.00,
+          totalMspAmount: 2204000.00,
+          loadStatus: "DISPUTE_ADJUSTED",
+          dbtPaymentStatus: "PROCESSING",
+          pfmsTxnRef: "PFMS-TS-2025-INPR-881",
+          paymentDisbursedDate: "Processing at e-Kuber"
+        },
+        {
+          loadId: "LOAD-2025-02",
+          transitPass: "TP-2025-8755",
+          dispatchDate: "2025-10-27",
+          ppcCenter: "PPC Narsampet Mandi (Center #401)",
+          truckNo: "TS-03-UB-1044",
+          paddyType: "Common Grade-A",
+          dispatchedQtyQtl: 800.00,
+          millWeighedQtyQtl: 800.00,
+          moisturePercent: 16.4,
+          mspRatePerQtl: 2320.00,
+          totalMspAmount: 1856000.00,
+          loadStatus: "WEIGHED_MATCHED",
+          dbtPaymentStatus: "PAID",
+          pfmsTxnRef: "PFMS-TS-2025-771902",
+          paymentDisbursedDate: "2025-10-30"
+        }
+      ]
+    },
+    {
+      farmerId: "TS-PPC-F-882193",
+      farmerName: "Ch. Srinivas",
+      fatherHusbandName: "Ch. Narayana",
+      aadhaarMasked: "XXXX-XXXX-3341",
+      pattaPassbookNo: "T2908003310",
+      mobile: "+91 99890 44556",
+      village: "Inavole",
+      mandal: "Wardhannapet",
+      district: "Warangal Urban",
+      bankName: "Canara Bank",
+      accountNoMasked: "XXXXXX5520",
+      ifscCode: "CNRB0005520",
+      totalLoadsDelivered: 1,
+      totalPaddyQtyQtl: 800.00,
+      totalMspGrossAmount: 1856000.00,
+      subsidiesApprovedAmount: 1856000.00,
+      subsidiesInProcessAmount: 0.00,
+      pendingPaymentAmount: 0.00,
+      overallDbtStatus: "COMPLETED",
+      loads: [
+        {
+          loadId: "LOAD-2025-01",
+          transitPass: "TP-2025-8804",
+          dispatchDate: "2025-11-05",
+          ppcCenter: "PPC Wardhannapet (Center #408)",
+          truckNo: "TS-04-TA-3390",
+          paddyType: "Common Grade-A",
+          dispatchedQtyQtl: 800.00,
+          millWeighedQtyQtl: 800.00,
+          moisturePercent: 16.8,
+          mspRatePerQtl: 2320.00,
+          totalMspAmount: 1856000.00,
+          loadStatus: "WEIGHED_MATCHED",
+          dbtPaymentStatus: "PAID",
+          pfmsTxnRef: "PFMS-TS-2025-993310",
+          paymentDisbursedDate: "2025-11-08"
+        }
+      ]
+    },
+    {
+      farmerId: "TS-PPC-F-882194",
+      farmerName: "G. Shankaraiah",
+      fatherHusbandName: "G. Laxmaiah",
+      aadhaarMasked: "XXXX-XXXX-7729",
+      pattaPassbookNo: "T2908009941",
+      mobile: "+91 98661 77889",
+      village: "Akulathota",
+      mandal: "Chennaraopet",
+      district: "Warangal Rural",
+      bankName: "State Bank of India",
+      accountNoMasked: "XXXXXX7781",
+      ifscCode: "SBIN0020412",
+      totalLoadsDelivered: 2,
+      totalPaddyQtyQtl: 2100.00,
+      totalMspGrossAmount: 4872000.00,
+      subsidiesApprovedAmount: 4872000.00,
+      subsidiesInProcessAmount: 0.00,
+      pendingPaymentAmount: 0.00,
+      overallDbtStatus: "COMPLETED",
+      loads: [
+        {
+          loadId: "LOAD-2025-01",
+          transitPass: "TP-2025-8805",
+          dispatchDate: "2025-11-06",
+          ppcCenter: "PPC Chennaraopet (Center #412)",
+          truckNo: "TS-03-UB-7782",
+          paddyType: "Common Grade-A",
+          dispatchedQtyQtl: 1200.00,
+          millWeighedQtyQtl: 1200.00,
+          moisturePercent: 16.4,
+          mspRatePerQtl: 2320.00,
+          totalMspAmount: 2784000.00,
+          loadStatus: "WEIGHED_MATCHED",
+          dbtPaymentStatus: "PAID",
+          pfmsTxnRef: "PFMS-TS-2025-998812",
+          paymentDisbursedDate: "2025-11-09"
+        },
+        {
+          loadId: "LOAD-2025-02",
+          transitPass: "TP-2025-8730",
+          dispatchDate: "2025-10-26",
+          ppcCenter: "PPC Chennaraopet (Center #412)",
+          truckNo: "TS-03-UC-6611",
+          paddyType: "Common Grade-A",
+          dispatchedQtyQtl: 900.00,
+          millWeighedQtyQtl: 900.00,
+          moisturePercent: 16.0,
+          mspRatePerQtl: 2320.00,
+          totalMspAmount: 2088000.00,
+          loadStatus: "WEIGHED_MATCHED",
+          dbtPaymentStatus: "PAID",
+          pfmsTxnRef: "PFMS-TS-2025-789012",
+          paymentDisbursedDate: "2025-10-29"
+        }
+      ]
+    },
+    {
+      farmerId: "TS-PPC-F-882195",
+      farmerName: "K. Venkatesh",
+      fatherHusbandName: "K. Satyanarayana",
+      aadhaarMasked: "XXXX-XXXX-1150",
+      pattaPassbookNo: "T2908006629",
+      mobile: "+91 93902 33441",
+      village: "Kammarpally",
+      mandal: "Narsampet",
+      district: "Warangal Rural",
+      bankName: "Andhra Pradesh Grameena Vikas Bank",
+      accountNoMasked: "XXXXXX3390",
+      ifscCode: "APGV0004109",
+      totalLoadsDelivered: 1,
+      totalPaddyQtyQtl: 650.00,
+      totalMspGrossAmount: 1508000.00,
+      subsidiesApprovedAmount: 1508000.00,
+      subsidiesInProcessAmount: 0.00,
+      pendingPaymentAmount: 0.00,
+      overallDbtStatus: "COMPLETED",
+      loads: [
+        {
+          loadId: "LOAD-2025-01",
+          transitPass: "TP-2025-8806",
+          dispatchDate: "2025-11-06",
+          ppcCenter: "PPC Narsampet Mandi (Center #401)",
+          truckNo: "TS-03-UC-5509",
+          paddyType: "Common Grade-A",
+          dispatchedQtyQtl: 650.00,
+          millWeighedQtyQtl: 650.00,
+          moisturePercent: 16.5,
+          mspRatePerQtl: 2320.00,
+          totalMspAmount: 1508000.00,
+          loadStatus: "WEIGHED_MATCHED",
+          dbtPaymentStatus: "PAID",
+          pfmsTxnRef: "PFMS-TS-2025-994411",
+          paymentDisbursedDate: "2025-11-09"
+        }
+      ]
+    },
+    {
+      farmerId: "TS-PPC-F-882196",
+      farmerName: "P. Laxman Rao",
+      fatherHusbandName: "P. Veerabhadram",
+      aadhaarMasked: "XXXX-XXXX-8840",
+      pattaPassbookNo: "T2908001190",
+      mobile: "+91 99490 88771",
+      village: "Shayampet",
+      mandal: "Parkal",
+      district: "Warangal Rural",
+      bankName: "HDFC Bank",
+      accountNoMasked: "XXXXXX9901",
+      ifscCode: "HDFC0001920",
+      totalLoadsDelivered: 1,
+      totalPaddyQtyQtl: 900.00,
+      totalMspGrossAmount: 2088000.00,
+      subsidiesApprovedAmount: 0.00,
+      subsidiesInProcessAmount: 0.00,
+      pendingPaymentAmount: 2088000.00,
+      overallDbtStatus: "ON_HOLD",
+      loads: [
+        {
+          loadId: "LOAD-2025-01",
+          transitPass: "TP-2025-8807",
+          dispatchDate: "2025-11-07",
+          ppcCenter: "PPC Parkal Center (Center #402)",
+          truckNo: "TS-03-UB-8812",
+          paddyType: "Common Grade-A",
+          dispatchedQtyQtl: 900.00,
+          millWeighedQtyQtl: 0.00,
+          moisturePercent: 16.9,
+          mspRatePerQtl: 2320.00,
+          totalMspAmount: 2088000.00,
+          loadStatus: "IN_TRANSIT",
+          dbtPaymentStatus: "PENDING_RECONCILIATION",
+          pfmsTxnRef: "PENDING-MILL-WEIGHMENT",
+          paymentDisbursedDate: "On Hold (Awaiting Gate Scale Inward)"
+        }
+      ]
+    },
+    {
+      farmerId: "TS-PPC-F-882197",
+      farmerName: "K. Lingaiah",
+      fatherHusbandName: "K. Mallesh",
+      aadhaarMasked: "XXXX-XXXX-5521",
+      pattaPassbookNo: "T2908008832",
+      mobile: "+91 91210 44990",
+      village: "Duggondi",
+      mandal: "Narsampet",
+      district: "Warangal Rural",
+      bankName: "State Bank of India",
+      accountNoMasked: "XXXXXX4481",
+      ifscCode: "SBIN0020188",
+      totalLoadsDelivered: 1,
+      totalPaddyQtyQtl: 300.00,
+      totalMspGrossAmount: 696000.00,
+      subsidiesApprovedAmount: 0.00,
+      subsidiesInProcessAmount: 696000.00,
+      pendingPaymentAmount: 0.00,
+      overallDbtStatus: "PARTIAL_PROCESSED",
+      loads: [
+        {
+          loadId: "LOAD-2025-01",
+          transitPass: "UNREG-NO-TP",
+          dispatchDate: "2025-11-07",
+          ppcCenter: "Direct Mill Gate Weighment",
+          truckNo: "TS-03-UD-9999",
+          paddyType: "Common Grade-A",
+          dispatchedQtyQtl: 0.00,
+          millWeighedQtyQtl: 300.00,
+          moisturePercent: 17.5,
+          mspRatePerQtl: 2320.00,
+          totalMspAmount: 696000.00,
+          loadStatus: "UNREGISTERED",
+          dbtPaymentStatus: "PROCESSING",
+          pfmsTxnRef: "PFMS-AWAIT-MANDI-AUTH",
+          paymentDisbursedDate: "Awaiting Mandi Officer Transit Link"
+        }
+      ]
+    }
+  ];
 
-  // Audit Logs
+  // Active Signals
+  govtLots = signal<GovtLotRecord[]>([...this.baseGovtLots]);
+  millSlips = signal<MillGateRecord[]>([...this.baseMillSlips]);
+  cmrDeliveries = signal<CMRDeliveryRecord[]>([...this.initialCmrDeliveries]);
+  farmerProfiles = signal<FarmerProfile[]>([...this.farmerProfilesDb]);
+
+  // Dynamic Audit Trail Log
   auditLogs = signal<AuditLogEntry[]>([
     {
-      id: "LOG-1",
-      dateStr: "15 Sept 2025, 12:15 PM",
-      changeDescription: "Live Govt API Data Synced (7 Procurement Lots)",
-      oldValue: "0 Lots",
-      newValue: "7 Lots Live Synced",
-      changedBy: "Govt OPMS API Gateway",
-      role: "System API Service",
+      id: "LOG-001",
+      dateStr: "2025-11-04 10:30 AM",
+      changeDescription: "Direct Live Sync established with Civil Supplies OPMS API Gateway",
+      oldValue: "Offline",
+      newValue: "Connected (Endpoint: /api/v2/cmr-procurement)",
+      changedBy: "System Daemon",
+      role: "SYSTEM",
       category: "UPLOAD"
     },
     {
-      id: "LOG-2",
-      dateStr: "12 Sept 2025, 10:30 AM",
-      changeDescription: "Quantity adjusted for Record GOVT-LOT-1025",
-      oldValue: "1000 Qtl",
-      newValue: "950 Qtl",
-      changedBy: "Officer A (R. Kumar, DCSO)",
-      role: "Government Officer",
+      id: "LOG-002",
+      dateStr: "2025-11-04 02:15 PM",
+      changeDescription: "Tare weight discrepancy on GOVT-LOT-1002 (Suresh K.) resolved via Weighbridge Calibration Certificate",
+      oldValue: "Difference: 50 Qtl",
+      newValue: "Agreed: 1450.00 Qtl (Approved by S. Murthy)",
+      changedBy: "S. Murthy",
+      role: "MILL_OPERATOR",
+      category: "DISPUTE"
+    },
+    {
+      id: "LOG-003",
+      dateStr: "2025-11-05 11:45 AM",
+      changeDescription: "Moisture deduction of 50 Qtl accepted on GOVT-LOT-1025 (M. Thirupathi) due to 18.2% moisture content",
+      oldValue: "1000.00 Qtl",
+      newValue: "950.00 Qtl (Authorized)",
+      changedBy: "Officer A (DCSO)",
+      role: "GOVT_OFFICER",
       category: "QUANTITY"
     }
   ]);
 
-  normalizeVehicle(v: string): string {
-    if (!v) return "";
-    return v.toUpperCase().replace(/[^A-Z0-9]/g, "");
-  }
+  // Statutory Settlement Summary State
+  statutoryApprovalStatus = signal<"PENDING" | "APPROVED" | "REJECTED" | "CORRECTION_REQUESTED">("PENDING");
+  statutoryOfficerRemarks = signal<string>("Awaiting final verification of Mandi outward slips vs Mill electronic weighments.");
+  approvedOfficerName = signal<string>("");
+  approvedTimestamp = signal<string>("");
 
-  // AUTO COMPARE ENGINE
+  // Reconciled Items Computation
   reconciledItems = computed<ReconciledItem[]>(() => {
-    const govts = this.govtRecords();
-    const mills = this.millRecords();
-    const overrides = this.resolvedOverrides();
+    const govt = this.govtLots();
+    const mill = this.millSlips();
     const results: ReconciledItem[] = [];
-    const unmatchedMillSet = new Set(mills.map((m) => m.slipNo));
 
-    govts.forEach((govt) => {
-      const normGovtTruck = this.normalizeVehicle(govt.truckNo);
-      
-      const matchedMill = mills.find((m) => {
-        if (m.transitPassRef && govt.transitPass && m.transitPassRef.trim().toUpperCase() === govt.transitPass.trim().toUpperCase()) {
-          return true;
-        }
-        return this.normalizeVehicle(m.vehicleRegNo) === normGovtTruck;
-      });
+    // 1. Process all Govt Lots
+    govt.forEach((g) => {
+      const m = mill.find((slip) => 
+        (slip.transitPassRef && slip.transitPassRef.trim().toLowerCase() === g.transitPass.trim().toLowerCase()) ||
+        (slip.vehicleRegNo && slip.vehicleRegNo.replace(/[^a-zA-Z0-9]/g, '').toLowerCase() === g.truckNo.replace(/[^a-zA-Z0-9]/g, '').toLowerCase())
+      );
 
-      if (matchedMill) {
-        unmatchedMillSet.delete(matchedMill.slipNo);
-        const qtyDiff = Number((matchedMill.netPaddyQtl - govt.paddyQtyQtl).toFixed(2));
-        const override = overrides[govt.id];
-
+      if (m) {
+        const diff = Math.round((g.paddyQtyQtl - m.netPaddyQtl) * 100) / 100;
         let status: ReconciledItem["status"] = "Match";
-        let discrepancyType = "None";
-        let aiReasoning = "Quantities match accurately between Mandi pass and Mill scale.";
+        let reason = "Paddy quantity perfectly matches between Mandi electronic gate pass and Mill weighbridge scale.";
+        let discType = "NONE";
 
-        if (override) {
-          status = "Match";
-          discrepancyType = "Resolved";
-          aiReasoning = `Resolved: ${override.notes || "Adjusted and agreed by joint inspection."}`;
-        } else if (Math.abs(qtyDiff) > 0.05) {
+        if (diff !== 0) {
           status = "Mismatch";
-          if (govt.moisturePercent > this.MAX_ALLOWED_MOISTURE || matchedMill.moisturePercent > this.MAX_ALLOWED_MOISTURE) {
-            discrepancyType = "Moisture Deduction";
-            aiReasoning = `Moisture ${matchedMill.moisturePercent}%. ${Math.abs(qtyDiff)} Qtl difference due to standard moisture cut.`;
+          if (g.moisturePercent > this.MAX_ALLOWED_MOISTURE) {
+            discType = "MOISTURE_CUT";
+            reason = `Moisture ${g.moisturePercent}%. ${Math.abs(diff)} Qtl difference due to standard moisture cut.`;
           } else {
-            discrepancyType = "Weighbridge Tare Variance";
-            aiReasoning = `Weight difference of ${Math.abs(qtyDiff)} Qtl between Mandi gross scale and Mill weighbridge.`;
+            discType = "TARE_WEIGHT_VARIANCE";
+            reason = `Tare weight variation of ${Math.abs(diff)} Qtl detected at Mill gross scale.`;
           }
         }
 
-        const finalQty = override ? override.agreedQty : (status === "Match" ? govt.paddyQtyQtl : matchedMill.netPaddyQtl);
-
         results.push({
-          id: govt.id,
-          farmerName: govt.farmerName,
-          govtRecord: govt,
-          millRecord: matchedMill,
-          govtQty: govt.paddyQtyQtl,
-          millQty: matchedMill.netPaddyQtl,
-          qtyDiff,
-          status,
-          discrepancyType,
-          aiReasoning,
-          finalReconciledQty: finalQty,
-          resolutionDetails: override || null
+          id: g.id,
+          farmerName: g.farmerName,
+          govtRecord: g,
+          millRecord: m,
+          govtQty: g.paddyQtyQtl,
+          millQty: m.netPaddyQtl,
+          qtyDiff: diff,
+          status: status,
+          discrepancyType: discType,
+          aiReasoning: reason,
+          finalReconciledQty: m.netPaddyQtl
         });
       } else {
-        const override = overrides[govt.id];
+        // Missing in Mill
         results.push({
-          id: govt.id,
-          farmerName: govt.farmerName,
-          govtRecord: govt,
+          id: g.id,
+          farmerName: g.farmerName,
+          govtRecord: g,
           millRecord: null,
-          govtQty: govt.paddyQtyQtl,
+          govtQty: g.paddyQtyQtl,
           millQty: 0,
-          qtyDiff: -govt.paddyQtyQtl,
-          status: override ? "Match" : "Missing In Mill",
-          discrepancyType: "Missing Inward Gate Slip",
+          qtyDiff: g.paddyQtyQtl,
+          status: "Missing In Mill",
+          discrepancyType: "MISSING_MILL_INWARD",
           aiReasoning: "Transit pass issued by Mandi officer, but no inward entry recorded in Mill register.",
-          finalReconciledQty: override ? override.agreedQty : 0,
-          resolutionDetails: override || null
+          finalReconciledQty: 0
         });
       }
     });
 
-    mills.forEach((mill) => {
-      if (unmatchedMillSet.has(mill.slipNo)) {
-        const override = overrides[mill.slipNo];
+    // 2. Identify Mill slips with no corresponding Govt Lot (Unregistered)
+    mill.forEach((m) => {
+      const matched = govt.some((g) => 
+        (m.transitPassRef && m.transitPassRef.trim().toLowerCase() === g.transitPass.trim().toLowerCase()) ||
+        (m.vehicleRegNo && m.vehicleRegNo.replace(/[^a-zA-Z0-9]/g, '').toLowerCase() === g.truckNo.replace(/[^a-zA-Z0-9]/g, '').toLowerCase())
+      );
+
+      if (!matched) {
         results.push({
-          id: mill.slipNo,
-          farmerName: mill.farmerName || "Direct Farmer Delivery",
+          id: m.slipNo,
+          farmerName: m.farmerName || "Unregistered Farmer",
           govtRecord: null,
-          millRecord: mill,
+          millRecord: m,
           govtQty: 0,
-          millQty: mill.netPaddyQtl,
-          qtyDiff: mill.netPaddyQtl,
-          status: override ? "Match" : "Missing In Govt",
-          discrepancyType: "Unregistered PPC Pass",
+          millQty: m.netPaddyQtl,
+          qtyDiff: -m.netPaddyQtl,
+          status: "Missing In Govt",
+          discrepancyType: "UNREGISTERED_MILL_TRUCK",
           aiReasoning: "Weighbridge slip generated at Mill gate without corresponding Govt Mandi Transit Pass.",
-          finalReconciledQty: override ? override.agreedQty : mill.netPaddyQtl,
-          resolutionDetails: override || null
+          finalReconciledQty: m.netPaddyQtl
         });
       }
     });
@@ -393,175 +799,223 @@ export class ReconcileService {
     return results;
   });
 
-  // CALCULATION MODULE
+  // Overall Settlement & CMR 67% Calculation
   settlementSummary = computed<SettlementSummary>(() => {
     const items = this.reconciledItems();
-    const deliveries = this.cmrDeliveries();
+    const cmrList = this.cmrDeliveries();
 
-    const totalPaddyQtl = items.reduce((acc, i) => acc + (i.finalReconciledQty || 0), 0);
-    const totalRiceQtl = Number((totalPaddyQtl * this.RAW_RICE_OTR).toFixed(2));
-    const totalDeliveredRiceQtl = deliveries.reduce((acc, d) => acc + d.riceDeliveredQtl, 0);
-    const totalPendingRiceQtl = Math.max(0, Number((totalRiceQtl - totalDeliveredRiceQtl).toFixed(2)));
+    let totalPaddy = 0;
+    let matched = 0;
+    let mismatch = 0;
 
-    const millingCharges = totalPaddyQtl * this.MILLING_CHARGES_PER_QTL;
-    const handlingCharges = totalPaddyQtl * this.HANDLING_CHARGES_PER_QTL;
-    const totalBags = items.reduce((acc, i) => acc + (i.millRecord ? i.millRecord.gunnyBags : (i.govtRecord ? i.govtRecord.gunnyBags : 0)), 0);
-    const gunnyCredit = totalBags * this.GUNNY_DEPRECIATION_RATE;
-    const totalPayableAmount = millingCharges + handlingCharges + gunnyCredit;
-
-    const matchedCount = items.filter((i) => i.status === "Match").length;
-    const mismatchCount = items.filter((i) => i.status !== "Match").length;
-    const matchPercentage = items.length ? ((matchedCount / items.length) * 100).toFixed(1) : "0";
-
-    return {
-      totalPaddyQtl,
-      totalRiceQtl,
-      totalDeliveredRiceQtl,
-      totalPendingRiceQtl,
-      totalPayableAmount,
-      millingCharges,
-      handlingCharges,
-      gunnyCredit,
-      matchedCount,
-      mismatchCount,
-      totalLots: items.length,
-      matchPercentage,
-      approvalStatus: this.officerApprovalStatus(),
-      approvalRemarks: this.officerApprovalRemarks(),
-      approvedBy: this.officerApprovedBy(),
-      approvedAt: this.officerApprovedAt()
-    };
-  });
-
-  // DYNAMIC LIVE GOVT API FETCH METHOD
-  syncFromGovtApi(centerFilter: string = "ALL"): string {
-    const count = this.syncCount() + 1;
-    this.syncCount.set(count);
-
-    const nowTime = new Date().toLocaleTimeString("en-IN", { hour: '2-digit', minute: '2-digit' });
-    const nowDate = new Date().toLocaleDateString("en-IN", { day: 'numeric', month: 'short', year: 'numeric' });
-    this.lastApiSyncTime.set(`${nowDate} ${nowTime}`);
-
-    // Dynamically inject a fresh new procurement batch if synced multiple times
-    if (count % 2 === 0) {
-      const extraLot: GovtLotRecord = {
-        id: `GOVT-LOT-100${7 + count}`,
-        transitPass: `TP-2025-88${50 + count}`,
-        ppcCenter: "PPC Chennaraopet (Center #412)",
-        dispatchDate: "2025-11-08",
-        farmerName: "K. Venkatesh (Farmer)",
-        truckNo: "TS-03-UC-5509",
-        paddyType: "Common Grade-A",
-        paddyQtyQtl: 650.00,
-        moisturePercent: 16.5,
-        gunnyBags: 1625,
-        mspRatePerQtl: 2320.00,
-        officialRemarks: "Live Sync Batch: Fresh Mandi Dispatch verified"
-      };
-
-      // Add if not already existing
-      const existing = this.govtRecords();
-      if (!existing.some(l => l.id === extraLot.id)) {
-        this.govtRecords.set([extraLot, ...existing]);
-      }
-    } else {
-      // Re-fetch all base lots
-      this.govtRecords.set([...this.baseGovtLots]);
-    }
-
-    const currentLotsCount = this.govtRecords().length;
-    const totalPaddy = this.govtRecords().reduce((acc, l) => acc + l.paddyQtyQtl, 0);
-
-    // Add Audit Log
-    const newLog: AuditLogEntry = {
-      id: `LOG-${Date.now()}`,
-      dateStr: `${nowDate}, ${nowTime}`,
-      changeDescription: `Live Govt API Sync executed (Center: ${centerFilter})`,
-      oldValue: "Connecting...",
-      newValue: `${currentLotsCount} Mandi Lots Active (${totalPaddy} Qtl)`,
-      changedBy: "Civil Supplies OPMS API Gateway",
-      role: "Government Portal Service",
-      category: "UPLOAD"
-    };
-    this.auditLogs.update((prev) => [newLog, ...prev]);
-
-    return `Synced ${currentLotsCount} Procurement Lots (${totalPaddy} Qtl) live from Govt Gateway!`;
-  }
-
-  resolveDiscrepancy(itemId: string, agreedQty: number, notes: string, userRole: string, oldQty: number = 1000) {
-    const current = this.resolvedOverrides();
-    this.resolvedOverrides.set({
-      ...current,
-      [itemId]: {
-        agreedQty,
-        resolvedBy: userRole,
-        notes,
-        timestamp: new Date().toLocaleDateString("en-IN", { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+    items.forEach((item) => {
+      totalPaddy += item.finalReconciledQty;
+      if (item.status === "Match") {
+        matched++;
+      } else {
+        mismatch++;
       }
     });
 
-    const nowFormatted = new Date().toLocaleDateString("en-IN", { day: 'numeric', month: 'short' });
-    const actorName = userRole === "GOVT_OFFICER" ? "Officer A (R. Kumar, DCSO)" : "S. Murthy (Mill Manager)";
+    // 67% Raw Rice Norm
+    const totalRiceTarget = Math.round(totalPaddy * this.RAW_RICE_OTR * 100) / 100;
+    
+    // Delivered CMR to FCI / Civil Supplies Godowns
+    let deliveredRice = 0;
+    cmrList.forEach((c) => deliveredRice += c.riceDeliveredQtl);
+    deliveredRice = Math.round(deliveredRice * 100) / 100;
 
-    const newLog: AuditLogEntry = {
-      id: `LOG-${Date.now()}`,
-      dateStr: `${nowFormatted}, ${new Date().toLocaleTimeString("en-IN", { hour: '2-digit', minute: '2-digit' })}`,
-      changeDescription: `Quantity changed for ${itemId}`,
-      oldValue: `${oldQty} Qtl`,
-      newValue: `${agreedQty} Qtl`,
-      changedBy: actorName,
-      role: userRole === "GOVT_OFFICER" ? "Government Officer" : "Rice Mill User",
-      category: "QUANTITY"
+    const pendingRice = Math.max(0, Math.round((totalRiceTarget - deliveredRice) * 100) / 100);
+
+    // Miller Payouts
+    const millingCharges = Math.round(totalPaddy * this.MILLING_CHARGES_PER_QTL * 100) / 100;
+    const handlingCharges = Math.round(totalPaddy * this.HANDLING_CHARGES_PER_QTL * 100) / 100;
+    const gunnyCredit = Math.round(totalPaddy * 2.5 * this.GUNNY_DEPRECIATION_RATE * 100) / 100;
+    const totalPayable = millingCharges + handlingCharges + gunnyCredit;
+
+    const matchPct = items.length > 0 ? ((matched / items.length) * 100).toFixed(1) + "%" : "0%";
+
+    return {
+      totalPaddyQtl: totalPaddy,
+      totalRiceQtl: totalRiceTarget,
+      totalDeliveredRiceQtl: deliveredRice,
+      totalPendingRiceQtl: pendingRice,
+      totalPayableAmount: totalPayable,
+      millingCharges,
+      handlingCharges,
+      gunnyCredit,
+      matchedCount: matched,
+      mismatchCount: mismatch,
+      totalLots: items.length,
+      matchPercentage: matchPct,
+      approvalStatus: this.statutoryApprovalStatus(),
+      approvalRemarks: this.statutoryOfficerRemarks(),
+      approvedBy: this.approvedOfficerName(),
+      approvedAt: this.approvedTimestamp()
     };
+  });
 
-    this.auditLogs.update((prev) => [newLog, ...prev]);
+  // Get single farmer profile
+  getFarmerProfile(nameOrId: string): FarmerProfile | null {
+    const search = nameOrId.toLowerCase().trim();
+    return this.farmerProfiles().find((f) => 
+      f.farmerName.toLowerCase().includes(search) ||
+      f.farmerId.toLowerCase().includes(search) ||
+      search.includes(f.farmerName.toLowerCase())
+    ) || null;
   }
 
-  setOfficerDecision(decision: "APPROVED" | "REJECTED" | "CORRECTION_REQUESTED", remarks: string, officerName: string) {
-    const nowStr = new Date().toLocaleDateString("en-IN", { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-    const nowFormatted = new Date().toLocaleDateString("en-IN", { day: 'numeric', month: 'short' });
+  // Direct Live Sync from Govt API Server
+  syncFromGovtApi(centerFilter?: string): string {
+    this.syncCount.update((c) => c + 1);
+    this.lastApiSyncTime.set(new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }));
 
-    this.officerApprovalStatus.set(decision);
-    this.officerApprovalRemarks.set(remarks);
-    this.officerApprovedBy.set(officerName);
-    this.officerApprovedAt.set(nowStr);
+    const newLogs: AuditLogEntry = {
+      id: "LOG-" + (this.auditLogs().length + 1).toString().padStart(3, '0'),
+      dateStr: new Date().toLocaleString('en-IN'),
+      changeDescription: `Direct Live Sync executed from Government OPMS API (${centerFilter || 'All Centers'}). Feeds updated.`,
+      oldValue: `Sync #${this.syncCount() - 1}`,
+      newValue: `Sync #${this.syncCount()} (7 Active Procurement Feeds)`,
+      changedBy: "Civil Supplies OPMS API Gateway",
+      role: "GOVT_OFFICER",
+      category: "UPLOAD"
+    };
 
-    const newLog: AuditLogEntry = {
-      id: `LOG-${Date.now()}`,
-      dateStr: `${nowFormatted}, ${new Date().toLocaleTimeString("en-IN", { hour: '2-digit', minute: '2-digit' })}`,
-      changeDescription: `Officer Decision: ${decision}`,
+    this.auditLogs.update((logs) => [newLogs, ...logs]);
+    return `Live synchronized 7 Mandi Procurement feeds from Government OPMS API gateway (${this.lastApiSyncTime()}).`;
+  }
+
+  // Officer / Miller resolves a specific dispute
+  resolveDiscrepancy(
+    itemId: string, 
+    agreedQty: number, 
+    userName: string, 
+    userRole: string, 
+    notes: string
+  ): void {
+    const item = this.reconciledItems().find((i) => i.id === itemId);
+    if (!item) return;
+
+    const oldQty = item.finalReconciledQty;
+
+    // Update in millSlips or govtLots
+    this.millSlips.update((slips) => {
+      return slips.map((s) => {
+        if (s.slipNo === itemId || (item.govtRecord && s.transitPassRef === item.govtRecord.transitPass)) {
+          return {
+            ...s,
+            netPaddyQtl: agreedQty,
+            millerRemarks: `Resolved: ${notes}`
+          };
+        }
+        return s;
+      });
+    });
+
+    this.govtLots.update((lots) => {
+      return lots.map((l) => {
+        if (l.id === itemId) {
+          return {
+            ...l,
+            paddyQtyQtl: agreedQty,
+            officialRemarks: `Resolved: ${notes}`
+          };
+        }
+        return l;
+      });
+    });
+
+    // Add Audit Log
+    const log: AuditLogEntry = {
+      id: "LOG-" + (this.auditLogs().length + 1).toString().padStart(3, '0'),
+      dateStr: new Date().toLocaleString('en-IN'),
+      changeDescription: `Dispute resolved on lot ${itemId} (${item.farmerName})`,
+      oldValue: `${oldQty} Qtl`,
+      newValue: `${agreedQty} Qtl (${notes})`,
+      changedBy: userName,
+      role: userRole,
+      category: "DISPUTE"
+    };
+
+    this.auditLogs.update((logs) => [log, ...logs]);
+  }
+
+  // Statutory Decision Actions
+  approveBatch(officerName: string, remarks: string): void {
+    this.statutoryApprovalStatus.set("APPROVED");
+    this.statutoryOfficerRemarks.set(remarks);
+    this.approvedOfficerName.set(officerName);
+    this.approvedTimestamp.set(new Date().toLocaleString('en-IN'));
+
+    const log: AuditLogEntry = {
+      id: "LOG-" + (this.auditLogs().length + 1).toString().padStart(3, '0'),
+      dateStr: new Date().toLocaleString('en-IN'),
+      changeDescription: "Statutory Approval & Subsidy Clearance Certificate issued by Civil Supplies Officer",
       oldValue: "PENDING",
-      newValue: decision,
+      newValue: "APPROVED - Joint Reconciliation Certificate (JRC) Generated",
       changedBy: officerName,
-      role: "Government Officer",
+      role: "GOVT_OFFICER",
       category: "APPROVAL"
     };
 
-    this.auditLogs.update((prev) => [newLog, ...prev]);
+    this.auditLogs.update((logs) => [log, ...logs]);
   }
 
-  addManualMillRecord(record: MillGateRecord) {
-    this.millRecords.update((prev) => [record, ...prev]);
-    const nowFormatted = new Date().toLocaleDateString("en-IN", { day: 'numeric', month: 'short' });
-    const newLog: AuditLogEntry = {
-      id: `LOG-${Date.now()}`,
-      dateStr: `${nowFormatted}, ${new Date().toLocaleTimeString("en-IN", { hour: '2-digit', minute: '2-digit' })}`,
-      changeDescription: `Weighbridge Inward Recorded: Slip #${record.slipNo}`,
-      oldValue: "None",
-      newValue: `${record.netPaddyQtl} Qtl (${record.farmerName || 'Farmer'})`,
-      changedBy: "Digital Weighbridge Scale",
-      role: "Rice Mill User",
-      category: "UPLOAD"
+  rejectBatch(officerName: string, remarks: string): void {
+    this.statutoryApprovalStatus.set("REJECTED");
+    this.statutoryOfficerRemarks.set(remarks);
+    this.approvedOfficerName.set(officerName);
+    this.approvedTimestamp.set(new Date().toLocaleString('en-IN'));
+
+    const log: AuditLogEntry = {
+      id: "LOG-" + (this.auditLogs().length + 1).toString().padStart(3, '0'),
+      dateStr: new Date().toLocaleString('en-IN'),
+      changeDescription: "Batch Rejected by Civil Supplies Officer due to discrepancy non-compliance",
+      oldValue: "PENDING",
+      newValue: "REJECTED",
+      changedBy: officerName,
+      role: "GOVT_OFFICER",
+      category: "APPROVAL"
     };
-    this.auditLogs.update((prev) => [newLog, ...prev]);
+
+    this.auditLogs.update((logs) => [log, ...logs]);
   }
 
-  resetDemoData() {
-    this.resolvedOverrides.set({});
-    this.officerApprovalStatus.set("PENDING");
-    this.officerApprovalRemarks.set("");
-    this.officerApprovedBy.set("");
-    this.officerApprovedAt.set("");
-    this.govtRecords.set([...this.baseGovtLots]);
+  requestCorrection(officerName: string, remarks: string): void {
+    this.statutoryApprovalStatus.set("CORRECTION_REQUESTED");
+    this.statutoryOfficerRemarks.set(remarks);
+    this.approvedOfficerName.set(officerName);
+    this.approvedTimestamp.set(new Date().toLocaleString('en-IN'));
+
+    const log: AuditLogEntry = {
+      id: "LOG-" + (this.auditLogs().length + 1).toString().padStart(3, '0'),
+      dateStr: new Date().toLocaleString('en-IN'),
+      changeDescription: "Correction & Physical Tare Recalibration requested from Rice Miller",
+      oldValue: "PENDING",
+      newValue: "CORRECTION_REQUESTED",
+      changedBy: officerName,
+      role: "GOVT_OFFICER",
+      category: "APPROVAL"
+    };
+
+    this.auditLogs.update((logs) => [log, ...logs]);
+  }
+
+  // Add Scale Inward Record (Miller Only)
+  addMillGateRecord(record: MillGateRecord): void {
+    this.millSlips.update((slips) => [record, ...slips]);
+
+    const log: AuditLogEntry = {
+      id: "LOG-" + (this.auditLogs().length + 1).toString().padStart(3, '0'),
+      dateStr: new Date().toLocaleString('en-IN'),
+      changeDescription: `Mill Gate Weighbridge scale inward recorded for slip ${record.slipNo} (${record.vehicleRegNo})`,
+      oldValue: "None",
+      newValue: `Net ${record.netPaddyQtl} Qtl (${record.farmerName})`,
+      changedBy: "Mill Scale Operator",
+      role: "MILL_OPERATOR",
+      category: "QUANTITY"
+    };
+
+    this.auditLogs.update((logs) => [log, ...logs]);
   }
 }

@@ -2,7 +2,7 @@ import { Component, inject, signal, computed } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { ReconcileService } from "./services/reconcile.service";
-import { ReconciledItem, GovtLotRecord, MillGateRecord } from "./models/cmr.model";
+import { ReconciledItem, GovtLotRecord, MillGateRecord, FarmerProfile, FarmerLoadRecord } from "./models/cmr.model";
 
 export interface AuthUser {
   userId: string;
@@ -103,6 +103,9 @@ export class App {
   selectedDiscrepancyItem = signal<ReconciledItem | null>(null);
   resolveAgreedQty = signal<number>(0);
   resolveNotes = signal<string>("");
+
+  // Farmer 360 Passbook Profile Modal State
+  selectedFarmerProfile = signal<FarmerProfile | null>(null);
 
   // Officer Action Form State
   officerRemarksInput = signal<string>("Verified digital weighment feeds against official Civil Supplies procurement manifests. Approved for payment.");
@@ -248,68 +251,71 @@ export class App {
     }, 800);
   }
 
-  // Switch Selected Mill in District
-  switchDistrictMill(millId: string) {
-    this.selectedMillId.set(millId);
-    const mill = this.districtMills().find(m => m.millId === millId);
-    this.showToast(`Switched inspection context to: ${mill?.millName || millId}`);
+  // Farmer 360 Passbook Profile Open/Close
+  openFarmerProfile(farmerNameOrId: string) {
+    const profile = this.reconcileService.getFarmerProfile(farmerNameOrId);
+    if (profile) {
+      this.selectedFarmerProfile.set(profile);
+    } else {
+      // Dynamic fallback profile
+      this.selectedFarmerProfile.set({
+        farmerId: "TS-PPC-F-" + Math.floor(100000 + Math.random() * 900000),
+        farmerName: farmerNameOrId,
+        fatherHusbandName: "Verified Landholder",
+        aadhaarMasked: "XXXX-XXXX-" + Math.floor(1000 + Math.random() * 9000),
+        pattaPassbookNo: "T290800" + Math.floor(1000 + Math.random() * 9000),
+        mobile: "+91 98490 " + Math.floor(10000 + Math.random() * 90000),
+        village: "Local Mandi Jurisdiction",
+        mandal: "Warangal Area",
+        district: "Warangal Rural",
+        bankName: "State Bank of India",
+        accountNoMasked: "XXXXXX" + Math.floor(1000 + Math.random() * 9000),
+        ifscCode: "SBIN0020188",
+        totalLoadsDelivered: 1,
+        totalPaddyQtyQtl: 1000.0,
+        totalMspGrossAmount: 2320000.0,
+        subsidiesApprovedAmount: 2320000.0,
+        subsidiesInProcessAmount: 0.0,
+        pendingPaymentAmount: 0.0,
+        overallDbtStatus: "COMPLETED",
+        loads: [
+          {
+            loadId: "LOAD-2025-01",
+            transitPass: "TP-2025-8801",
+            dispatchDate: "2025-11-04",
+            ppcCenter: "PPC Mandi Center",
+            truckNo: "TS-03-UB-4491",
+            paddyType: "Common Grade-A",
+            dispatchedQtyQtl: 1000.0,
+            millWeighedQtyQtl: 1000.0,
+            moisturePercent: 16.5,
+            mspRatePerQtl: 2320.0,
+            totalMspAmount: 2320000.0,
+            loadStatus: "WEIGHED_MATCHED",
+            dbtPaymentStatus: "PAID",
+            pfmsTxnRef: "PFMS-TS-2025-998811",
+            paymentDisbursedDate: "2025-11-06"
+          }
+        ]
+      });
+    }
   }
 
-  // Digital Scale Inward Entry
-  submitManualMillEntry() {
-    const newRecord: MillGateRecord = {
-      slipNo: `MILL-WB-${Math.floor(100 + Math.random() * 900)}`,
-      transitPassRef: this.manualPass(),
-      vehicleRegNo: this.manualTruck(),
-      inwardDate: new Date().toISOString().split("T")[0],
-      farmerName: this.manualFarmer(),
-      grossWtKg: (this.manualQty() * 100) + 10000,
-      tareWtKg: 10000,
-      netPaddyQtl: Number(this.manualQty()),
-      moisturePercent: Number(this.manualMoisture()),
-      gunnyBags: Number(this.manualBags()),
-      driverName: "K. Venkatesh",
-      millerRemarks: "Direct electronic weighbridge inward recorded."
-    };
-
-    this.reconcileService.addManualMillRecord(newRecord);
-    this.showToast(`Digital scale inward recorded for ${this.manualFarmer()} (${this.manualQty()} Qtl)!`);
-    this.activeTab.set("auto-compare");
+  closeFarmerProfile() {
+    this.selectedFarmerProfile.set(null);
   }
 
-  simulatePhotoOcr() {
-    this.isOcrScanning.set(true);
-    this.ocrSuccessMsg.set(null);
-
-    setTimeout(() => {
-      this.isOcrScanning.set(false);
-      const ocrRecord: MillGateRecord = {
-        slipNo: "MILL-OCR-808",
-        transitPassRef: "TP-2025-8806",
-        vehicleRegNo: "TS-03-UC-5509",
-        inwardDate: "2025-11-06",
-        farmerName: "T. Rajamouli",
-        grossWtKg: 35850,
-        tareWtKg: 10000,
-        netPaddyQtl: 650.00,
-        moisturePercent: 16.5,
-        gunnyBags: 1625,
-        driverName: "G. Ravi",
-        millerRemarks: "Digitized via Photo OCR from physical weigh slip #808."
-      };
-      this.reconcileService.addManualMillRecord(ocrRecord);
-      this.ocrSuccessMsg.set("Photo OCR Extracted: Farmer T. Rajamouli | 650.00 Qtl | Matched Govt TP-2025-8806");
-      this.showToast("Paper slip digitized via OCR and reconciled!");
-    }, 1200);
+  printFarmerPassbook() {
+    window.print();
   }
 
-  // Discrepancy Resolution
+  // Open Discrepancy Resolution Modal
   openDiscrepancyModal(item: ReconciledItem) {
     this.selectedDiscrepancyItem.set(item);
-    this.resolveAgreedQty.set(item.finalReconciledQty || item.millQty || item.govtQty);
+    this.resolveAgreedQty.set(item.finalReconciledQty || item.govtQty || item.millQty);
     this.resolveNotes.set(
-      item.discrepancyType.includes("Moisture") 
-        ? "Agreed to standard 50kg/Qtl moisture cut deduction based on gate test."
+      item.discrepancyType === 'MOISTURE_CUT' 
+        ? "Agreed to standard moisture cut deduction based on gate test." 
         : "Adjusted tare weight according to certified weighbridge calibration."
     );
   }
@@ -322,61 +328,96 @@ export class App {
     const item = this.selectedDiscrepancyItem();
     if (!item) return;
 
-    const userRole = this.authenticatedUser()?.role || "MILL_OPERATOR";
-    const oldQty = item.govtQty || item.millQty;
-
+    const user = this.authenticatedUser();
     this.reconcileService.resolveDiscrepancy(
       item.id,
-      Number(this.resolveAgreedQty()),
-      this.resolveNotes(),
-      userRole,
-      oldQty
+      this.resolveAgreedQty(),
+      user?.name || "Civil Supplies Officer",
+      user?.role || "GOVT_OFFICER",
+      this.resolveNotes()
     );
 
-    this.showToast(`Record ${item.id} resolved to ${this.resolveAgreedQty()} Qtl successfully!`);
+    this.showToast(`Lot ${item.id} reconciled to ${this.resolveAgreedQty()} Qtl.`);
     this.closeDiscrepancyModal();
   }
 
-  // Officer Decision Actions
-  officerAction(decision: "APPROVED" | "REJECTED" | "CORRECTION_REQUESTED") {
-    const officerName = this.authenticatedUser()?.name || "Officer A (R. Kumar, DCSO)";
-    const remarks = this.officerRemarksInput();
-
-    this.reconcileService.setOfficerDecision(decision, remarks, officerName);
-
-    if (decision === "APPROVED") {
-      this.showToast("Batch Approved! Statutory Subsidy Release of " + this.formatInr(this.reconcileService.settlementSummary().totalPayableAmount) + " authorized.");
-    } else if (decision === "REJECTED") {
-      this.showToast("Batch Rejected. Mill flagged for physical Civil Supplies audit.");
-    } else {
-      this.showToast("Correction Notice Issued. Returned to Mill Operator for clarification.");
-    }
+  // Statutory Decision Hub Actions
+  executeApproveBatch() {
+    const user = this.authenticatedUser();
+    this.reconcileService.approveBatch(user?.name || "District Civil Supplies Officer", this.officerRemarksInput());
+    this.showCertificateModal.set(true);
+    this.showToast("Batch Approved! Statutory Subsidy Release of " + this.formatInr(this.reconcileService.settlementSummary().totalPayableAmount) + " authorized.");
   }
 
-  printCertificate() {
-    window.print();
+  executeRejectBatch() {
+    const user = this.authenticatedUser();
+    this.reconcileService.rejectBatch(user?.name || "District Civil Supplies Officer", this.officerRemarksInput());
+    this.showToast("Batch Rejected. Subsidy payment blocked pending Joint Physical Audit.");
+  }
+
+  executeRequestCorrection() {
+    const user = this.authenticatedUser();
+    this.reconcileService.requestCorrection(user?.name || "District Civil Supplies Officer", this.officerRemarksInput());
+    this.showToast("Correction notice sent to Rice Miller for weighbridge recalibration.");
+  }
+
+  // Miller Weighbridge Scale Slip Submission
+  submitManualScaleEntry() {
+    if (!this.manualPass() || !this.manualTruck() || this.manualQty() <= 0) {
+      this.showToast("Please enter valid Transit Pass, Truck No, and Mill Weight.");
+      return;
+    }
+
+    const newSlip: MillGateRecord = {
+      slipNo: "MILL-WB-" + Math.floor(600 + Math.random() * 400),
+      transitPassRef: this.manualPass(),
+      vehicleRegNo: this.manualTruck(),
+      inwardDate: new Date().toISOString().split('T')[0],
+      farmerName: this.manualFarmer(),
+      grossWtKg: Math.round(this.manualQty() * 100 + 10000),
+      tareWtKg: 10000,
+      netPaddyQtl: this.manualQty(),
+      moisturePercent: this.manualMoisture(),
+      gunnyBags: this.manualBags(),
+      driverName: "Scale Operator Entry",
+      millerRemarks: "Scale slip entered at Mill weighbridge."
+    };
+
+    this.reconcileService.addMillGateRecord(newSlip);
+    this.showToast(`Weighbridge Inward Slip ${newSlip.slipNo} recorded successfully!`);
+    this.activeTab.set("auto-compare");
+  }
+
+  simulateCameraOcrScan() {
+    this.isOcrScanning.set(true);
+    this.ocrSuccessMsg.set(null);
+
+    setTimeout(() => {
+      this.isOcrScanning.set(false);
+      this.manualFarmer.set("K. Venkatesh");
+      this.manualPass.set("TP-2025-8806");
+      this.manualTruck.set("TS-03-UC-5509");
+      this.manualQty.set(650.00);
+      this.manualMoisture.set(16.5);
+      this.manualBags.set(1625);
+      this.ocrSuccessMsg.set("OCR Extracted: TP-2025-8806 | TS-03-UC-5509 | 650.00 Qtl | 16.5% Moisture");
+      this.showToast("📷 Slip OCR Extracted Successfully!");
+    }, 1200);
+  }
+
+  // Helpers
+  formatInr(val: number): string {
+    return "₹" + (val || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  formatNum(val: number): string {
+    return (val || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 
   showToast(msg: string) {
     this.showSuccessToast.set(msg);
     setTimeout(() => {
       this.showSuccessToast.set(null);
-    }, 3500);
-  }
-
-  formatInr(val: number): string {
-    return new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-      maximumFractionDigits: 2
-    }).format(val || 0);
-  }
-
-  formatNum(val: number, decimals: number = 2): string {
-    if (val === null || val === undefined || isNaN(val)) return "0.00";
-    return Number(val).toLocaleString("en-IN", {
-      minimumFractionDigits: decimals,
-      maximumFractionDigits: decimals
-    });
+    }, 4500);
   }
 }
