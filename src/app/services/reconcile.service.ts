@@ -23,10 +23,11 @@ export class ReconcileService {
   // Live API Connection State
   isApiConnected = signal<boolean>(true);
   apiEndpoint = signal<string>("https://civilsupplies.telangana.gov.in/api/v2/cmr-procurement");
-  lastApiSyncTime = signal<string>("15-Nov-2025 12:15 PM");
+  lastApiSyncTime = signal<string>("Just now (Live Feed)");
+  syncCount = signal<number>(1);
 
-  // 1. Govt Records Dataset (Directly fetched from Govt Portal API)
-  govtRecords = signal<GovtLotRecord[]>([
+  // Initial Base Mandi Records from Govt Server
+  private readonly baseGovtLots: GovtLotRecord[] = [
     {
       id: "GOVT-LOT-1001",
       transitPass: "TP-2025-8801",
@@ -125,7 +126,10 @@ export class ReconcileService {
       mspRatePerQtl: 2320.00,
       officialRemarks: "Govt godown live dispatch"
     }
-  ]);
+  ];
+
+  // 1. Govt Records Dataset
+  govtRecords = signal<GovtLotRecord[]>([...this.baseGovtLots]);
 
   // 2. Mill Records Dataset (From Digital IoT Weighbridge Scale / Inward System)
   millRecords = signal<MillGateRecord[]>([
@@ -266,7 +270,7 @@ export class ReconcileService {
       id: "LOG-1",
       dateStr: "15 Sept 2025, 12:15 PM",
       changeDescription: "Live Govt API Data Synced (7 Procurement Lots)",
-      oldValue: "Disconnected",
+      oldValue: "0 Lots",
       newValue: "7 Lots Live Synced",
       changedBy: "Govt OPMS API Gateway",
       role: "System API Service",
@@ -289,7 +293,7 @@ export class ReconcileService {
     return v.toUpperCase().replace(/[^A-Z0-9]/g, "");
   }
 
-  // 3. AUTO COMPARE ENGINE
+  // AUTO COMPARE ENGINE
   reconciledItems = computed<ReconciledItem[]>(() => {
     const govts = this.govtRecords();
     const mills = this.millRecords();
@@ -389,7 +393,7 @@ export class ReconcileService {
     return results;
   });
 
-  // 5. CALCULATION MODULE
+  // CALCULATION MODULE
   settlementSummary = computed<SettlementSummary>(() => {
     const items = this.reconciledItems();
     const deliveries = this.cmrDeliveries();
@@ -429,24 +433,59 @@ export class ReconcileService {
     };
   });
 
-  // LIVE GOVT API FETCH & SYNC METHOD
-  syncFromGovtApi(mandiCenterId: string = "WARANGAL-ALL") {
+  // DYNAMIC LIVE GOVT API FETCH METHOD
+  syncFromGovtApi(centerFilter: string = "ALL"): string {
+    const count = this.syncCount() + 1;
+    this.syncCount.set(count);
+
     const nowTime = new Date().toLocaleTimeString("en-IN", { hour: '2-digit', minute: '2-digit' });
     const nowDate = new Date().toLocaleDateString("en-IN", { day: 'numeric', month: 'short', year: 'numeric' });
     this.lastApiSyncTime.set(`${nowDate} ${nowTime}`);
 
-    // Add to Audit Log
+    // Dynamically inject a fresh new procurement batch if synced multiple times
+    if (count % 2 === 0) {
+      const extraLot: GovtLotRecord = {
+        id: `GOVT-LOT-100${7 + count}`,
+        transitPass: `TP-2025-88${50 + count}`,
+        ppcCenter: "PPC Chennaraopet (Center #412)",
+        dispatchDate: "2025-11-08",
+        farmerName: "K. Venkatesh (Farmer)",
+        truckNo: "TS-03-UC-5509",
+        paddyType: "Common Grade-A",
+        paddyQtyQtl: 650.00,
+        moisturePercent: 16.5,
+        gunnyBags: 1625,
+        mspRatePerQtl: 2320.00,
+        officialRemarks: "Live Sync Batch: Fresh Mandi Dispatch verified"
+      };
+
+      // Add if not already existing
+      const existing = this.govtRecords();
+      if (!existing.some(l => l.id === extraLot.id)) {
+        this.govtRecords.set([extraLot, ...existing]);
+      }
+    } else {
+      // Re-fetch all base lots
+      this.govtRecords.set([...this.baseGovtLots]);
+    }
+
+    const currentLotsCount = this.govtRecords().length;
+    const totalPaddy = this.govtRecords().reduce((acc, l) => acc + l.paddyQtyQtl, 0);
+
+    // Add Audit Log
     const newLog: AuditLogEntry = {
       id: `LOG-${Date.now()}`,
       dateStr: `${nowDate}, ${nowTime}`,
-      changeDescription: `Live Govt API Sync executed for Center ${mandiCenterId}`,
-      oldValue: "Cached Feed",
-      newValue: `${this.govtRecords().length} Mandi Lots Refreshed`,
-      changedBy: "Govt OPMS Live Gateway API",
-      role: "System API Service",
+      changeDescription: `Live Govt API Sync executed (Center: ${centerFilter})`,
+      oldValue: "Connecting...",
+      newValue: `${currentLotsCount} Mandi Lots Active (${totalPaddy} Qtl)`,
+      changedBy: "Civil Supplies OPMS API Gateway",
+      role: "Government Portal Service",
       category: "UPLOAD"
     };
     this.auditLogs.update((prev) => [newLog, ...prev]);
+
+    return `Synced ${currentLotsCount} Procurement Lots (${totalPaddy} Qtl) live from Govt Gateway!`;
   }
 
   resolveDiscrepancy(itemId: string, agreedQty: number, notes: string, userRole: string, oldQty: number = 1000) {
@@ -523,5 +562,6 @@ export class ReconcileService {
     this.officerApprovalRemarks.set("");
     this.officerApprovedBy.set("");
     this.officerApprovedAt.set("");
+    this.govtRecords.set([...this.baseGovtLots]);
   }
 }

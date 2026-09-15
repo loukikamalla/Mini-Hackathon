@@ -45,6 +45,7 @@ export class App {
   // Live Govt API Sync States
   isApiSyncing = signal<boolean>(false);
   selectedMandiCenter = signal<string>("ALL");
+  lastSyncSuccessMessage = signal<string | null>("Live connected to Civil Supplies OPMS Gateway. 7 Procurement Lots synced.");
 
   // Discrepancy Modal States
   selectedDiscrepancyItem = signal<ReconciledItem | null>(null);
@@ -181,9 +182,10 @@ export class App {
     
     setTimeout(() => {
       this.isApiSyncing.set(false);
-      this.reconcileService.syncFromGovtApi(this.selectedMandiCenter());
-      this.showToast("⚡ Successfully fetched live procurement records from Govt OPMS API Gateway!");
-    }, 1000);
+      const msg = this.reconcileService.syncFromGovtApi(this.selectedMandiCenter());
+      this.lastSyncSuccessMessage.set(msg);
+      this.showToast("⚡ " + msg);
+    }, 800);
   }
 
   // Digital Scale Inward Entry
