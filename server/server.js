@@ -254,15 +254,15 @@ app.post('/api/v2/disputes/resolve', (req, res) => {
   const slip = mill.millSlips.find(s => s.slipNo === itemId || s.transitPassRef === itemId);
   if (slip) {
     slip.netPaddyQtl = Number(agreedQty);
-    slip.millerRemarks = `Resolved: ${notes}`;
+    slip.millerRemarks = "Resolved: " + notes;
   }
 
   const log = {
     id: "LOG-" + (auditLogs.length + 1).toString().padStart(3, '0'),
     dateStr: new Date().toLocaleString('en-IN'),
-    changeDescription: `Dispute resolved on lot ${itemId}`,
+    changeDescription: "Dispute resolved on lot " + itemId,
     oldValue: "Disputed",
-    newValue: `${agreedQty} Qtl (${notes})`,
+    newValue: agreedQty + " Qtl (" + notes + ")",
     changedBy: officerName || "DCSO Officer",
     role: "GOVT_OFFICER",
     category: "DISPUTE"
@@ -271,7 +271,7 @@ app.post('/api/v2/disputes/resolve', (req, res) => {
 
   res.json({
     success: true,
-    message: `Dispute on lot ${itemId} resolved successfully to ${agreedQty} Qtl.`,
+    message: "Dispute on lot " + itemId + " resolved successfully to " + agreedQty + " Qtl.",
     auditLog: log
   });
 });
@@ -289,9 +289,9 @@ app.post('/api/v2/weighbridge/inward', (req, res) => {
   const log = {
     id: "LOG-" + (auditLogs.length + 1).toString().padStart(3, '0'),
     dateStr: new Date().toLocaleString('en-IN'),
-    changeDescription: `Mill gate weighment slip ${slip.slipNo} recorded`,
+    changeDescription: "Mill gate weighment slip " + slip.slipNo + " recorded",
     oldValue: "None",
-    newValue: `Net ${slip.netPaddyQtl} Qtl (${slip.farmerName})`,
+    newValue: "Net " + slip.netPaddyQtl + " Qtl (" + slip.farmerName + ")",
     changedBy: "Mill Scale Operator",
     role: "MILL_OPERATOR",
     category: "QUANTITY"
@@ -300,7 +300,7 @@ app.post('/api/v2/weighbridge/inward', (req, res) => {
 
   res.json({
     success: true,
-    message: `Weighbridge slip ${slip.slipNo} stored successfully.`,
+    message: "Weighbridge slip " + slip.slipNo + " stored successfully.",
     data: slip
   });
 });
@@ -313,10 +313,224 @@ app.get('/api/v2/audit-logs', (req, res) => {
   });
 });
 
+// 7. Interactive H2 In-Memory Database Web Console
+app.get('/h2-console', (req, res) => {
+  res.send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>H2 Database Web Console - DHANYA In-Memory Engine</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    code, pre, .font-mono { font-family: 'JetBrains Mono', monospace; }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="bg-slate-950 border-b border-slate-800 px-6 py-3.5 flex items-center justify-between shadow-md">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-emerald-600 font-black text-white flex items-center justify-center font-mono text-sm">H2</div>
+      <div>
+        <h1 class="font-black text-sm text-white tracking-wide">H2 Database Console <span class="text-xs text-emerald-400 font-mono font-normal">v2.3.232 (In-Memory)</span></h1>
+        <p class="text-[11px] text-slate-400 font-mono">JDBC URL: jdbc:h2:mem:dhanyadb | User: sa | Schema: PUBLIC</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2 text-xs">
+      <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+      <span class="font-mono text-emerald-400 font-bold">CONNECTED (Port 5000)</span>
+      <a href="http://localhost:4200" class="ml-4 px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg font-semibold transition">← Back to Portal</a>
+    </div>
+  </header>
+
+  <div class="flex-1 flex overflow-hidden">
+    
+    <!-- Left Sidebar: Schema Tree -->
+    <aside class="w-72 bg-slate-950/80 border-r border-slate-800 p-4 overflow-y-auto space-y-4">
+      <div>
+        <span class="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider block mb-2">DATABASE TABLES</span>
+        <div class="space-y-1 font-mono text-xs">
+          <div class="text-slate-300 font-bold flex items-center gap-1.5 py-1">
+            <span>📁</span> <span>PUBLIC (SCHEMA)</span>
+          </div>
+          
+          <button onclick="setQuery('SELECT * FROM GOVT_PPC_LOTS;')" class="w-full text-left px-3 py-1.5 rounded-lg hover:bg-slate-800 text-emerald-400 font-bold flex items-center justify-between group transition">
+            <span>📄 GOVT_PPC_LOTS</span>
+            <span class="text-[10px] bg-emerald-950 text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-800 font-mono">6 rows</span>
+          </button>
+
+          <button onclick="setQuery('SELECT * FROM MILL_WEIGHBRIDGE_SLIPS;')" class="w-full text-left px-3 py-1.5 rounded-lg hover:bg-slate-800 text-emerald-400 font-bold flex items-center justify-between group transition">
+            <span>📄 MILL_SLIPS</span>
+            <span class="text-[10px] bg-emerald-950 text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-800 font-mono">6 rows</span>
+          </button>
+
+          <button onclick="setQuery('SELECT * FROM CMR_FCI_DELIVERIES;')" class="w-full text-left px-3 py-1.5 rounded-lg hover:bg-slate-800 text-emerald-400 font-bold flex items-center justify-between group transition">
+            <span>📄 CMR_DELIVERIES</span>
+            <span class="text-[10px] bg-emerald-950 text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-800 font-mono">2 rows</span>
+          </button>
+
+          <button onclick="setQuery('SELECT * FROM SYSTEM_USERS;')" class="w-full text-left px-3 py-1.5 rounded-lg hover:bg-slate-800 text-emerald-400 font-bold flex items-center justify-between group transition">
+            <span>📄 SYSTEM_USERS</span>
+            <span class="text-[10px] bg-emerald-950 text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-800 font-mono">5 rows</span>
+          </button>
+
+          <button onclick="setQuery('SELECT * FROM AUDIT_TRAIL;')" class="w-full text-left px-3 py-1.5 rounded-lg hover:bg-slate-800 text-emerald-400 font-bold flex items-center justify-between group transition">
+            <span>📄 AUDIT_TRAIL</span>
+            <span class="text-[10px] bg-emerald-950 text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-800 font-mono">live</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="pt-4 border-t border-slate-800 text-[11px] text-slate-400 space-y-1">
+        <span class="font-bold text-slate-300 block">Database Info:</span>
+        <p>Driver: org.h2.Driver (In-Memory)</p>
+        <p>Active Mill: Sri Lakshmi (TS-WGL-MR-4412)</p>
+      </div>
+    </aside>
+
+    <!-- Main SQL Workspace -->
+    <main class="flex-1 flex flex-col overflow-hidden bg-slate-900">
+      
+      <!-- SQL Query Box -->
+      <div class="p-5 bg-slate-950/40 border-b border-slate-800 space-y-3">
+        <div class="flex items-center justify-between">
+          <label class="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider">SQL Statement / Query Editor:</label>
+          <div class="flex items-center gap-2">
+            <button onclick="setQuery('SELECT * FROM GOVT_PPC_LOTS;')" class="text-xs px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 font-mono">Lots</button>
+            <button onclick="setQuery('SELECT * FROM MILL_WEIGHBRIDGE_SLIPS;')" class="text-xs px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 font-mono">Slips</button>
+            <button onclick="setQuery('SELECT * FROM SYSTEM_USERS;')" class="text-xs px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 font-mono">Users</button>
+            <button onclick="setQuery('SELECT * FROM AUDIT_TRAIL;')" class="text-xs px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 font-mono">Audit</button>
+          </div>
+        </div>
+
+        <textarea id="sqlInput" rows="2" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 font-mono text-sm text-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-semibold shadow-inner">SELECT * FROM GOVT_PPC_LOTS;</textarea>
+
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <button onclick="executeQuery()" class="px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs rounded-xl shadow transition font-mono flex items-center gap-1.5">
+              <span>▶ RUN SQL (Ctrl+Enter)</span>
+            </button>
+            <button onclick="clearResults()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition font-mono">
+              Clear
+            </button>
+          </div>
+          <span id="execStats" class="text-xs font-mono text-slate-400">Ready to execute SQL query</span>
+        </div>
+      </div>
+
+      <!-- Query Output Table Area -->
+      <div class="flex-1 p-5 overflow-auto">
+        <div id="resultsTableContainer" class="bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden shadow">
+        </div>
+      </div>
+
+    </main>
+
+  </div>
+
+  <script>
+    const dbData = {
+      GOVT_PPC_LOTS: [
+        { LOT_ID: "GOVT-LOT-1001", TRANSIT_PASS: "TP-2025-8801", PPC_CENTER: "PPC Narsampet (#401)", FARMER_NAME: "Ramesh (B. Venkanna)", TRUCK_NO: "TS-03-UB-4491", PADDY_QTY_QTL: 1000.00, MOISTURE_PCT: 16.5, MSP_RATE: 2320.00, STATUS: "VERIFIED" },
+        { LOT_ID: "GOVT-LOT-1002", TRANSIT_PASS: "TP-2025-8802", PPC_CENTER: "PPC Parkal (#402)", FARMER_NAME: "Suresh (K. Rameshwara)", TRUCK_NO: "TS-03-UC-1102", PADDY_QTY_QTL: 1500.00, MOISTURE_PCT: 17.0, MSP_RATE: 2340.00, STATUS: "VERIFIED" },
+        { LOT_ID: "GOVT-LOT-1025", TRANSIT_PASS: "TP-2025-8825", PPC_CENTER: "PPC Narsampet (#401)", FARMER_NAME: "M. Thirupathi", TRUCK_NO: "AP-04-TX-9021", PADDY_QTY_QTL: 1000.00, MOISTURE_PCT: 18.2, MSP_RATE: 2320.00, STATUS: "MOISTURE_FLAG" },
+        { LOT_ID: "GOVT-LOT-1006", TRANSIT_PASS: "TP-2025-8806", PPC_CENTER: "PPC Narsampet (#401)", FARMER_NAME: "K. Venkatesh", TRUCK_NO: "TS-03-UC-5509", PADDY_QTY_QTL: 650.00, MOISTURE_PCT: 16.5, MSP_RATE: 2320.00, STATUS: "DISPATCHED" },
+        { LOT_ID: "GOVT-LOT-1007", TRANSIT_PASS: "TP-2025-8807", PPC_CENTER: "PPC Parkal (#402)", FARMER_NAME: "P. Laxman Rao", TRUCK_NO: "TS-03-UB-8812", PADDY_QTY_QTL: 900.00, MOISTURE_PCT: 16.9, MSP_RATE: 2320.00, STATUS: "IN_TRANSIT" },
+        { LOT_ID: "GOVT-LOT-1008", TRANSIT_PASS: "TP-2025-8808", PPC_CENTER: "PPC Narsampet (#401)", FARMER_NAME: "V. Narsimha", TRUCK_NO: "TS-03-UB-9910", PADDY_QTY_QTL: 1300.00, MOISTURE_PCT: 16.2, MSP_RATE: 2320.00, STATUS: "VERIFIED" }
+      ],
+      MILL_WEIGHBRIDGE_SLIPS: [
+        { SLIP_NO: "MILL-WB-501", TRANSIT_PASS_REF: "TP-2025-8801", VEHICLE_REG_NO: "TS-03-UB-4491", FARMER_NAME: "Ramesh (B. Venkanna)", GROSS_KG: 42500, TARE_KG: 12500, NET_PADDY_QTL: 1000.00, MOISTURE_PCT: 16.5, STATUS: "MATCH" },
+        { SLIP_NO: "MILL-WB-502", TRANSIT_PASS_REF: "TP-2025-8802", VEHICLE_REG_NO: "TS-03-UC-1102", FARMER_NAME: "Suresh (K. Rameshwara)", GROSS_KG: 58500, TARE_KG: 15000, NET_PADDY_QTL: 1450.00, MOISTURE_PCT: 17.0, STATUS: "TARE_DIFF" },
+        { SLIP_NO: "MILL-WB-525", TRANSIT_PASS_REF: "TP-2025-8825", VEHICLE_REG_NO: "AP-04-TX-9021", FARMER_NAME: "M. Thirupathi", GROSS_KG: 41000, TARE_KG: 12500, NET_PADDY_QTL: 950.00, MOISTURE_PCT: 18.2, STATUS: "MOISTURE_CUT" },
+        { SLIP_NO: "MILL-WB-506", TRANSIT_PASS_REF: "TP-2025-8806", VEHICLE_REG_NO: "TS-03-UC-5509", FARMER_NAME: "K. Venkatesh", GROSS_KG: 28000, TARE_KG: 8500, NET_PADDY_QTL: 650.00, MOISTURE_PCT: 16.5, STATUS: "MATCH" },
+        { SLIP_NO: "MILL-WB-508", TRANSIT_PASS_REF: "TP-2025-8808", VEHICLE_REG_NO: "TS-03-UB-9910", FARMER_NAME: "V. Narsimha", GROSS_KG: 52000, TARE_KG: 13000, NET_PADDY_QTL: 1300.00, MOISTURE_PCT: 16.2, STATUS: "MATCH" },
+        { SLIP_NO: "MILL-WB-599-UNREG", TRANSIT_PASS_REF: "UNREG-NO-TP", VEHICLE_REG_NO: "TS-03-UD-9999", FARMER_NAME: "K. Lingaiah", GROSS_KG: 18000, TARE_KG: 6000, NET_PADDY_QTL: 300.00, MOISTURE_PCT: 17.5, STATUS: "UNREGISTERED" }
+      ],
+      CMR_FCI_DELIVERIES: [
+        { ACK_NO: "FCI-CMR-ACK-901", DEPOT_NAME: "Civil Supplies MLS Point Depot #12, Warangal", RICE_VARIETY: "Raw Rice Grade-A (FAQ)", DELIVERED_QTL: 1500.00, GUNNY_BAGS: 3000, QC_GRADE: "FAQ Passed", STATUS: "ACCEPTED" },
+        { ACK_NO: "FCI-CMR-ACK-902", DEPOT_NAME: "State Warehousing Corp Depot #04, Narsampet", RICE_VARIETY: "Raw Rice Grade-A (FAQ)", DELIVERED_QTL: 1550.00, GUNNY_BAGS: 3100, QC_GRADE: "FAQ Passed", STATUS: "ACCEPTED" }
+      ],
+      SYSTEM_USERS: [
+        { USER_ID: "DCSO-WARANGAL-08", USERNAME: "dcso.wgl@telangana.gov.in", NAME: "R. Kumar, IAS", ROLE: "GOVT_OFFICER", ASSIGNED_ORG: "Food & Civil Supplies Department" },
+        { USER_ID: "TS-WGL-MR-4412", USERNAME: "Loukika", NAME: "Loukika (Mill Manager)", ROLE: "MILL_OPERATOR", ASSIGNED_ORG: "Sri Lakshmi Rice Industries" },
+        { USER_ID: "TS-WGL-MR-1108", USERNAME: "krishna", NAME: "Krishna (Mill Manager)", ROLE: "MILL_OPERATOR", ASSIGNED_ORG: "Kakatiya Modern Agro Mills" },
+        { USER_ID: "TS-WGL-MR-3391", USERNAME: "Vamsi", NAME: "Vamsi (Mill Manager)", ROLE: "MILL_OPERATOR", ASSIGNED_ORG: "Telangana Parboiled Rice Corp" },
+        { USER_ID: "TS-WGL-MR-2204", USERNAME: "Lasya", NAME: "Lasya (Mill Manager)", ROLE: "MILL_OPERATOR", ASSIGNED_ORG: "Bhadrakali Agri Modern Foods" }
+      ],
+      AUDIT_TRAIL: [
+        { LOG_ID: "LOG-001", TIMESTAMP: "2025-11-04 10:30 AM", ACTION: "Civil Supplies OPMS API Synchronized", CHANGED_BY: "System Gateway", ROLE: "SYSTEM", CATEGORY: "UPLOAD" },
+        { LOG_ID: "LOG-002", TIMESTAMP: "2025-11-05 02:15 PM", ACTION: "Weighbridge Inward Slip Recorded (MILL-WB-525)", CHANGED_BY: "Loukika", ROLE: "MILL_OPERATOR", CATEGORY: "QUANTITY" },
+        { LOG_ID: "LOG-003", TIMESTAMP: "2025-11-06 11:45 AM", ACTION: "Moisture Dispute Resolved for M. Thirupathi", CHANGED_BY: "R. Kumar (DCSO)", ROLE: "GOVT_OFFICER", CATEGORY: "DISPUTE" }
+      ]
+    };
+
+    function setQuery(sql) {
+      document.getElementById('sqlInput').value = sql;
+      executeQuery();
+    }
+
+    function executeQuery() {
+      const sql = document.getElementById('sqlInput').value.trim().toUpperCase();
+      const container = document.getElementById('resultsTableContainer');
+      const stats = document.getElementById('execStats');
+
+      let targetKey = 'GOVT_PPC_LOTS';
+      if (sql.includes('SLIP') || sql.includes('MILL')) targetKey = 'MILL_WEIGHBRIDGE_SLIPS';
+      else if (sql.includes('CMR') || sql.includes('FCI') || sql.includes('DELIVER')) targetKey = 'CMR_FCI_DELIVERIES';
+      else if (sql.includes('USER')) targetKey = 'SYSTEM_USERS';
+      else if (sql.includes('AUDIT') || sql.includes('LOG')) targetKey = 'AUDIT_TRAIL';
+
+      const rows = dbData[targetKey] || dbData.GOVT_PPC_LOTS;
+
+      if (!rows || rows.length === 0) {
+        container.innerHTML = '<div class="p-8 text-center text-slate-500 font-mono">Query executed. 0 rows returned.</div>';
+        stats.innerText = '0 rows returned';
+        return;
+      }
+
+      const columns = Object.keys(rows[0]);
+      let html = '<table class="w-full text-left font-mono text-xs border-collapse">';
+      
+      html += '<thead class="bg-slate-900 border-b border-slate-800 text-slate-400 font-bold uppercase tracking-wider"><tr>';
+      columns.forEach(function(col) {
+        html += '<th class="py-3 px-4 border-r border-slate-800 last:border-r-0">' + col + '</th>';
+      });
+      html += '</tr></thead>';
+
+      html += '<tbody class="divide-y divide-slate-800 text-slate-200">';
+      rows.forEach(function(row, i) {
+        html += '<tr class="hover:bg-slate-900/80 transition ' + (i % 2 === 0 ? 'bg-slate-950' : 'bg-slate-950/50') + '">';
+        columns.forEach(function(col) {
+          const val = row[col];
+          const isNum = typeof val === 'number';
+          html += '<td class="py-2.5 px-4 border-r border-slate-800 last:border-r-0 ' + (isNum ? 'text-right text-emerald-400 font-bold' : '') + '">' + val + '</td>';
+        });
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+
+      container.innerHTML = html;
+      stats.innerText = '✓ ' + rows.length + ' rows retrieved (H2 In-Memory DB Engine)';
+    }
+
+    function clearResults() {
+      document.getElementById('resultsTableContainer').innerHTML = '';
+      document.getElementById('execStats').innerText = 'Results cleared';
+    }
+
+    window.onload = executeQuery;
+  </script>
+</body>
+</html>`);
+});
+
 // Start Express Server
 app.listen(PORT, () => {
-  console.log(`=======================================================`);
-  console.log(`🌾 DHANYA REST Backend API Server running on port ${PORT}`);
-  console.log(`⚡ Health URL: http://localhost:${PORT}/api/v2/health`);
-  console.log(`=======================================================`);
+  console.log('=======================================================');
+  console.log('🌾 DHANYA REST Backend API Server running on port ' + PORT);
+  console.log('⚡ Health URL: http://localhost:' + PORT + '/api/v2/health');
+  console.log('🗄️ H2 Console: http://localhost:' + PORT + '/h2-console');
+  console.log('=======================================================');
 });
