@@ -12,6 +12,18 @@ export interface AuthUser {
   designation: string;
 }
 
+export interface MillSummary {
+  millId: string;
+  millName: string;
+  location: string;
+  paddyAllocatedQtl: number;
+  riceTargetQtl: number;
+  deliveredRiceQtl: number;
+  complianceRate: string;
+  pendingDisputes: number;
+  status: "COMPLIANT" | "UNDER_REVIEW" | "DISPUTE_FLAGGED";
+}
+
 @Component({
   selector: "app-root",
   standalone: true,
@@ -31,9 +43,9 @@ export class App {
   authErrorMessage = signal<string | null>(null);
 
   // Login Form State
-  selectedLoginRole = signal<"MILL_OPERATOR" | "GOVT_OFFICER">("MILL_OPERATOR");
-  loginUserId = signal<string>("TS-WGL-MR-4412");
-  loginPassword = signal<string>("Miller@2025");
+  selectedLoginRole = signal<"MILL_OPERATOR" | "GOVT_OFFICER">("GOVT_OFFICER");
+  loginUserId = signal<string>("dcso.wgl@telangana.gov.in");
+  loginPassword = signal<string>("Govt@Civil2025");
 
   // Tab Navigation
   activeTab = signal<"auto-compare" | "live-api" | "discrepancies" | "approval" | "audit">("auto-compare");
@@ -42,9 +54,49 @@ export class App {
   filterCategory = signal<"ALL" | "MATCH" | "MISMATCH">("ALL");
   searchQuery = signal<string>("");
 
+  // Officer-Specific Mandi & Mill Selectors
+  selectedMandiCenter = signal<string>("ALL");
+  selectedMillId = signal<string>("TS-WGL-MR-4412");
+
+  // List of District Mills under Officer Jurisdiction
+  districtMills = signal<MillSummary[]>([
+    {
+      millId: "TS-WGL-MR-4412",
+      millName: "Sri Lakshmi Rice Industries",
+      location: "Narsampet Road, Warangal Urban",
+      paddyAllocatedQtl: 6350.00,
+      riceTargetQtl: 4254.50,
+      deliveredRiceQtl: 3050.00,
+      complianceRate: "71.7%",
+      pendingDisputes: 3,
+      status: "UNDER_REVIEW"
+    },
+    {
+      millId: "TS-WGL-MR-1108",
+      millName: "Kakatiya Modern Agro Mills",
+      location: "Parkal Highway, Warangal Rural",
+      paddyAllocatedQtl: 4800.00,
+      riceTargetQtl: 3216.00,
+      deliveredRiceQtl: 3216.00,
+      complianceRate: "100.0%",
+      pendingDisputes: 0,
+      status: "COMPLIANT"
+    },
+    {
+      millId: "TS-WGL-MR-3391",
+      millName: "Telangana Parboiled Rice Corp",
+      location: "Wardhannapet MLS Point",
+      paddyAllocatedQtl: 5500.00,
+      riceTargetQtl: 3685.00,
+      deliveredRiceQtl: 2100.00,
+      complianceRate: "57.0%",
+      pendingDisputes: 2,
+      status: "DISPUTE_FLAGGED"
+    }
+  ]);
+
   // Live Govt API Sync States
   isApiSyncing = signal<boolean>(false);
-  selectedMandiCenter = signal<string>("ALL");
   lastSyncSuccessMessage = signal<string | null>("Live connected to Civil Supplies OPMS Gateway. 7 Procurement Lots synced.");
 
   // Discrepancy Modal States
@@ -71,11 +123,12 @@ export class App {
   showSuccessToast = signal<string | null>(null);
   showCertificateModal = signal<boolean>(false);
 
-  // Computed Auto Compare List
+  // Computed Auto Compare List (Filtered by category, search & center)
   filteredReconciledList = computed(() => {
     const items = this.reconcileService.reconciledItems();
     const cat = this.filterCategory();
     const query = this.searchQuery().toLowerCase().trim();
+    const center = this.selectedMandiCenter();
 
     return items.filter((item) => {
       const matchesCategory = 
@@ -84,6 +137,13 @@ export class App {
         cat === "MISMATCH" ? item.status !== "Match" : true;
 
       if (!matchesCategory) return false;
+
+      if (center !== "ALL") {
+        const itemCenter = item.govtRecord?.ppcCenter || "";
+        if (!itemCenter.toLowerCase().includes(center.toLowerCase())) {
+          return false;
+        }
+      }
 
       if (!query) return true;
 
@@ -156,11 +216,11 @@ export class App {
           userId: "DCSO-WARANGAL-08",
           name: "Officer A (R. Kumar, DCSO)",
           role: "GOVT_OFFICER",
-          org: "District Food & Civil Supplies Department",
+          org: "District Food & Civil Supplies Department, Warangal",
           designation: "District Civil Supplies Officer"
         });
         this.currentView.set("PORTAL");
-        this.showToast("Welcome Officer A (Government Officer)");
+        this.showToast("Welcome Officer A (Government Officer Dashboard)");
         return;
       } else {
         this.authErrorMessage.set("Invalid credentials. Use: dcso.wgl@telangana.gov.in / Govt@Civil2025");
@@ -186,6 +246,13 @@ export class App {
       this.lastSyncSuccessMessage.set(msg);
       this.showToast("⚡ " + msg);
     }, 800);
+  }
+
+  // Switch Selected Mill in District
+  switchDistrictMill(millId: string) {
+    this.selectedMillId.set(millId);
+    const mill = this.districtMills().find(m => m.millId === millId);
+    this.showToast(`Switched inspection context to: ${mill?.millName || millId}`);
   }
 
   // Digital Scale Inward Entry
@@ -278,11 +345,11 @@ export class App {
     this.reconcileService.setOfficerDecision(decision, remarks, officerName);
 
     if (decision === "APPROVED") {
-      this.showToast("Batch Approved! Subsidy of " + this.formatInr(this.reconcileService.settlementSummary().totalPayableAmount) + " released.");
+      this.showToast("Batch Approved! Statutory Subsidy Release of " + this.formatInr(this.reconcileService.settlementSummary().totalPayableAmount) + " authorized.");
     } else if (decision === "REJECTED") {
-      this.showToast("Batch Rejected. Notified for joint physical inspection.");
+      this.showToast("Batch Rejected. Mill flagged for physical Civil Supplies audit.");
     } else {
-      this.showToast("Correction Requested. Returned to Rice Mill Operator.");
+      this.showToast("Correction Notice Issued. Returned to Mill Operator for clarification.");
     }
   }
 
