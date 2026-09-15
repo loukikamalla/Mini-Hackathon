@@ -1217,19 +1217,25 @@
         <div class="w-14 h-14 rounded-2xl bg-emerald-800 text-white text-3xl flex items-center justify-center mx-auto shadow">🏛️</div>
         <h3 class="text-2xl font-black text-slate-900">Government of Telangana • Civil Supplies Department</h3>
         <span class="text-xs sm:text-sm font-extrabold uppercase tracking-widest text-emerald-800 block">Joint Statutory Reconciliation Certificate (JRC)</span>
-        <span class="text-xs font-mono text-slate-400 block font-semibold">Certificate No: JRC-TS-2025-WGL-4412</span>
+        <span class="text-xs font-mono text-slate-400 block font-semibold">Certificate No: JRC-TS-2025-WGL-{{ currentActiveMill().millId.slice(-4) }}</span>
       </div>
 
       <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200 text-xs sm:text-sm space-y-3">
-        <div class="flex justify-between"><span class="text-slate-500">Authorized Rice Mill:</span><strong class="text-slate-900">Sri Lakshmi Rice Industries (TS-WGL-MR-4412)</strong></div>
+        <div class="flex justify-between"><span class="text-slate-500">Authorized Rice Mill:</span><strong class="text-slate-900">{{ currentActiveMill().millName }} ({{ currentActiveMill().millId }})</strong></div>
         <div class="flex justify-between"><span class="text-slate-500">Reconciled Paddy Volume:</span><strong class="font-mono text-slate-900 text-sm sm:text-base">{{ formatNum(reconcileService.settlementSummary().totalPaddyQtl) }} Qtl</strong></div>
         <div class="flex justify-between"><span class="text-slate-500">67% CMR Rice Out-Turn:</span><strong class="font-mono text-emerald-800 text-sm sm:text-base">{{ formatNum(reconcileService.settlementSummary().totalRiceQtl) }} Qtl</strong></div>
         <div class="flex justify-between"><span class="text-slate-500">Approved Statutory Subsidy:</span><strong class="font-mono text-emerald-900 text-base sm:text-lg font-black">{{ formatInr(reconcileService.settlementSummary().totalPayableAmount) }}</strong></div>
       </div>
 
       <div class="grid grid-cols-2 gap-4 pt-4 text-xs sm:text-sm text-center">
-        <div class="border-t border-slate-200 pt-3"><span class="font-bold text-slate-900 block text-sm">S. Murthy</span><span class="text-slate-400 text-xs">Authorized Mill Signatory</span></div>
-        <div class="border-t border-slate-200 pt-3"><span class="font-bold text-slate-900 block text-sm">District Civil Supplies Officer (DCSO)</span><span class="text-emerald-700 text-xs font-extrabold">✓ Digitally Signed & Approved</span></div>
+        <div class="border-t border-slate-200 pt-3">
+          <span class="font-bold text-slate-900 block text-sm">{{ getMillManagerName(currentActiveMill().millId) }}</span>
+          <span class="text-slate-400 text-xs">Authorized Mill Signatory</span>
+        </div>
+        <div class="border-t border-slate-200 pt-3">
+          <span class="font-bold text-slate-900 block text-sm">{{ reconcileService.settlementSummary().approvedBy || 'Officer R. Kumar (DCSO)' }}</span>
+          <span class="text-emerald-700 text-xs font-extrabold">✓ Digitally Signed & Approved (DCSO Warangal)</span>
+        </div>
       </div>
 
       <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">

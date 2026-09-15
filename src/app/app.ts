@@ -344,21 +344,33 @@ export class App {
   // Statutory Decision Hub Actions
   executeApproveBatch() {
     const user = this.authenticatedUser();
-    this.reconcileService.approveBatch(user?.name || "District Civil Supplies Officer", this.officerRemarksInput());
+    const officerName = user?.name || "Officer R. Kumar (DCSO)";
+    this.reconcileService.approveBatch(officerName, this.officerRemarksInput());
     this.showCertificateModal.set(true);
-    this.showToast("📢 Batch Approved! Direct DBT SMS Payment Notifications dispatched to 6 verified Farmers via Telangana SMS Gateway.");
+    this.showToast(`📢 Batch Approved by ${officerName}! Direct DBT SMS Notifications dispatched to verified Farmers.`);
   }
 
   executeRejectBatch() {
     const user = this.authenticatedUser();
-    this.reconcileService.rejectBatch(user?.name || "District Civil Supplies Officer", this.officerRemarksInput());
-    this.showToast("Batch Rejected. Subsidy payment blocked pending Joint Physical Audit.");
+    const officerName = user?.name || "Officer R. Kumar (DCSO)";
+    this.reconcileService.rejectBatch(officerName, this.officerRemarksInput());
+    this.showToast(`Batch Rejected by ${officerName}. Subsidy payment blocked pending Joint Physical Audit.`);
   }
 
   executeRequestCorrection() {
     const user = this.authenticatedUser();
-    this.reconcileService.requestCorrection(user?.name || "District Civil Supplies Officer", this.officerRemarksInput());
-    this.showToast("Correction notice sent to Rice Miller for weighbridge recalibration.");
+    const officerName = user?.name || "Officer R. Kumar (DCSO)";
+    this.reconcileService.requestCorrection(officerName, this.officerRemarksInput());
+    this.showToast(`Correction notice issued by ${officerName} to Rice Miller for weighbridge recalibration.`);
+  }
+
+  getMillManagerName(millId?: string): string {
+    const id = millId || this.selectedMillId();
+    if (id === 'TS-WGL-MR-4412') return 'Loukika (Managing Partner)';
+    if (id === 'TS-WGL-MR-1108') return 'Krishna (Managing Partner)';
+    if (id === 'TS-WGL-MR-3391') return 'Vamsi (Managing Partner)';
+    if (id === 'TS-WGL-MR-2204') return 'Lasya (Managing Partner)';
+    return 'Authorized Mill Signatory';
   }
 
   // Miller Weighbridge Scale Slip Submission

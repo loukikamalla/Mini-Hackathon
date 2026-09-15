@@ -272,10 +272,17 @@ export class ReconcileService {
     }
   ]);
 
-  // Statutory Status Signals
+  // Statutory Status Signals & Status Map per Mill
+  private millApprovalStatuses: Record<string, "PENDING" | "APPROVED" | "REJECTED" | "CORRECTION_REQUESTED"> = {
+    "TS-WGL-MR-4412": "PENDING",
+    "TS-WGL-MR-1108": "PENDING",
+    "TS-WGL-MR-3391": "PENDING",
+    "TS-WGL-MR-2204": "PENDING"
+  };
+
   statutoryApprovalStatus = signal<"PENDING" | "APPROVED" | "REJECTED" | "CORRECTION_REQUESTED">("PENDING");
   statutoryOfficerRemarks = signal<string>("Verified digital weighment feeds against official Civil Supplies procurement manifests. Approved for payment.");
-  approvedOfficerName = signal<string>("");
+  approvedOfficerName = signal<string>("Officer R. Kumar (DCSO)");
   approvedTimestamp = signal<string>("");
 
   // Switch Active Mill Database
@@ -286,7 +293,7 @@ export class ReconcileService {
     this.millSlips.set([...dataset.millSlips]);
     this.cmrDeliveries.set([...dataset.cmrDeliveries]);
     this.farmerProfiles.set([...dataset.farmerProfiles]);
-    this.statutoryApprovalStatus.set(millId === "TS-WGL-MR-1108" ? "APPROVED" : "PENDING");
+    this.statutoryApprovalStatus.set(this.millApprovalStatuses[millId] || "PENDING");
   }
 
   // Reconciled Items Computation
@@ -522,12 +529,13 @@ export class ReconcileService {
 
   // Statutory Decisions
   approveBatch(officerName: string, remarks: string): void {
+    this.millApprovalStatuses[this.activeMillId()] = "APPROVED";
     this.statutoryApprovalStatus.set("APPROVED");
     this.statutoryOfficerRemarks.set(remarks);
-    this.approvedOfficerName.set(officerName);
+    this.approvedOfficerName.set(officerName || "Officer R. Kumar (DCSO)");
     this.approvedTimestamp.set(new Date().toLocaleString('en-IN'));
 
-    this.generateFarmerApprovalNotifications(officerName);
+    this.generateFarmerApprovalNotifications(officerName || "Officer R. Kumar (DCSO)");
 
     this.farmerProfiles.update((profiles) => {
       return profiles.map((p) => ({
@@ -550,7 +558,7 @@ export class ReconcileService {
       changeDescription: `Statutory Approval Issued for ${this.activeMillId()}. Direct DBT SMS Notifications dispatched to verified Farmers.`,
       oldValue: "PENDING",
       newValue: "APPROVED - JRC Generated & DBT SMS Sent",
-      changedBy: officerName,
+      changedBy: officerName || "Officer R. Kumar (DCSO)",
       role: "GOVT_OFFICER",
       category: "APPROVAL"
     };
@@ -559,9 +567,10 @@ export class ReconcileService {
   }
 
   rejectBatch(officerName: string, remarks: string): void {
+    this.millApprovalStatuses[this.activeMillId()] = "REJECTED";
     this.statutoryApprovalStatus.set("REJECTED");
     this.statutoryOfficerRemarks.set(remarks);
-    this.approvedOfficerName.set(officerName);
+    this.approvedOfficerName.set(officerName || "Officer R. Kumar (DCSO)");
     this.approvedTimestamp.set(new Date().toLocaleString('en-IN'));
 
     const log: AuditLogEntry = {
@@ -569,8 +578,8 @@ export class ReconcileService {
       dateStr: new Date().toLocaleString('en-IN'),
       changeDescription: `Batch Rejected for ${this.activeMillId()} by Civil Supplies Officer`,
       oldValue: "PENDING",
-      newValue: "REJECTED",
-      changedBy: officerName,
+      newValue: "REJECTED - Subsidy Disbursal Halted",
+      changedBy: officerName || "Officer R. Kumar (DCSO)",
       role: "GOVT_OFFICER",
       category: "APPROVAL"
     };
@@ -579,9 +588,10 @@ export class ReconcileService {
   }
 
   requestCorrection(officerName: string, remarks: string): void {
+    this.millApprovalStatuses[this.activeMillId()] = "CORRECTION_REQUESTED";
     this.statutoryApprovalStatus.set("CORRECTION_REQUESTED");
     this.statutoryOfficerRemarks.set(remarks);
-    this.approvedOfficerName.set(officerName);
+    this.approvedOfficerName.set(officerName || "Officer R. Kumar (DCSO)");
     this.approvedTimestamp.set(new Date().toLocaleString('en-IN'));
 
     const log: AuditLogEntry = {
@@ -589,8 +599,8 @@ export class ReconcileService {
       dateStr: new Date().toLocaleString('en-IN'),
       changeDescription: `Tare recalibration requested for ${this.activeMillId()}`,
       oldValue: "PENDING",
-      newValue: "CORRECTION_REQUESTED",
-      changedBy: officerName,
+      newValue: "CORRECTION_REQUESTED - Notice Sent to Miller",
+      changedBy: officerName || "Officer R. Kumar (DCSO)",
       role: "GOVT_OFFICER",
       category: "APPROVAL"
     };
