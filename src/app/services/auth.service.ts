@@ -100,6 +100,21 @@ export class AuthService {
         assignedMillId: 'TS-WGL-MR-3391',
         assignedDistrict: 'Wardhannapet'
       }
+    },
+    {
+      userIds: ['ts-wgl-mr-2204', 'miller@bhadrakali.in', 'bhadrakali'],
+      passwords: ['Miller@2025', 'miller123', 'password', '1234'],
+      role: 'MILL_OPERATOR',
+      userProfile: {
+        userId: 'TS-WGL-MR-2204',
+        name: 'G. Mallaiah (Mill Manager)',
+        email: 'miller@bhadrakali.in',
+        role: 'MILL_OPERATOR',
+        org: 'Bhadrakali Agri Modern Foods',
+        designation: 'Authorized Weighbridge Inward Manager',
+        assignedMillId: 'TS-WGL-MR-2204',
+        assignedDistrict: 'Chennaraopet'
+      }
     }
   ];
 
