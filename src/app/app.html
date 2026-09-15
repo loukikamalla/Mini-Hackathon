@@ -768,8 +768,14 @@
 
                 <button 
                   (click)="openDiscrepancyModal(item)"
-                  class="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition">
-                  {{ authenticatedUser()?.role === 'GOVT_OFFICER' ? 'Authorize Adjusted Quantity →' : 'Resolve Quantity Dispute →' }}
+                  [class]="item.status === 'Match' 
+                    ? 'w-full py-3 bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-emerald-100 font-bold text-xs rounded-xl transition flex items-center justify-center gap-2 shadow-sm' 
+                    : 'w-full py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition shadow-sm'">
+                  @if (item.status === 'Match') {
+                    <span>✓ Authorized & Reconciled (Click to Modify)</span>
+                  } @else {
+                    <span>{{ authenticatedUser()?.role === 'GOVT_OFFICER' ? 'Authorize Adjusted Quantity →' : 'Resolve Quantity Dispute →' }}</span>
+                  }
                 </button>
 
               </div>
