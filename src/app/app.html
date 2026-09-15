@@ -652,29 +652,100 @@
 
       <!-- ========================================================= -->
       <!-- TAB 4: STATUTORY OFFICER DECISION HUB                     -->
-      <!-- ========================================================= -->
       @if (activeTab() === 'approval') {
         <div class="space-y-6">
           
+          <!-- Top Header with Batch ID and Current Decision Status -->
           <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h3 class="text-lg font-black text-slate-900">Civil Supplies Officer Statutory Decision Hub</h3>
-              <p class="text-xs sm:text-sm text-slate-500 mt-1">Authorize subsidy clearance and issue the official Joint Reconciliation Certificate (JRC).</p>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-black bg-purple-100 text-purple-900 px-2.5 py-1 rounded-lg border border-purple-200 font-mono">BATCH #CMR-2025-WGL-01</span>
+                <span class="text-xs font-bold text-slate-400">Kharif Procurement Season 2025-26</span>
+              </div>
+              <h3 class="text-xl font-black text-slate-900 mt-1">Civil Supplies Officer Statutory Decision Hub</h3>
+              <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Statutory subsidy release authorization for Sri Lakshmi Rice Industries (TS-WGL-MR-4412).</p>
             </div>
 
-            <div class="flex items-center gap-2">
-              <span class="text-xs sm:text-sm font-bold text-slate-500">Current Status:</span>
-              <span class="px-3.5 py-1 rounded-full text-xs sm:text-sm font-black uppercase"
-                [class]="reconcileService.settlementSummary().approvalStatus === 'APPROVED' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-amber-100 text-amber-800 border border-amber-200'">
+            <div class="flex items-center gap-3">
+              <span class="text-xs sm:text-sm font-bold text-slate-500">Decision Status:</span>
+              <span class="px-4 py-1.5 rounded-full text-xs sm:text-sm font-black uppercase tracking-wider"
+                [class]="reconcileService.settlementSummary().approvalStatus === 'APPROVED' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : reconcileService.settlementSummary().approvalStatus === 'REJECTED' ? 'bg-rose-100 text-rose-800 border border-rose-300' : reconcileService.settlementSummary().approvalStatus === 'CORRECTION_REQUESTED' ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-slate-100 text-slate-700 border border-slate-200'">
                 {{ reconcileService.settlementSummary().approvalStatus }}
               </span>
             </div>
           </div>
 
+          <!-- BATCH OVERVIEW & AUDIT SUMMARY CARD -->
+          <div class="bg-slate-900 text-white p-7 sm:p-8 rounded-3xl shadow-xl border border-slate-800 space-y-6">
+            
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+              <div>
+                <span class="text-xs font-bold uppercase tracking-widest text-emerald-400">Target Rice Mill & Batch Details Under Review:</span>
+                <h2 class="text-2xl font-black text-white mt-1">Sri Lakshmi Rice Industries</h2>
+                <span class="text-xs font-mono text-slate-400 font-semibold">Mill Code: TS-WGL-MR-4412 • Narsampet Road, Warangal Urban</span>
+              </div>
+
+              <div class="bg-slate-800/80 border border-slate-700 p-3.5 rounded-2xl text-right">
+                <span class="text-xs text-slate-400 font-bold block">Current Batch Allocation</span>
+                <span class="text-xl font-black text-emerald-400 font-mono">6,350.00 Qtl Paddy</span>
+              </div>
+            </div>
+
+            <!-- 4 Quantitative Metrics of this Batch -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              
+              <div class="bg-slate-800/60 p-4 rounded-2xl border border-slate-700/80">
+                <span class="text-xs font-bold text-slate-400 block">Total Paddy Inward:</span>
+                <span class="text-xl font-black text-white font-mono mt-1 block">{{ formatNum(reconcileService.settlementSummary().totalPaddyQtl) }} Qtl</span>
+                <span class="text-[11px] text-slate-400 mt-0.5 block">7 Mandi Truck Dispatches</span>
+              </div>
+
+              <div class="bg-slate-800/60 p-4 rounded-2xl border border-slate-700/80">
+                <span class="text-xs font-bold text-slate-400 block">67% CMR Rice Target:</span>
+                <span class="text-xl font-black text-emerald-400 font-mono mt-1 block">{{ formatNum(reconcileService.settlementSummary().totalRiceQtl) }} Qtl</span>
+                <span class="text-[11px] text-slate-400 mt-0.5 block">Statutory Raw Rice Due</span>
+              </div>
+
+              <div class="bg-slate-800/60 p-4 rounded-2xl border border-slate-700/80">
+                <span class="text-xs font-bold text-slate-400 block">FCI Godown Delivered:</span>
+                <span class="text-xl font-black text-white font-mono mt-1 block">{{ formatNum(reconcileService.settlementSummary().totalDeliveredRiceQtl) }} Qtl</span>
+                <span class="text-[11px] text-emerald-400 font-bold mt-0.5 block">71.7% Delivered</span>
+              </div>
+
+              <div class="bg-slate-800/60 p-4 rounded-2xl border border-slate-700/80">
+                <span class="text-xs font-bold text-slate-400 block">Pending Rice:</span>
+                <span class="text-xl font-black text-amber-400 font-mono mt-1 block">{{ formatNum(reconcileService.settlementSummary().totalPendingRiceQtl) }} Qtl</span>
+                <span class="text-[11px] text-slate-400 mt-0.5 block">To complete 100% quota</span>
+              </div>
+
+            </div>
+
+            <!-- Batch Verification Checklist -->
+            <div class="bg-slate-800/40 p-4 rounded-2xl border border-slate-700 flex flex-wrap items-center justify-between gap-3 text-xs">
+              <div class="flex items-center gap-2">
+                <span class="text-emerald-400 font-bold">✓</span>
+                <span>Weighbridge Scales Calibrated</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-emerald-400 font-bold">✓</span>
+                <span>Moisture Cuts Authorized</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-emerald-400 font-bold">✓</span>
+                <span>FCI Godown Acknowledgments Verified</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-emerald-400 font-bold">✓</span>
+                <span>Direct Live Mandi API Match</span>
+              </div>
+            </div>
+
+          </div>
+
           <!-- Financial Settlement Breakdown Card -->
           <div class="bg-white p-8 sm:p-10 rounded-3xl border border-slate-200 shadow-sm space-y-7">
             
-            <h4 class="text-xs sm:text-sm font-black uppercase tracking-wider text-slate-500">Statutory Subsidy & Milling Charges Calculation</h4>
+            <h4 class="text-xs sm:text-sm font-black uppercase tracking-wider text-slate-500">Statutory Subsidy & Milling Charges for Batch #CMR-2025-WGL-01</h4>
             
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
               <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200">
@@ -693,7 +764,7 @@
 
             <div class="bg-emerald-50 border border-emerald-200 p-7 rounded-3xl flex flex-col sm:flex-row items-center justify-between gap-4">
               <div>
-                <span class="text-xs sm:text-sm font-extrabold text-emerald-800 uppercase tracking-wider block">Total Net Statutory Subsidy Payable</span>
+                <span class="text-xs sm:text-sm font-extrabold text-emerald-800 uppercase tracking-wider block">Total Net Statutory Subsidy Payable to Miller</span>
                 <span class="text-3xl sm:text-4xl font-black text-emerald-950 font-mono mt-1.5 block">{{ formatInr(reconcileService.settlementSummary().totalPayableAmount) }}</span>
               </div>
               @if (reconcileService.settlementSummary().approvalStatus === 'APPROVED') {
@@ -715,9 +786,28 @@
                 class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs sm:text-sm font-semibold text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900"></textarea>
             </div>
 
+            <!-- DECISION GUIDELINES (Clear Matrix on When to Approve vs Reject) -->
+            <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200 space-y-3">
+              <span class="text-xs font-black uppercase text-slate-600 tracking-wider block">Official Decision Guidelines for Officers:</span>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                <div class="p-3.5 bg-emerald-50 rounded-2xl border border-emerald-200 text-emerald-900 space-y-1">
+                  <strong class="font-black block text-emerald-800">🟢 When to Click "Approve":</strong>
+                  <p class="leading-relaxed">When weighments match, moisture cuts are authorized, and CMR rice is delivered to FCI. Clears ₹1,27,000 subsidy & issues JRC Certificate.</p>
+                </div>
+                <div class="p-3.5 bg-rose-50 rounded-2xl border border-rose-200 text-rose-900 space-y-1">
+                  <strong class="font-black block text-rose-800">🔴 When to Click "Reject":</strong>
+                  <p class="leading-relaxed">When there are fraudulent lorry entries, fake transit passes, or major unaccounted shortages. Blocks subsidy payment completely.</p>
+                </div>
+                <div class="p-3.5 bg-amber-50 rounded-2xl border border-amber-200 text-amber-900 space-y-1">
+                  <strong class="font-black block text-amber-800">🟡 When to Click "Correction":</strong>
+                  <p class="leading-relaxed">When physical tare weight recalibration or moisture re-testing is needed by the joint inspection team.</p>
+                </div>
+              </div>
+            </div>
+
             <!-- THE 3 STATUTORY DECISION BUTTONS -->
             <div class="pt-4 border-t border-slate-100">
-              <span class="block text-xs sm:text-sm font-black text-slate-500 uppercase tracking-wider mb-4">Statutory Decision Actions:</span>
+              <span class="block text-xs sm:text-sm font-black text-slate-500 uppercase tracking-wider mb-4">Execute Statutory Action on Batch #CMR-2025-WGL-01:</span>
               
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
                 
