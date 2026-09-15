@@ -1,12 +1,11 @@
-
 <div class="min-h-screen bg-[#f8fafc] text-[#0f172a] flex flex-col font-sans antialiased selection:bg-emerald-600 selection:text-white">
 
   <!-- ========================================================= -->
-  <!-- 1. AUTHENTIC ENTERPRISE / GOVTECH LANDING PAGE            -->
+  <!-- 1. LANDING & LOGIN VIEW                                   -->
   <!-- ========================================================= -->
-  @if (isLandingPage()) {
+  @if (currentView() === 'LANDING') {
 
-    <!-- Top Gov & Security Bar -->
+    <!-- Top Gov Bar -->
     <div class="bg-slate-900 text-slate-300 text-[11px] font-medium py-1.5 px-6 border-b border-slate-800">
       <div class="max-w-7xl mx-auto flex items-center justify-between">
         <div class="flex items-center gap-3">
@@ -25,10 +24,9 @@
     </div>
 
     <!-- Main Navigation Bar -->
-    <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-xs">
       <div class="max-w-7xl mx-auto px-6 h-18 flex items-center justify-between">
         
-        <!-- Institutional Logo & Title -->
         <div class="flex items-center gap-3.5">
           <div class="w-10 h-10 rounded-lg bg-emerald-700 flex items-center justify-center text-white font-bold shadow-xs">
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -44,280 +42,257 @@
           </div>
         </div>
 
-        <!-- Navigation Links & Portals -->
-        <div class="flex items-center gap-3">
-          <div class="hidden md:flex items-center gap-6 mr-4 text-xs font-semibold text-slate-600">
-            <a href="#workflow" class="hover:text-emerald-700 transition">Standard Workflow</a>
-            <a href="#norms" class="hover:text-emerald-700 transition">CMR 67% Norms</a>
-            <a href="#compliance" class="hover:text-emerald-700 transition">Audit Compliance</a>
-          </div>
-
-          <button 
-            (click)="launchApp('MILL_OPERATOR')"
-            class="px-3.5 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg transition">
-            Rice Mill Operator Login
-          </button>
-          
-          <button 
-            (click)="launchApp('GOVT_OFFICER')"
-            class="px-4 py-2 text-xs font-semibold text-white bg-emerald-700 hover:bg-emerald-800 rounded-lg shadow-xs transition">
-            District Officer Portal →
-          </button>
+        <div class="text-xs font-semibold text-slate-500 font-mono">
+          SECURE STATUTORY GATEWAY
         </div>
 
       </div>
     </header>
 
-    <!-- Hero Section -->
-    <main class="flex-1">
-      <section class="max-w-7xl mx-auto px-6 pt-16 pb-20">
+    <!-- Main Landing & Big Authentication Form -->
+    <main class="flex-1 flex flex-col justify-center py-12 px-6">
+      <div class="max-w-5xl mx-auto w-full space-y-10">
         
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        <!-- Header Text -->
+        <div class="text-center space-y-3 max-w-3xl mx-auto">
+          <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            1. Official Role-Based Login System
+          </div>
+
+          <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
+            Automated Joint Reconciliation for Paddy Procurement & CMR Settlement
+          </h1>
+
+          <p class="text-sm text-slate-600 leading-relaxed max-w-2xl mx-auto">
+            Upload Mandi and Mill datasets, run automatic comparison, resolve quantity mismatches, calculate payable subsidies, and authorize official officer approvals.
+          </p>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- PROMINENT CENTERED AUTHENTICATION CARD     -->
+        <!-- ========================================== -->
+        <div class="max-w-md mx-auto w-full bg-white rounded-2xl p-8 shadow-xl border border-slate-200 space-y-5">
           
-          <!-- Left Column: Value Proposition -->
-          <div class="lg:col-span-7 space-y-6">
+          <div class="text-center space-y-1">
+            <h2 class="text-lg font-bold text-slate-900">Portal Authentication</h2>
+            <p class="text-xs text-slate-500">Select your role to access your dedicated workspace</p>
+          </div>
+
+          <!-- Role Toggle Tabs -->
+          <div class="grid grid-cols-2 p-1 bg-slate-100 rounded-xl text-xs font-semibold">
+            <button 
+              type="button"
+              (click)="setLoginRole('MILL_OPERATOR')"
+              [class]="selectedLoginRole() === 'MILL_OPERATOR' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'"
+              class="py-2.5 rounded-lg transition text-center">
+              🌾 Rice Mill User
+            </button>
             
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold">
-              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <button 
+              type="button"
+              (click)="setLoginRole('GOVT_OFFICER')"
+              [class]="selectedLoginRole() === 'GOVT_OFFICER' ? 'bg-emerald-700 text-white shadow-sm' : 'text-slate-500 hover:text-slate-900'"
+              class="py-2.5 rounded-lg transition text-center">
+              🏛️ Government Officer
+            </button>
+          </div>
+
+          <!-- Auth Error Message -->
+          @if (authErrorMessage()) {
+            <div class="p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-xs font-medium flex items-center gap-2">
+              <svg class="w-4 h-4 text-rose-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
-              Integrated Digital Reconciliation Framework for Kharif / Rabi Seasons
+              <span>{{ authErrorMessage() }}</span>
+            </div>
+          }
+
+          <!-- Auth Form -->
+          <form (submit)="performDirectLogin($event)" class="space-y-4 text-xs">
+            
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1.5">
+                {{ selectedLoginRole() === 'MILL_OPERATOR' ? 'Rice Mill User ID / Email' : 'Government Officer Email / ID' }}
+              </label>
+              <input 
+                type="text" 
+                [ngModel]="loginUserId()" 
+                (ngModelChange)="loginUserId.set($event)"
+                name="userId"
+                required
+                placeholder="e.g. TS-WGL-MR-4412"
+                class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm text-slate-900 font-medium focus:border-emerald-600 focus:bg-white focus:outline-none transition font-mono"
+              />
             </div>
 
-            <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
-              Automated Joint Reconciliation for Paddy Procurement & Custom Milled Rice
-            </h1>
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1.5">Security Password</label>
+              <input 
+                type="password" 
+                [ngModel]="loginPassword()" 
+                (ngModelChange)="loginPassword.set($event)"
+                name="password"
+                required
+                placeholder="Enter password"
+                class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm text-slate-900 font-medium focus:border-emerald-600 focus:bg-white focus:outline-none transition"
+              />
+            </div>
 
-            <p class="text-sm sm:text-base text-slate-600 leading-relaxed max-w-xl">
-              Eliminate physical register discrepancies, moisture variance disputes, and lengthy manual reconciliation cycles. Seamlessly cross-verify Mandi Transit Passes with Mill Weighbridge records and calculate approved subsidy disbursements in real-time.
-            </p>
+            <!-- Credentials Reminder Box -->
+            <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-[11px] text-slate-600">
+              @if (selectedLoginRole() === 'MILL_OPERATOR') {
+                <div><strong>Rice Mill User:</strong> <code class="text-emerald-800 font-bold">TS-WGL-MR-4412</code> | <strong>Pass:</strong> <code class="text-emerald-800 font-bold">Miller@2025</code></div>
+              } @else {
+                <div><strong>Govt Officer:</strong> <code class="text-blue-800 font-bold">dcso.wgl@telangana.gov.in</code> | <strong>Pass:</strong> <code class="text-blue-800 font-bold">Govt@Civil2025</code></div>
+              }
+            </div>
 
-            <div class="flex flex-wrap items-center gap-3 pt-2">
+            <!-- 1-Click Demo Auto-fill Helper Button -->
+            <div class="pt-1">
               <button 
-                (click)="launchApp('MILL_OPERATOR')"
-                class="px-6 py-3 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-lg shadow-sm transition flex items-center gap-2">
-                <span>Access Live Reconciliation Workdesk</span>
+                type="button"
+                (click)="setDemoCredentials(selectedLoginRole())"
+                class="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition border border-slate-200 flex items-center justify-center gap-1.5">
+                <span>⚡ Auto-fill {{ selectedLoginRole() === 'MILL_OPERATOR' ? 'Rice Mill User' : 'Government Officer' }} Credentials</span>
+              </button>
+            </div>
+
+            <!-- Big Submit Sign In Button -->
+            <div class="pt-2">
+              <button 
+                type="submit" 
+                class="w-full py-3.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl text-sm shadow-md shadow-emerald-700/20 transition flex items-center justify-center gap-2">
+                <span>Sign In as {{ selectedLoginRole() === 'MILL_OPERATOR' ? 'Rice Mill User' : 'Government Officer' }}</span>
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
               </button>
-
-              <button 
-                (click)="launchApp('GOVT_OFFICER')"
-                class="px-5 py-3 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-lg border border-slate-300 shadow-xs transition">
-                Civil Supplies Department Verification
-              </button>
             </div>
 
-            <!-- Key Trust & Operational Badges -->
-            <div class="pt-6 border-t border-slate-200 grid grid-cols-3 gap-4 text-left">
-              <div>
-                <div class="text-xl font-extrabold text-slate-900 font-mono">0.05%</div>
-                <div class="text-xs text-slate-500 font-medium">Allowable Moisture/Tare Tolerance</div>
-              </div>
-              <div>
-                <div class="text-xl font-extrabold text-slate-900 font-mono">67.0%</div>
-                <div class="text-xs text-slate-500 font-medium">Standard Raw Rice Out-Turn Ratio</div>
-              </div>
-              <div>
-                <div class="text-xl font-extrabold text-slate-900 font-mono">100%</div>
-                <div class="text-xs text-slate-500 font-medium">Tamper-Evident JRC Audit Trail</div>
-              </div>
-            </div>
-
-          </div>
-
-          <!-- Right Column: Interactive UI Showcase Preview -->
-          <div class="lg:col-span-5">
-            <div class="bg-white rounded-xl border border-slate-200 shadow-md overflow-hidden">
-              <div class="bg-slate-900 text-slate-300 px-4 py-3 border-b border-slate-800 flex items-center justify-between text-xs">
-                <span class="font-semibold text-white">Live Batch Preview: KMS-2025-WGL-04</span>
-                <span class="bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded text-[10px] font-mono font-bold">READY TO VERIFY</span>
-              </div>
-
-              <div class="p-5 space-y-4">
-                <div class="grid grid-cols-2 gap-3 text-xs">
-                  <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
-                    <span class="text-slate-500 text-[11px] block">Procurement Inward (Govt)</span>
-                    <span class="font-bold text-slate-900 text-sm font-mono">2,170.50 Qtl</span>
-                    <span class="text-[10px] text-slate-400 block mt-0.5">8 Dispatched Lots</span>
-                  </div>
-                  <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
-                    <span class="text-slate-500 text-[11px] block">Mill Weighbridge (Actual)</span>
-                    <span class="font-bold text-slate-900 text-sm font-mono">2,166.00 Qtl</span>
-                    <span class="text-[10px] text-slate-400 block mt-0.5">Electronic Scale Verified</span>
-                  </div>
-                </div>
-
-                <!-- Sample Mismatch Item -->
-                <div class="p-3 bg-amber-50/60 rounded-lg border border-amber-200/80 text-xs">
-                  <div class="flex items-center justify-between font-semibold text-slate-900">
-                    <span>Lot #1003 (TS-04-TX-9021)</span>
-                    <span class="text-amber-800 bg-amber-100 px-2 py-0.5 rounded text-[10px] font-bold">Moisture Cut (-3.00 Qtl)</span>
-                  </div>
-                  <p class="text-[11px] text-slate-600 mt-1">
-                    Moisture recorded at 18.2% vs 17.0% norm. 3.00 Qtl deduction suggested as per Civil Supplies specs.
-                  </p>
-                </div>
-
-                <!-- One Click Demo Action -->
-                <button 
-                  (click)="launchApp('MILL_OPERATOR')"
-                  class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-semibold transition">
-                  Open Interactive Workdesk ➔
-                </button>
-              </div>
-            </div>
-          </div>
+          </form>
 
         </div>
 
-        <!-- 3-Phase Operational Framework -->
-        <div id="workflow" class="mt-20 pt-16 border-t border-slate-200">
-          <div class="text-center max-w-2xl mx-auto mb-12">
-            <h2 class="text-2xl font-extrabold text-slate-900">Standard Operational Workflow</h2>
-            <p class="text-xs text-slate-500 mt-1">End-to-end statutory compliance from Paddy weighbridge to Joint Clearance Certificate.</p>
+        <!-- Statutory Metrics at bottom -->
+        <div class="pt-6 border-t border-slate-200 grid grid-cols-1 sm:grid-cols-3 gap-6 text-center max-w-3xl mx-auto">
+          <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+            <div class="text-xl font-extrabold text-slate-900 font-mono">100%</div>
+            <div class="text-xs text-slate-600 font-medium mt-0.5">Automated Comparison</div>
           </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            
-            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-xs">
-              <div class="w-8 h-8 rounded-md bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-xs mb-4">01</div>
-              <h3 class="font-bold text-sm text-slate-900">Statement Ingestion & OCR</h3>
-              <p class="text-xs text-slate-600 mt-2 leading-relaxed">
-                Ingest official civil supplies portal statements or scan handwritten weighbridge notebooks directly into structured digital lot entries.
-              </p>
-            </div>
-
-            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-xs">
-              <div class="w-8 h-8 rounded-md bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-xs mb-4">02</div>
-              <h3 class="font-bold text-sm text-slate-900">3-Way Comparative Reconciliation</h3>
-              <p class="text-xs text-slate-600 mt-2 leading-relaxed">
-                Algorithmic matching of transit passes, vehicle numbers, moisture percentages, and net quantities within authorized tolerances.
-              </p>
-            </div>
-
-            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-xs">
-              <div class="w-8 h-8 rounded-md bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-xs mb-4">03</div>
-              <h3 class="font-bold text-sm text-slate-900">Statutory Subsidy Clearance</h3>
-              <p class="text-xs text-slate-600 mt-2 leading-relaxed">
-                Computation of 67% CMR delivery requirements, gunny bag credits, milling charges (₹10/Qtl), and generation of verified JRC certificates.
-              </p>
-            </div>
-
+          <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+            <div class="text-xl font-extrabold text-slate-900 font-mono">67.0%</div>
+            <div class="text-xs text-slate-600 font-medium mt-0.5">CMR Raw Rice Norm</div>
+          </div>
+          <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+            <div class="text-xl font-extrabold text-slate-900 font-mono">100%</div>
+            <div class="text-xs text-slate-600 font-medium mt-0.5">Auditable History Log</div>
           </div>
         </div>
 
-      </section>
+      </div>
     </main>
 
-    <!-- Institutional Footer -->
+    <!-- Footer -->
     <footer class="bg-white border-t border-slate-200 py-6 text-slate-500 text-xs">
       <div class="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div>
-          <span>© 2026 Department of Food & Civil Supplies. All Rights Reserved.</span>
-        </div>
+        <div>© 2026 Department of Food & Civil Supplies. Official Government Portal.</div>
         <div class="flex items-center gap-4 text-[11px]">
           <span>CMR Policy Guidelines</span>
           <span>•</span>
-          <span>Weighbridge Calibration Norms</span>
-          <span>•</span>
-          <span>Support: ncmrs-support@nic.in</span>
+          <span>Helpdesk: 1800-425-0033</span>
         </div>
       </div>
     </footer>
 
-  } @else {
+  } 
 
   <!-- ========================================================= -->
-  <!-- 2. PRODUCTION ENTERPRISE WORKDESK (HUMAN-DESIGNED)        -->
+  <!-- 2. AUTHENTICATED WORKDESK                                  -->
   <!-- ========================================================= -->
+  @if (currentView() === 'PORTAL') {
 
     <!-- System Header -->
     <header class="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-40 no-print">
       <div class="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
         
-        <!-- Left: Logo & Breadcrumbs -->
-        <div class="flex items-center gap-4">
-          <button 
-            (click)="isLandingPage.set(true)"
-            title="Return to Public Portal"
-            class="text-xs font-semibold text-slate-300 hover:text-white flex items-center gap-1.5 transition">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-            <span>Home</span>
-          </button>
-
-          <span class="text-slate-700">|</span>
-
+        <!-- Left: Portal Title -->
+        <div class="flex items-center gap-3">
+          <div class="w-7 h-7 rounded bg-emerald-600 flex items-center justify-center font-bold text-xs">
+            NC
+          </div>
           <div class="flex items-center gap-2">
             <span class="font-bold text-sm tracking-tight text-white">NCMRS Workdesk</span>
-            <span class="text-[11px] text-slate-400 font-mono">Batch: KMS-2025-WGL</span>
+            <span class="text-[11px] text-slate-400 font-mono">KMS-2025-26</span>
           </div>
         </div>
 
-        <!-- Center: Tabbed Navigation -->
-        <nav class="hidden md:flex items-center gap-1">
+        <!-- Center: 5 Dedicated Tabs (Mapped 1:1 to User Stories) -->
+        <nav class="hidden lg:flex items-center gap-1">
+          
           <button 
-            (click)="activeTab.set('matrix')"
-            [class]="activeTab() === 'matrix' ? 'bg-slate-800 text-white font-semibold border-b-2 border-emerald-500' : 'text-slate-400 hover:text-slate-200'"
-            class="px-3 py-1.5 text-xs transition">
-            Reconciliation Ledger
+            (click)="activeTab.set('auto-compare')"
+            [class]="activeTab() === 'auto-compare' ? 'bg-slate-800 text-emerald-400 font-semibold border-b-2 border-emerald-500' : 'text-slate-400 hover:text-slate-200'"
+            class="px-3 py-1.5 text-xs transition flex items-center gap-1.5">
+            <span>3. Auto Compare</span>
           </button>
           
           <button 
-            (click)="activeTab.set('ingestion')"
-            [class]="activeTab() === 'ingestion' ? 'bg-slate-800 text-white font-semibold border-b-2 border-emerald-500' : 'text-slate-400 hover:text-slate-200'"
-            class="px-3 py-1.5 text-xs transition">
-            Data Ingestion & OCR
+            (click)="activeTab.set('upload')"
+            [class]="activeTab() === 'upload' ? 'bg-slate-800 text-emerald-400 font-semibold border-b-2 border-emerald-500' : 'text-slate-400 hover:text-slate-200'"
+            class="px-3 py-1.5 text-xs transition flex items-center gap-1.5">
+            <span>2. Upload Data</span>
           </button>
 
           <button 
-            (click)="activeTab.set('settlement')"
-            [class]="activeTab() === 'settlement' ? 'bg-slate-800 text-white font-semibold border-b-2 border-emerald-500' : 'text-slate-400 hover:text-slate-200'"
-            class="px-3 py-1.5 text-xs transition">
-            CMR 67% Settlement & JRC
+            (click)="activeTab.set('discrepancies')"
+            [class]="activeTab() === 'discrepancies' ? 'bg-slate-800 text-emerald-400 font-semibold border-b-2 border-emerald-500' : 'text-slate-400 hover:text-slate-200'"
+            class="px-3 py-1.5 text-xs transition flex items-center gap-1.5">
+            <span>4. Discrepancy Page</span>
+            @if (reconcileService.settlementSummary().mismatchCount > 0) {
+              <span class="px-1.5 py-0.2 bg-amber-500 text-slate-900 text-[10px] font-bold rounded-full">
+                {{ reconcileService.settlementSummary().mismatchCount }}
+              </span>
+            }
           </button>
+
+          <button 
+            (click)="activeTab.set('approval')"
+            [class]="activeTab() === 'approval' ? 'bg-slate-800 text-emerald-400 font-semibold border-b-2 border-emerald-500' : 'text-slate-400 hover:text-slate-200'"
+            class="px-3 py-1.5 text-xs transition flex items-center gap-1.5">
+            <span>6. Approval Module</span>
+            @if (reconcileService.settlementSummary().approvalStatus === 'APPROVED') {
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            } @else if (reconcileService.settlementSummary().approvalStatus === 'REJECTED') {
+              <span class="w-2 h-2 rounded-full bg-rose-400"></span>
+            }
+          </button>
+
+          <button 
+            (click)="activeTab.set('audit')"
+            [class]="activeTab() === 'audit' ? 'bg-slate-800 text-emerald-400 font-semibold border-b-2 border-emerald-500' : 'text-slate-400 hover:text-slate-200'"
+            class="px-3 py-1.5 text-xs transition flex items-center gap-1.5">
+            <span>7. Audit History</span>
+          </button>
+
         </nav>
 
-        <!-- Right: Role Persona & Actions -->
+        <!-- Right: Authenticated User Badge & Logout -->
         <div class="flex items-center gap-3">
           
-          <!-- Role Persona Pill -->
-          <div class="flex items-center bg-slate-800 p-0.5 rounded text-xs border border-slate-700">
-            <button 
-              (click)="setRole('MILL_OPERATOR')"
-              [class]="currentRole() === 'MILL_OPERATOR' ? 'bg-slate-700 text-white font-semibold' : 'text-slate-400 hover:text-white'"
-              class="px-2 py-1 rounded transition">
-              Mill Operator
-            </button>
-            <button 
-              (click)="setRole('GOVT_OFFICER')"
-              [class]="currentRole() === 'GOVT_OFFICER' ? 'bg-emerald-700 text-white font-semibold' : 'text-slate-400 hover:text-white'"
-              class="px-2 py-1 rounded transition">
-              Govt Inspector
-            </button>
+          <div class="flex items-center gap-2 px-2.5 py-1 bg-slate-800 rounded border border-slate-700 text-xs">
+            <div class="w-2 h-2 rounded-full" [class]="authenticatedUser()?.role === 'MILL_OPERATOR' ? 'bg-emerald-400' : 'bg-blue-400'"></div>
+            <span class="font-semibold text-slate-200">{{ authenticatedUser()?.name }}</span>
+            <span class="text-[10px] text-slate-400">({{ authenticatedUser()?.role === 'MILL_OPERATOR' ? 'Rice Mill User' : 'Govt Officer' }})</span>
           </div>
 
-          <!-- Joint Certificate Action -->
           <button 
-            (click)="showCertificateModal.set(true)"
-            class="px-3 py-1 bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-semibold rounded transition flex items-center gap-1.5">
-            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            <span>Joint Certificate (JRC)</span>
-          </button>
-
-          <!-- Reset -->
-          <button 
-            (click)="resetAll()"
-            title="Reset to Initial State"
-            class="p-1 text-slate-400 hover:text-white transition">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
+            (click)="logout()"
+            title="Sign Out"
+            class="px-2.5 py-1 text-xs font-semibold text-rose-300 hover:bg-rose-950/40 rounded transition border border-rose-900/50">
+            Sign Out
           </button>
 
         </div>
@@ -329,14 +304,29 @@
     <div class="bg-white border-b border-slate-200 py-2.5 px-6 text-xs text-slate-600">
       <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
         <div class="flex items-center gap-4">
-          <span><strong>Mill:</strong> Sri Lakshmi Rice Industries (TS/WGL/MR-4412)</span>
+          <span><strong>User:</strong> {{ authenticatedUser()?.userId }}</span>
           <span class="text-slate-300">•</span>
-          <span><strong>Procurement Mandi:</strong> Narsampet & Parkal PPC</span>
+          <span><strong>Role:</strong> 
+            <span class="font-semibold" [class]="authenticatedUser()?.role === 'MILL_OPERATOR' ? 'text-emerald-700' : 'text-blue-700'">
+              {{ authenticatedUser()?.role === 'MILL_OPERATOR' ? 'Rice Mill User' : 'Government Officer' }}
+            </span>
+          </span>
           <span class="text-slate-300">•</span>
-          <span><strong>Role Mode:</strong> <span class="font-semibold text-slate-900">{{ currentRole() === 'MILL_OPERATOR' ? 'Mill Operator (Inward Management)' : 'Civil Supplies Officer (Verification & Approval)' }}</span></span>
+          <span><strong>Approval State:</strong>
+            @if (reconcileService.settlementSummary().approvalStatus === 'APPROVED') {
+              <span class="text-emerald-700 font-bold">APPROVED BY OFFICER</span>
+            } @else if (reconcileService.settlementSummary().approvalStatus === 'REJECTED') {
+              <span class="text-rose-700 font-bold">REJECTED</span>
+            } @else if (reconcileService.settlementSummary().approvalStatus === 'CORRECTION_REQUESTED') {
+              <span class="text-amber-700 font-bold">CORRECTION REQUESTED</span>
+            } @else {
+              <span class="text-slate-500 font-medium">PENDING REVIEW</span>
+            }
+          </span>
         </div>
+        
         <div class="flex items-center gap-2 font-mono text-[11px] text-slate-500">
-          <span>Status: ACTIVE_RECONCILIATION</span>
+          <span>Session: SECURE_AUTHENTICATED</span>
         </div>
       </div>
     </div>
@@ -354,126 +344,196 @@
     <!-- Main Workspace -->
     <main class="max-w-7xl mx-auto px-6 py-6 flex-1 w-full space-y-6">
 
-      <!-- Executive KPI Cards -->
-      <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        
-        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
-          <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Total Reconciled Paddy</span>
-          <div class="flex items-baseline gap-2 mt-1">
-            <span class="text-2xl font-bold text-slate-900 font-mono">{{ formatNum(reconcileService.settlementSummary().totalReconciledPaddyQtl) }}</span>
-            <span class="text-xs font-medium text-slate-500">Qtl</span>
-          </div>
-          <div class="text-[11px] text-slate-500 mt-2 pt-2 border-t border-slate-100 flex justify-between">
-            <span>Govt: {{ formatNum(reconcileService.settlementSummary().totalGovtPaddyQtl) }}</span>
-            <span>Mill: {{ formatNum(reconcileService.settlementSummary().totalMillPaddyQtl) }}</span>
-          </div>
+      <!-- ========================================================= -->
+      <!-- 5. CALCULATION MODULE (4 Core KPI Cards)                  -->
+      <!-- ========================================================= -->
+      <section class="space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">5. Calculation Module (Automated Settlement Metrics)</span>
+          <span class="text-xs text-slate-400 font-mono">Norm: 67% Raw Rice CMR</span>
         </div>
 
-        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
-          <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Reconciliation Compliance</span>
-          <div class="flex items-baseline gap-2 mt-1">
-            <span class="text-2xl font-bold text-emerald-700 font-mono">{{ reconcileService.settlementSummary().matchPercentage }}%</span>
-            <span class="text-xs font-medium text-slate-500">({{ reconcileService.settlementSummary().matchedCount }}/{{ reconcileService.settlementSummary().totalLots }} Lots)</span>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          
+          <!-- 1. Total Paddy -->
+          <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs hover:border-slate-300 transition">
+            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Total Paddy</span>
+            <div class="flex items-baseline gap-2 mt-1">
+              <span class="text-2xl font-black text-slate-900 font-mono">{{ formatNum(reconcileService.settlementSummary().totalPaddyQtl) }}</span>
+              <span class="text-xs font-semibold text-slate-500">Qtl</span>
+            </div>
+            <div class="text-[11px] text-slate-500 mt-2 pt-2 border-t border-slate-100 flex justify-between">
+              <span>Govt Lots Synced</span>
+              <span class="font-semibold text-slate-700">{{ reconcileService.settlementSummary().totalLots }} Lots</span>
+            </div>
           </div>
-          <div class="w-full bg-slate-100 rounded-full h-1.5 mt-2.5 overflow-hidden">
-            <div class="bg-emerald-600 h-1.5 rounded-full" [style.width.%]="reconcileService.settlementSummary().matchPercentage"></div>
-          </div>
-        </div>
 
-        <div 
-          (click)="setFilter('MISMATCH')"
-          class="bg-white p-4 rounded-xl border border-amber-300 hover:border-amber-500 shadow-xs cursor-pointer transition">
-          <span class="text-xs font-semibold text-amber-800 uppercase tracking-wider block">Pending Discrepancies</span>
-          <div class="flex items-baseline gap-2 mt-1">
-            <span class="text-2xl font-bold text-amber-700 font-mono">
-              {{ reconcileService.settlementSummary().mismatchCount + reconcileService.settlementSummary().missingInMillCount + reconcileService.settlementSummary().missingInGovtCount }}
-            </span>
-            <span class="text-xs font-medium text-slate-500">Lots flagged</span>
+          <!-- 2. Total Rice (67% OTR) -->
+          <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs hover:border-slate-300 transition">
+            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Total Rice (67% CMR)</span>
+            <div class="flex items-baseline gap-2 mt-1">
+              <span class="text-2xl font-black text-emerald-700 font-mono">{{ formatNum(reconcileService.settlementSummary().totalRiceQtl) }}</span>
+              <span class="text-xs font-semibold text-slate-500">Qtl</span>
+            </div>
+            <div class="text-[11px] text-slate-500 mt-2 pt-2 border-t border-slate-100 flex justify-between">
+              <span>Target Delivery</span>
+              <span class="font-semibold text-emerald-700">67 kg per 100 kg</span>
+            </div>
           </div>
-          <div class="text-[11px] text-amber-700 mt-2 pt-2 border-t border-amber-100 font-medium">
-            Filter unresolved items →
-          </div>
-        </div>
 
-        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
-          <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Eligible Milling Subsidy</span>
-          <div class="mt-1">
-            <span class="text-2xl font-bold text-slate-900 font-mono">{{ formatInr(reconcileService.settlementSummary().netApprovedAmount) }}</span>
+          <!-- 3. Total Pending -->
+          <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs hover:border-slate-300 transition">
+            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Total Pending</span>
+            <div class="flex items-baseline gap-2 mt-1">
+              <span class="text-2xl font-black text-amber-700 font-mono">{{ formatNum(reconcileService.settlementSummary().totalPendingRiceQtl) }}</span>
+              <span class="text-xs font-semibold text-slate-500">Qtl Rice</span>
+            </div>
+            <div class="text-[11px] text-slate-500 mt-2 pt-2 border-t border-slate-100 flex justify-between">
+              <span>Delivered: {{ formatNum(reconcileService.settlementSummary().totalDeliveredRiceQtl) }} Qtl</span>
+              <span class="text-amber-700 font-semibold">In Progress</span>
+            </div>
           </div>
-          <div class="text-[11px] text-slate-500 mt-2 pt-2 border-t border-slate-100 flex justify-between">
-            <span>Rate: ₹10/Qtl + Handling</span>
-            <span class="text-emerald-700 font-medium">Cleared for Payout</span>
-          </div>
-        </div>
 
+          <!-- 4. Total Payable Amount -->
+          <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs hover:border-slate-300 transition">
+            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Total Payable Amount</span>
+            <div class="mt-1">
+              <span class="text-2xl font-black text-slate-900 font-mono">{{ formatInr(reconcileService.settlementSummary().totalPayableAmount) }}</span>
+            </div>
+            <div class="text-[11px] text-slate-500 mt-2 pt-2 border-t border-slate-100 flex justify-between">
+              <span>₹10/Qtl + ₹4.50 Handl.</span>
+              <span class="text-emerald-700 font-semibold">Eligible Claim</span>
+            </div>
+          </div>
+
+        </div>
       </section>
 
+
       <!-- ========================================================= -->
-      <!-- TAB 1: RECONCILIATION LEDGER                              -->
+      <!-- TAB 1: 3. AUTO COMPARE (Farmer, Govt Qty, Mill Qty, Status)-->
       <!-- ========================================================= -->
-      @if (activeTab() === 'matrix') {
+      @if (activeTab() === 'auto-compare') {
         <div class="space-y-4">
-          
-          <!-- Toolbar -->
-          <div class="bg-white p-3 rounded-xl border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs">
-            
-            <!-- Category Tabs -->
-            <div class="flex flex-wrap items-center gap-1.5 w-full sm:w-auto">
-              <button 
-                (click)="setFilter('ALL')"
-                [class]="filterCategory() === 'ALL' ? 'bg-slate-900 text-white font-medium' : 'text-slate-600 hover:bg-slate-100'"
-                class="px-3 py-1.5 rounded text-xs transition">
-                All Entries ({{ reconcileService.reconciledItems().length }})
-              </button>
 
-              <button 
-                (click)="setFilter('EXACT_MATCH')"
-                [class]="filterCategory() === 'EXACT_MATCH' ? 'bg-emerald-700 text-white font-medium' : 'text-slate-600 hover:bg-slate-100'"
-                class="px-3 py-1.5 rounded text-xs transition">
-                Verified Match ({{ reconcileService.settlementSummary().matchedCount }})
-              </button>
-
-              <button 
-                (click)="setFilter('MISMATCH')"
-                [class]="filterCategory() === 'MISMATCH' ? 'bg-amber-600 text-white font-medium' : 'text-slate-600 hover:bg-slate-100'"
-                class="px-3 py-1.5 rounded text-xs transition">
-                Variances / Moisture Cuts ({{ reconcileService.settlementSummary().mismatchCount }})
-              </button>
-
-              <button 
-                (click)="setFilter('MISSING_IN_MILL')"
-                [class]="filterCategory() === 'MISSING_IN_MILL' ? 'bg-rose-700 text-white font-medium' : 'text-slate-600 hover:bg-slate-100'"
-                class="px-3 py-1.5 rounded text-xs transition">
-                Missing Gate Slips ({{ reconcileService.settlementSummary().missingInMillCount }})
-              </button>
+          <!-- PROMINENT DIRECT UPLOAD BAR FOR MILL OWNER & GOVT -->
+          <div class="bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 text-white p-4 sm:p-5 rounded-2xl shadow-md border border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div class="space-y-1">
+              <div class="flex items-center gap-2">
+                <span class="px-2.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-mono text-[11px] font-bold border border-emerald-500/30">
+                  {{ authenticatedUser()?.role === 'MILL_OPERATOR' ? '🌾 RICE MILL ACTION HUB' : '🏛️ GOVT INTAKE HUB' }}
+                </span>
+                <span class="text-xs text-slate-400">Direct Data Upload & Inward Entry</span>
+              </div>
+              <h3 class="text-base font-bold text-white tracking-tight">
+                {{ authenticatedUser()?.role === 'MILL_OPERATOR' ? 'Upload Mill Gate Records to Auto Compare' : 'Upload Civil Supplies Mandi Procurement Manifest' }}
+              </h3>
+              <p class="text-xs text-slate-300 max-w-xl">
+                {{ authenticatedUser()?.role === 'MILL_OPERATOR' ? 'Upload mill_data.xlsx, submit manual weighbridge slips, or scan photo register to compare against Govt records.' : 'Upload govt_data.xlsx dataset from mandi procurement centers for instant cross-matching.' }}
+              </p>
             </div>
 
-            <!-- Search Field -->
-            <div class="w-full sm:w-64">
+            <!-- 3 Direct Upload & Entry Actions -->
+            <div class="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
+              
+              @if (authenticatedUser()?.role === 'MILL_OPERATOR') {
+                <!-- 1. Mill Excel Upload Button with Hidden Input -->
+                <label class="px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl transition shadow-xs cursor-pointer flex items-center gap-2">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                  </svg>
+                  <span>📁 Upload mill_data.xlsx</span>
+                  <input type="file" accept=".xlsx,.xls,.csv" (change)="handleMillFileUpload($event)" class="hidden" />
+                </label>
+
+                <!-- 2. Manual Entry Quick Button -->
+                <button 
+                  (click)="activeTab.set('upload')"
+                  class="px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl transition border border-slate-700 flex items-center gap-2">
+                  <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  <span>✍️ Manual Weigh Slip</span>
+                </button>
+
+                <!-- 3. Photo OCR Quick Scan Button -->
+                <button 
+                  (click)="simulatePhotoOcr()"
+                  [disabled]="isOcrScanning()"
+                  class="px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl transition border border-slate-700 flex items-center gap-2">
+                  <svg class="w-4 h-4 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                  </svg>
+                  <span>📸 {{ isOcrScanning() ? 'Scanning...' : 'Photo OCR Scan' }}</span>
+                </button>
+              } @else {
+                <!-- Govt Officer Upload Button -->
+                <label class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl transition shadow-xs cursor-pointer flex items-center gap-2">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                  </svg>
+                  <span>📥 Upload govt_data.xlsx</span>
+                  <input type="file" accept=".xlsx,.xls,.csv" (change)="handleGovtFileUpload($event)" class="hidden" />
+                </label>
+              }
+
+            </div>
+          </div>
+          
+          <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
+            
+            <div>
+              <h2 class="text-base font-bold text-slate-900">3. Auto Compare & Reconciliation Ledger</h2>
+              <p class="text-xs text-slate-500 mt-0.5">System automatically compares Govt Mandi passes with Mill weighbridge slips.</p>
+            </div>
+
+            <!-- Category Filter Tabs & Search -->
+            <div class="flex flex-wrap items-center gap-2">
+              <div class="flex items-center p-1 bg-slate-100 rounded-lg text-xs font-medium">
+                <button 
+                  (click)="filterCategory.set('ALL')"
+                  [class]="filterCategory() === 'ALL' ? 'bg-white text-slate-900 shadow-xs font-semibold' : 'text-slate-600'"
+                  class="px-3 py-1.5 rounded transition">
+                  All Records ({{ reconcileService.reconciledItems().length }})
+                </button>
+                <button 
+                  (click)="filterCategory.set('MATCH')"
+                  [class]="filterCategory() === 'MATCH' ? 'bg-emerald-700 text-white font-semibold' : 'text-slate-600'"
+                  class="px-3 py-1.5 rounded transition">
+                  Match ({{ reconcileService.settlementSummary().matchedCount }})
+                </button>
+                <button 
+                  (click)="filterCategory.set('MISMATCH')"
+                  [class]="filterCategory() === 'MISMATCH' ? 'bg-amber-600 text-white font-semibold' : 'text-slate-600'"
+                  class="px-3 py-1.5 rounded transition">
+                  Mismatch ({{ reconcileService.settlementSummary().mismatchCount }})
+                </button>
+              </div>
+
               <input 
                 type="text" 
                 [ngModel]="searchQuery()" 
                 (ngModelChange)="searchQuery.set($event)"
-                placeholder="Search Truck, Transit Pass, Lot ID..."
-                class="w-full bg-slate-50 border border-slate-200 rounded px-3 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-slate-400 focus:bg-white"
+                placeholder="Search Farmer, Record ID..."
+                class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-slate-400 focus:bg-white w-48"
               />
             </div>
 
           </div>
 
-          <!-- High Precision Data Table -->
+          <!-- The Core Auto Compare Table (Exact format requested) -->
           <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs">
             <div class="overflow-x-auto">
               <table class="w-full text-left text-xs border-collapse">
                 <thead class="bg-slate-50 text-slate-600 uppercase tracking-wider text-[11px] border-b border-slate-200 font-semibold">
                   <tr>
-                    <th class="py-3 px-4">Lot ID / Transit Pass</th>
-                    <th class="py-3 px-4">Vehicle Reg. No</th>
-                    <th class="py-3 px-4">Govt Dispatch (Qtl)</th>
-                    <th class="py-3 px-4">Mill Weighbridge (Qtl)</th>
-                    <th class="py-3 px-4">Variance</th>
-                    <th class="py-3 px-4">Status & Technical Notes</th>
-                    <th class="py-3 px-4 text-right">Action</th>
+                    <th class="py-3.5 px-4">Record</th>
+                    <th class="py-3.5 px-4">Farmer</th>
+                    <th class="py-3.5 px-4">Govt Qty (Qtl)</th>
+                    <th class="py-3.5 px-4">Mill Qty (Qtl)</th>
+                    <th class="py-3.5 px-4">Difference</th>
+                    <th class="py-3.5 px-4">Status</th>
+                    <th class="py-3.5 px-4 text-right">Action</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 font-sans">
@@ -481,96 +541,87 @@
                   @for (item of filteredReconciledList(); track item.id) {
                     <tr class="hover:bg-slate-50/80 transition">
                       
-                      <!-- Lot and Pass Details -->
-                      <td class="py-3 px-4">
-                        <div class="font-bold text-slate-900 font-mono">{{ item.id }}</div>
-                        <div class="text-[11px] text-slate-500 font-mono">{{ item.govtRecord?.transitPass || item.millRecord?.transitPassRef || 'DIRECT_GATE' }}</div>
-                        <div class="text-[10px] text-slate-400">{{ item.govtRecord?.farmerName || item.millRecord?.driverName }}</div>
+                      <!-- Record ID -->
+                      <td class="py-3.5 px-4 font-mono font-bold text-slate-900">
+                        {{ item.id }}
+                        <div class="text-[10px] text-slate-400 font-normal font-mono">
+                          {{ item.govtRecord?.transitPass || item.millRecord?.transitPassRef || 'GATE_ENTRY' }}
+                        </div>
                       </td>
 
-                      <!-- Vehicle -->
-                      <td class="py-3 px-4">
-                        <span class="font-mono font-semibold text-slate-800 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
-                          {{ item.govtRecord?.truckNo || item.millRecord?.vehicleRegNo }}
-                        </span>
-                        <div class="text-[10px] text-slate-400 mt-0.5">{{ item.govtRecord?.dispatchDate || item.millRecord?.inwardDate }}</div>
+                      <!-- Farmer -->
+                      <td class="py-3.5 px-4">
+                        <span class="font-bold text-slate-900 text-sm">{{ item.farmerName }}</span>
+                        <div class="text-[10px] text-slate-500 font-mono">Truck: {{ item.govtRecord?.truckNo || item.millRecord?.vehicleRegNo }}</div>
                       </td>
 
                       <!-- Govt Qty -->
-                      <td class="py-3 px-4">
+                      <td class="py-3.5 px-4 font-mono font-semibold text-slate-900 text-sm">
                         @if (item.govtRecord) {
-                          <div class="font-semibold text-slate-900 font-mono">{{ formatNum(item.govtRecord.paddyQtyQtl) }} Qtl</div>
-                          <div class="text-[10px] text-slate-500">Moisture: {{ item.govtRecord.moisturePercent }}% • {{ item.govtRecord.gunnyBags }} Bags</div>
+                          <span>{{ formatNum(item.govtQty) }}</span>
+                          <span class="text-xs text-slate-400 ml-1">Qtl</span>
                         } @else {
-                          <span class="text-rose-600 font-mono">UNREGISTERED</span>
+                          <span class="text-rose-600">0.00</span>
                         }
                       </td>
 
                       <!-- Mill Qty -->
-                      <td class="py-3 px-4">
+                      <td class="py-3.5 px-4 font-mono font-semibold text-slate-900 text-sm">
                         @if (item.millRecord) {
-                          <div class="font-semibold text-slate-900 font-mono">{{ formatNum(item.millRecord.netPaddyQtl) }} Qtl</div>
-                          <div class="text-[10px] text-slate-500">Gate: {{ item.millRecord.moisturePercent }}% • Slip #{{ item.millRecord.slipNo }}</div>
+                          <span>{{ formatNum(item.millQty) }}</span>
+                          <span class="text-xs text-slate-400 ml-1">Qtl</span>
                         } @else {
-                          <span class="text-rose-600 font-mono">NO_GATE_ENTRY</span>
+                          <span class="text-rose-600">0.00</span>
                         }
                       </td>
 
-                      <!-- Variance -->
-                      <td class="py-3 px-4 font-mono font-semibold">
-                        @if (item.status === 'EXACT_MATCH') {
-                          <span class="text-slate-400">0.00 Qtl</span>
-                        } @else if (item.status === 'RESOLVED') {
-                          <span class="text-emerald-700">Agreed: {{ formatNum(item.finalReconciledQty) }} Qtl</span>
+                      <!-- Difference -->
+                      <td class="py-3.5 px-4 font-mono font-semibold">
+                        @if (item.qtyDiff === 0) {
+                          <span class="text-slate-400">0 Qtl</span>
+                        } @else if (item.resolutionDetails) {
+                          <span class="text-teal-700">Resolved ({{ formatNum(item.finalReconciledQty) }} Qtl)</span>
                         } @else {
-                          <span class="text-amber-700">{{ item.qtyDiff > 0 ? '+' : '' }}{{ formatNum(item.qtyDiff) }} Qtl</span>
+                          <span class="text-amber-700 font-bold">{{ item.qtyDiff > 0 ? '+' : '' }}{{ formatNum(item.qtyDiff) }} Qtl</span>
                         }
                       </td>
 
-                      <!-- Status & Details -->
-                      <td class="py-3 px-4">
-                        @if (item.status === 'EXACT_MATCH') {
-                          <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      <!-- Status -->
+                      <td class="py-3.5 px-4">
+                        @if (item.status === 'Match') {
+                          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
                             <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
-                            Reconciled
+                            Match
                           </span>
-                        } @else if (item.status === 'RESOLVED') {
-                          <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium bg-teal-50 text-teal-700 border border-teal-200">
-                            <span class="w-1.5 h-1.5 rounded-full bg-teal-600"></span>
-                            Resolved
-                          </span>
-                        } @else if (item.status === 'MISMATCH') {
-                          <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium bg-amber-50 text-amber-800 border border-amber-200">
+                        } @else if (item.status === 'Mismatch') {
+                          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-bold bg-amber-50 text-amber-900 border border-amber-200">
                             <span class="w-1.5 h-1.5 rounded-full bg-amber-600"></span>
-                            {{ item.discrepancyType }}
+                            Mismatch
                           </span>
                         } @else {
-                          <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium bg-rose-50 text-rose-700 border border-rose-200">
+                          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-bold bg-rose-50 text-rose-800 border border-rose-200">
                             <span class="w-1.5 h-1.5 rounded-full bg-rose-600"></span>
-                            Missing Inward Entry
+                            {{ item.status }}
                           </span>
                         }
-                        <p class="text-[10px] text-slate-500 mt-1 max-w-xs line-clamp-1" [title]="item.aiReasoning">
-                          {{ item.aiReasoning }}
-                        </p>
                       </td>
 
-                      <!-- Action Button -->
-                      <td class="py-3 px-4 text-right">
-                        @if (item.status === 'MISMATCH' || item.status === 'MISSING_IN_MILL' || item.status === 'MISSING_IN_GOVT') {
+                      <!-- Action -->
+                      <td class="py-3.5 px-4 text-right">
+                        @if (item.status !== 'Match') {
                           <button 
                             (click)="openDiscrepancyModal(item)"
-                            class="px-2.5 py-1 text-xs font-semibold bg-amber-600 hover:bg-amber-700 text-white rounded transition shadow-xs">
-                            Review & Settle
+                            class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-lg transition shadow-xs">
+                            Resolve Mismatch →
                           </button>
-                        } @else if (item.status === 'RESOLVED') {
+                        } @else if (item.resolutionDetails) {
                           <button 
                             (click)="openDiscrepancyModal(item)"
-                            class="px-2 py-1 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded transition border border-slate-200">
+                            class="px-2.5 py-1 text-slate-600 hover:bg-slate-100 rounded text-xs border border-slate-200 font-medium">
                             Audit Note
                           </button>
                         } @else {
-                          <span class="text-slate-400 text-xs font-mono">OK</span>
+                          <span class="text-slate-400 font-mono text-xs">Verified ✓</span>
                         }
                       </td>
 
@@ -585,61 +636,139 @@
         </div>
       }
 
+
       <!-- ========================================================= -->
-      <!-- TAB 2: DATA INGESTION & OCR SCANNER                       -->
+      <!-- TAB 2: 2. UPLOAD DATA (Govt Excel, Mill Excel, Manual, OCR)-->
       <!-- ========================================================= -->
-      @if (activeTab() === 'ingestion') {
+      @if (activeTab() === 'upload') {
         <div class="space-y-6">
           
-          <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
-            <div>
-              <h2 class="text-base font-bold text-slate-900">Multi-Format Inward Statement Ingestion</h2>
-              <p class="text-xs text-slate-500 mt-1">Cross-verify electronic Mandi dispatch files with physical weighbridge entries.</p>
-            </div>
-            
-            <button 
-              (click)="runOcrScan()"
-              [disabled]="isOcrScanning()"
-              class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg transition flex items-center gap-2">
-              <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-              <span>{{ isOcrScanning() ? 'Extracting via Vision OCR...' : 'Digitize Physical Register (Slip #808)' }}</span>
-            </button>
+          <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-xs">
+            <h2 class="text-base font-bold text-slate-900">2. Upload Data (Multi-Source Ingestion)</h2>
+            <p class="text-xs text-slate-500 mt-1">Upload official Government Mandi Excel manifests, Mill electronic weighbridge statements, manual scale entries, or photo OCR register pages.</p>
           </div>
-
-          @if (ocrNotification()) {
-            <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 p-3.5 rounded-lg text-xs font-medium flex items-center gap-2">
-              <svg class="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
-              <span>{{ ocrNotification() }}</span>
-            </div>
-          }
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             
-            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-xs space-y-3">
-              <div class="flex items-center justify-between">
-                <span class="font-bold text-sm text-slate-900">1. Civil Supplies Procurement Manifest</span>
-                <span class="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-mono">{{ reconcileService.govtRecords().length }} Lots</span>
+            <!-- Govt Data Upload (govt_data.xlsx) -->
+            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-xs space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div>
+                  <h3 class="font-bold text-sm text-slate-900">Govt Data Upload</h3>
+                  <p class="text-xs text-slate-500">Official Civil Supplies Mandi Procurement Manifest</p>
+                </div>
+                <span class="px-2 py-0.5 bg-emerald-50 text-emerald-800 text-[10px] font-bold rounded border border-emerald-200">
+                  {{ reconcileService.govtRecords().length }} Lots Active
+                </span>
               </div>
-              <div class="border border-slate-200 rounded-lg p-6 bg-slate-50 text-center">
-                <div class="text-xs font-bold text-slate-900 font-mono">Civil_Supplies_Kharif_Statement.xlsx</div>
-                <div class="text-[11px] text-emerald-700 mt-1">Verified Portal Feed Synced</div>
+
+              <div class="border-2 border-dashed border-slate-300 hover:border-emerald-500 rounded-xl p-6 bg-slate-50 text-center transition cursor-pointer relative">
+                <input 
+                  type="file" 
+                  accept=".xlsx, .xls, .csv" 
+                  (change)="handleGovtFileUpload($event)"
+                  class="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                />
+                <svg class="w-8 h-8 text-emerald-600 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+                <div class="text-xs font-bold text-slate-900 font-mono">govt_data.xlsx</div>
+                <div class="text-[11px] text-slate-500 mt-1">Click to browse or drop Govt Excel file</div>
+              </div>
+
+              <div class="text-[11px] text-slate-500 bg-slate-50 p-2.5 rounded border border-slate-200">
+                <strong>Format:</strong> Record, TransitPass, Farmer Name, Truck No, Govt Qty (Qtl), Moisture (%).
               </div>
             </div>
 
-            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-xs space-y-3">
-              <div class="flex items-center justify-between">
-                <span class="font-bold text-sm text-slate-900">2. Mill Weighbridge & Inward Slips</span>
-                <span class="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-mono">{{ reconcileService.millRecords().length }} Gate Slips</span>
+            <!-- Mill Data Upload (mill_data.xlsx) -->
+            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-xs space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div>
+                  <h3 class="font-bold text-sm text-slate-900">Mill Data Upload</h3>
+                  <p class="text-xs text-slate-500">Mill Electronic Weighbridge Gate Inward Records</p>
+                </div>
+                <span class="px-2 py-0.5 bg-blue-50 text-blue-800 text-[10px] font-bold rounded border border-blue-200">
+                  {{ reconcileService.millRecords().length }} Slips Active
+                </span>
               </div>
-              <div class="border border-slate-200 rounded-lg p-6 bg-slate-50 text-center">
-                <div class="text-xs font-bold text-slate-900 font-mono">Mill_Electronic_Weighbridge.xlsx</div>
-                <div class="text-[11px] text-emerald-700 mt-1">Digital Scale + OCR Entries Verified</div>
+
+              <div class="border-2 border-dashed border-slate-300 hover:border-blue-500 rounded-xl p-6 bg-slate-50 text-center transition cursor-pointer relative">
+                <input 
+                  type="file" 
+                  accept=".xlsx, .xls, .csv" 
+                  (change)="handleMillFileUpload($event)"
+                  class="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                />
+                <svg class="w-8 h-8 text-blue-600 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+                <div class="text-xs font-bold text-slate-900 font-mono">mill_data.xlsx</div>
+                <div class="text-[11px] text-slate-500 mt-1">Click to browse or drop Mill Excel file</div>
               </div>
+
+              <div class="text-[11px] text-slate-500 bg-slate-50 p-2.5 rounded border border-slate-200">
+                <strong>Format:</strong> SlipNo, TransitPass, Farmer Name, Vehicle, Mill Qty (Qtl), Moisture (%).
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Manual Entry & Photo OCR Section -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <!-- Manual Entry Form -->
+            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-xs space-y-4">
+              <h3 class="font-bold text-sm text-slate-900">Manual Entry (Weighbridge Scale Terminal)</h3>
+              
+              <div class="grid grid-cols-2 gap-3 text-xs">
+                <div>
+                  <label class="block font-semibold text-slate-700 mb-1">Farmer Name</label>
+                  <input type="text" [ngModel]="manualFarmer()" (ngModelChange)="manualFarmer.set($event)" class="w-full bg-slate-50 border border-slate-200 rounded p-2 text-slate-900" />
+                </div>
+                <div>
+                  <label class="block font-semibold text-slate-700 mb-1">Transit Pass Ref</label>
+                  <input type="text" [ngModel]="manualPass()" (ngModelChange)="manualPass.set($event)" class="w-full bg-slate-50 border border-slate-200 rounded p-2 text-slate-900 font-mono" />
+                </div>
+                <div>
+                  <label class="block font-semibold text-slate-700 mb-1">Vehicle Truck No</label>
+                  <input type="text" [ngModel]="manualTruck()" (ngModelChange)="manualTruck.set($event)" class="w-full bg-slate-50 border border-slate-200 rounded p-2 text-slate-900 font-mono" />
+                </div>
+                <div>
+                  <label class="block font-semibold text-slate-700 mb-1">Net Mill Qty (Qtl)</label>
+                  <input type="number" [ngModel]="manualQty()" (ngModelChange)="manualQty.set($event)" class="w-full bg-slate-50 border border-slate-200 rounded p-2 text-slate-900 font-mono" />
+                </div>
+              </div>
+
+              <button 
+                (click)="submitManualMillEntry()"
+                class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-lg transition">
+                + Add Manual Gate Inward Entry
+              </button>
+            </div>
+
+            <!-- Photo OCR Inward Scan -->
+            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-xs space-y-4 flex flex-col justify-between">
+              <div>
+                <h3 class="font-bold text-sm text-slate-900">Photo / Handwritten Register OCR</h3>
+                <p class="text-xs text-slate-500 mt-1">Scan or take photo of physical paper weighbridge slips or handwritten weighbooks.</p>
+              </div>
+
+              @if (ocrSuccessMsg()) {
+                <div class="bg-emerald-50 border border-emerald-200 text-emerald-900 p-3 rounded-lg text-xs font-medium">
+                  {{ ocrSuccessMsg() }}
+                </div>
+              }
+
+              <button 
+                (click)="simulatePhotoOcr()"
+                [disabled]="isOcrScanning()"
+                class="w-full py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-lg transition flex items-center justify-center gap-2">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                </svg>
+                <span>{{ isOcrScanning() ? 'Extracting via AI Vision OCR...' : '📸 Scan Photo Slip #808' }}</span>
+              </button>
             </div>
 
           </div>
@@ -647,81 +776,274 @@
         </div>
       }
 
+
       <!-- ========================================================= -->
-      <!-- TAB 3: SETTLEMENT & CLEARANCE BILL                        -->
+      <!-- TAB 3: 4. DISCREPANCY PAGE                                -->
       <!-- ========================================================= -->
-      @if (activeTab() === 'settlement') {
+      @if (activeTab() === 'discrepancies') {
         <div class="space-y-6">
           
-          <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-xs space-y-6">
+          <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
             <div>
-              <h2 class="text-base font-bold text-slate-900">Custom Milled Rice (CMR) Settlement Ledger</h2>
-              <p class="text-xs text-slate-500 mt-0.5">Statutory 67% Raw Rice Out-Turn Ratio calculation and milling subsidy billing.</p>
+              <h2 class="text-base font-bold text-slate-900">4. Discrepancy Page & Mismatch Resolver</h2>
+              <p class="text-xs text-slate-500 mt-0.5">Review lots with quantity variances between Govt passes and Mill weighbridge slips.</p>
             </div>
+            
+            <span class="px-3 py-1 bg-amber-50 text-amber-900 border border-amber-200 rounded-lg text-xs font-bold">
+              {{ reconcileService.settlementSummary().mismatchCount }} Unresolved Mismatches
+            </span>
+          </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
-                <span class="text-xs text-slate-500 block">Custom Milling Charges (₹10.00 / Qtl)</span>
-                <span class="text-xl font-bold text-slate-900 font-mono mt-1 block">{{ formatInr(reconcileService.settlementSummary().millingChargesPayable) }}</span>
-                <span class="text-[11px] text-slate-400 mt-1 block">On {{ formatNum(reconcileService.settlementSummary().totalReconciledPaddyQtl) }} Qtl paddy</span>
+          <!-- Discrepancies Grid (Highlighting Record 25 format requested by user) -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            @for (item of discrepancyList(); track item.id) {
+              <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4">
+                
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <div>
+                    <span class="font-bold text-base text-slate-900 font-mono">{{ item.id }}</span>
+                    <span class="ml-2 font-bold text-sm text-slate-800">({{ item.farmerName }})</span>
+                  </div>
+                  <span class="px-2.5 py-0.5 rounded text-xs font-bold" [class]="item.status === 'Match' ? 'bg-teal-50 text-teal-800 border border-teal-200' : 'bg-amber-50 text-amber-900 border border-amber-200'">
+                    {{ item.status === 'Match' ? 'Resolved' : 'Mismatch' }}
+                  </span>
+                </div>
+
+                <!-- Exact 3-Point Layout Requested: Govt Qty, Mill Qty, Difference -->
+                <div class="grid grid-cols-3 gap-2 bg-slate-50 p-4 rounded-xl border border-slate-200 text-center font-mono">
+                  <div>
+                    <span class="text-[10px] text-slate-500 uppercase tracking-wider block font-sans">Govt Qty</span>
+                    <span class="text-base font-extrabold text-slate-900 mt-1 block">{{ formatNum(item.govtQty) }}</span>
+                    <span class="text-[10px] text-slate-400 font-sans">Qtl ({{ item.govtQty * 100 }} kg)</span>
+                  </div>
+
+                  <div>
+                    <span class="text-[10px] text-slate-500 uppercase tracking-wider block font-sans">Mill Qty</span>
+                    <span class="text-base font-extrabold text-slate-900 mt-1 block">{{ formatNum(item.millQty) }}</span>
+                    <span class="text-[10px] text-slate-400 font-sans">Qtl ({{ item.millQty * 100 }} kg)</span>
+                  </div>
+
+                  <div>
+                    <span class="text-[10px] text-slate-500 uppercase tracking-wider block font-sans">Difference</span>
+                    <span class="text-base font-extrabold text-amber-700 mt-1 block">
+                      {{ Math.abs(item.qtyDiff) }} Qtl
+                    </span>
+                    <span class="text-[10px] text-amber-600 font-sans font-bold">({{ Math.abs(item.qtyDiff) * 100 }} kg)</span>
+                  </div>
+                </div>
+
+                <div class="bg-amber-50/70 border border-amber-200/80 p-3 rounded-lg text-xs text-amber-950 space-y-1">
+                  <div class="font-bold">Root Cause Analysis:</div>
+                  <div>{{ item.aiReasoning }}</div>
+                </div>
+
+                @if (item.resolutionDetails) {
+                  <div class="bg-teal-50 border border-teal-200 p-3 rounded-lg text-xs text-teal-900">
+                    <span class="font-bold">Agreed Settlement:</span> {{ item.resolutionDetails.agreedQty }} Qtl
+                    <p class="text-[11px] text-teal-700 mt-0.5">Notes: {{ item.resolutionDetails.notes }}</p>
+                  </div>
+                }
+
+                <button 
+                  (click)="openDiscrepancyModal(item)"
+                  class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-lg transition">
+                  {{ item.resolutionDetails ? 'Modify Resolution Note' : 'Resolve Difference (Adjust Agreed Quantity) →' }}
+                </button>
+
               </div>
-
-              <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
-                <span class="text-xs text-slate-500 block">Mandi Handling Reimbursement (₹4.50 / Qtl)</span>
-                <span class="text-xl font-bold text-slate-900 font-mono mt-1 block">{{ formatInr(reconcileService.settlementSummary().handlingChargesPayable) }}</span>
-                <span class="text-[11px] text-slate-400 mt-1 block">Unloading and stacking allowance</span>
-              </div>
-
-              <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
-                <span class="text-xs text-slate-500 block">Standard Gunny Bags Credit (₹2.20 / Bag)</span>
-                <span class="text-xl font-bold text-slate-900 font-mono mt-1 block">{{ formatInr(reconcileService.settlementSummary().gunnyDepreciationCredit) }}</span>
-                <span class="text-[11px] text-slate-400 mt-1 block">Depreciation adjustment for jute bags</span>
-              </div>
-            </div>
-
-            <div class="p-4 bg-slate-900 text-white rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div>
-                <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Approved Net Disbursement Claim</span>
-                <div class="text-2xl font-black text-emerald-400 font-mono mt-0.5">{{ formatInr(reconcileService.settlementSummary().netApprovedAmount) }}</div>
-              </div>
-
-              <button 
-                (click)="showCertificateModal.set(true)"
-                class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded transition flex items-center gap-2">
-                <span>Issue Clearance Certificate (JRC)</span>
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                </svg>
-              </button>
-            </div>
+            }
 
           </div>
 
-          <!-- Chronological Audit Trail -->
-          <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-xs">
-            <h3 class="font-bold text-sm text-slate-900 mb-3">Statutory Audit Trail History</h3>
-            <div class="space-y-2">
-              @for (log of reconcileService.auditLogs(); track log.id) {
-                <div class="p-3 bg-slate-50 rounded border border-slate-200 flex items-center justify-between text-xs">
-                  <div>
-                    <span class="font-semibold text-slate-900">{{ log.action }}</span>
-                    <span class="ml-2 text-slate-500 font-medium">[{{ log.role }} - {{ log.actor }}]</span>
-                    <p class="text-slate-600 text-[11px] mt-0.5">{{ log.details }}</p>
-                  </div>
-                  <span class="text-[10px] text-slate-400 font-mono">{{ log.timestamp }}</span>
-                </div>
-              }
+        </div>
+      }
+
+
+      <!-- ========================================================= -->
+      <!-- TAB 4: 6. APPROVAL MODULE (Officer Action Buttons)        -->
+      <!-- ========================================================= -->
+      @if (activeTab() === 'approval') {
+        <div class="space-y-6">
+          
+          <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-xs space-y-6">
+            
+            <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+              <div>
+                <h2 class="text-base font-bold text-slate-900">6. Officer Approval & Subsidy Clearance Module</h2>
+                <p class="text-xs text-slate-500 mt-0.5">Authorized Government Civil Supplies Officers review reconciled quantities and make statutory clearance decisions.</p>
+              </div>
+
+              <!-- Current Status Badge -->
+              <div>
+                @if (reconcileService.settlementSummary().approvalStatus === 'APPROVED') {
+                  <span class="px-3.5 py-1.5 bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold rounded-lg text-xs flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+                    APPROVED FOR PAYMENT
+                  </span>
+                } @else if (reconcileService.settlementSummary().approvalStatus === 'REJECTED') {
+                  <span class="px-3.5 py-1.5 bg-rose-100 text-rose-800 border border-rose-300 font-bold rounded-lg text-xs flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-rose-600"></span>
+                    REJECTED
+                  </span>
+                } @else if (reconcileService.settlementSummary().approvalStatus === 'CORRECTION_REQUESTED') {
+                  <span class="px-3.5 py-1.5 bg-amber-100 text-amber-800 border border-amber-300 font-bold rounded-lg text-xs flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-amber-600"></span>
+                    CORRECTION REQUESTED
+                  </span>
+                } @else {
+                  <span class="px-3.5 py-1.5 bg-slate-100 text-slate-700 border border-slate-300 font-bold rounded-lg text-xs flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-slate-400"></span>
+                    PENDING OFFICER REVIEW
+                  </span>
+                }
+              </div>
             </div>
+
+            <!-- Settlement Figures Breakdown -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+              <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                <span class="text-slate-500 block font-semibold">Reconciled Paddy Volume</span>
+                <span class="text-lg font-bold text-slate-900 font-mono mt-1 block">{{ formatNum(reconcileService.settlementSummary().totalPaddyQtl) }} Qtl</span>
+              </div>
+              <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                <span class="text-slate-500 block font-semibold">Required 67% Raw Rice Delivery</span>
+                <span class="text-lg font-bold text-slate-900 font-mono mt-1 block">{{ formatNum(reconcileService.settlementSummary().totalRiceQtl) }} Qtl</span>
+              </div>
+              <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                <span class="text-slate-500 block font-semibold">Total Payable Subsidy Amount</span>
+                <span class="text-lg font-bold text-emerald-700 font-mono mt-1 block">{{ formatInr(reconcileService.settlementSummary().totalPayableAmount) }}</span>
+              </div>
+            </div>
+
+            <!-- Official Remarks Input -->
+            <div class="space-y-1.5 text-xs">
+              <label class="block font-bold text-slate-700">Official Decision Remarks / Instructions</label>
+              <textarea 
+                [ngModel]="officerRemarksInput()" 
+                (ngModelChange)="officerRemarksInput.set($event)"
+                rows="2"
+                class="w-full bg-slate-50 border border-slate-300 rounded-lg p-3 text-xs text-slate-900 focus:outline-none focus:border-emerald-600 focus:bg-white"
+                placeholder="Enter remarks for the approval or rejection..."></textarea>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- 3 REQUIRED BUTTONS: Approve / Reject / Correction -->
+            <!-- ========================================== -->
+            <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div class="text-xs text-slate-600">
+                <span><strong>Officer Actions:</strong> Execute statutory decision on this reconciliation batch.</span>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
+                
+                <!-- 1. APPROVE BUTTON (Green) -->
+                <button 
+                  (click)="officerAction('APPROVED')"
+                  class="px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-lg transition shadow-md flex items-center gap-1.5">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>Approve</span>
+                </button>
+
+                <!-- 2. REJECT BUTTON (Red) -->
+                <button 
+                  (click)="officerAction('REJECTED')"
+                  class="px-5 py-2.5 bg-rose-700 hover:bg-rose-800 text-white font-bold text-xs rounded-lg transition shadow-md flex items-center gap-1.5">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  <span>Reject</span>
+                </button>
+
+                <!-- 3. REQUEST CORRECTION BUTTON (Amber) -->
+                <button 
+                  (click)="officerAction('CORRECTION_REQUESTED')"
+                  class="px-5 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-lg transition shadow-md flex items-center gap-1.5">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <span>Request Correction</span>
+                </button>
+
+              </div>
+            </div>
+
+            @if (reconcileService.settlementSummary().approvalStatus === 'APPROVED') {
+              <div class="border-t border-slate-200 pt-4 flex items-center justify-between text-xs">
+                <span class="text-emerald-700 font-semibold">✓ Digital Clearance Certificate Ready for Printing</span>
+                <button 
+                  (click)="showCertificateModal.set(true)"
+                  class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-lg transition">
+                  View & Print JRC Clearance Certificate →
+                </button>
+              </div>
+            }
+
+          </div>
+
+        </div>
+      }
+
+
+      <!-- ========================================================= -->
+      <!-- TAB 5: 7. AUDIT HISTORY                                   -->
+      <!-- ========================================================= -->
+      @if (activeTab() === 'audit') {
+        <div class="space-y-6">
+          
+          <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between">
+            <div>
+              <h2 class="text-base font-bold text-slate-900">7. Audit History & Modification Trail</h2>
+              <p class="text-xs text-slate-500 mt-0.5">Chronological record of all quantity modifications, dataset uploads, and officer approvals.</p>
+            </div>
+            
+            <span class="px-3 py-1 bg-slate-100 text-slate-700 rounded-lg text-xs font-mono font-semibold">
+              {{ reconcileService.auditLogs().length }} Logs Recorded
+            </span>
+          </div>
+
+          <!-- Clean Formatted Audit List (Exact format requested) -->
+          <div class="bg-white rounded-xl border border-slate-200 shadow-xs divide-y divide-slate-100">
+            
+            @for (log of reconcileService.auditLogs(); track log.id) {
+              <div class="p-4 hover:bg-slate-50 transition flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+                
+                <div class="space-y-1">
+                  <!-- Date -->
+                  <div class="text-[11px] font-bold text-slate-500 font-mono">
+                    {{ log.dateStr }}
+                  </div>
+                  
+                  <!-- Change Description -->
+                  <div class="font-bold text-slate-900 text-sm">
+                    {{ log.changeDescription }}
+                  </div>
+
+                  <!-- Quantity changed Old -> New -->
+                  <div class="inline-flex items-center gap-2 bg-slate-100 px-2.5 py-1 rounded font-mono text-xs font-semibold text-slate-800 border border-slate-200">
+                    <span class="text-slate-500">{{ log.oldValue }}</span>
+                    <span>→</span>
+                    <span class="text-emerald-700 font-bold">{{ log.newValue }}</span>
+                  </div>
+                </div>
+
+                <!-- Changed by Actor & Role -->
+                <div class="text-right">
+                  <div class="font-semibold text-slate-900">Changed by {{ log.changedBy }}</div>
+                  <div class="text-[11px] text-slate-400 font-medium">{{ log.role }}</div>
+                </div>
+
+              </div>
+            }
+
           </div>
 
         </div>
       }
 
     </main>
-
-    <!-- ========================================================= -->
-    <!-- 3. DIALOGS & CERTIFICATES (CLEAN FORMAL VIEW)             -->
-    <!-- ========================================================= -->
 
     <!-- DISCREPANCY SETTLEMENT MODAL -->
     @if (selectedDiscrepancyItem(); as item) {
@@ -731,40 +1053,39 @@
           <div class="flex items-center justify-between border-b border-slate-100 pb-3">
             <div>
               <h3 class="font-bold text-slate-900 text-sm">Discrepancy Resolution: {{ item.id }}</h3>
-              <p class="text-xs text-slate-500 font-mono">Transit Pass: {{ item.govtRecord?.transitPass || item.millRecord?.transitPassRef }}</p>
+              <p class="text-xs text-slate-500 font-mono">Farmer: {{ item.farmerName }}</p>
             </div>
-            <button (click)="closeDiscrepancyModal()" class="text-slate-400 hover:text-slate-700 text-sm">✕</button>
+            <button (click)="closeDiscrepancyModal()" class="text-slate-400 hover:text-slate-700 text-sm font-bold">✕</button>
           </div>
 
-          <!-- Technical Comparison Box -->
-          <div class="grid grid-cols-2 gap-3 text-xs">
-            <div class="bg-slate-50 p-3 rounded border border-slate-200">
-              <span class="text-slate-500 text-[11px] block">Civil Supplies Mandi Manifest</span>
-              <span class="text-sm font-bold text-slate-900 font-mono mt-1 block">{{ item.govtRecord ? formatNum(item.govtRecord.paddyQtyQtl) + ' Qtl' : 'NO_RECORD' }}</span>
-              <span class="text-[10px] text-slate-500 block mt-0.5">Moisture: {{ item.govtRecord?.moisturePercent || '--' }}%</span>
+          <div class="grid grid-cols-3 gap-2 text-center bg-slate-50 p-3 rounded-lg border border-slate-200 font-mono text-xs">
+            <div>
+              <span class="text-slate-500 text-[10px] block font-sans">Govt Qty</span>
+              <strong class="text-slate-900">{{ formatNum(item.govtQty) }} Qtl</strong>
             </div>
-
-            <div class="bg-slate-50 p-3 rounded border border-slate-200">
-              <span class="text-slate-500 text-[11px] block">Mill Gate Weighbridge</span>
-              <span class="text-sm font-bold text-slate-900 font-mono mt-1 block">{{ item.millRecord ? formatNum(item.millRecord.netPaddyQtl) + ' Qtl' : 'NO_RECORD' }}</span>
-              <span class="text-[10px] text-slate-500 block mt-0.5">Gate Moisture: {{ item.millRecord?.moisturePercent || '--' }}%</span>
+            <div>
+              <span class="text-slate-500 text-[10px] block font-sans">Mill Qty</span>
+              <strong class="text-slate-900">{{ formatNum(item.millQty) }} Qtl</strong>
+            </div>
+            <div>
+              <span class="text-slate-500 text-[10px] block font-sans">Difference</span>
+              <strong class="text-amber-700">{{ Math.abs(item.qtyDiff) }} Qtl</strong>
             </div>
           </div>
 
           <div class="bg-amber-50 border border-amber-200 p-3 rounded text-xs text-amber-900">
-            <span class="font-bold block mb-0.5">Technical Assessment:</span>
+            <span class="font-bold block mb-0.5">Reason:</span>
             <span>{{ item.aiReasoning }}</span>
           </div>
 
-          <!-- Resolution Form -->
           <div class="space-y-3 text-xs">
             <div>
-              <label class="block font-semibold text-slate-700 mb-1">Final Reconciled Quantity (Quintals)</label>
+              <label class="block font-semibold text-slate-700 mb-1">Agreed Quantity (Qtl)</label>
               <input 
                 type="number" 
                 [ngModel]="resolveAgreedQty()" 
                 (ngModelChange)="resolveAgreedQty.set($event)"
-                class="w-full bg-slate-50 border border-slate-200 rounded p-2 text-sm text-slate-900 font-mono focus:border-slate-400 focus:bg-white focus:outline-none"
+                class="w-full bg-slate-50 border border-slate-200 rounded p-2 text-sm text-slate-900 font-mono focus:border-emerald-600 focus:bg-white focus:outline-none"
               />
             </div>
 
@@ -774,7 +1095,7 @@
                 type="text" 
                 [ngModel]="resolveNotes()" 
                 (ngModelChange)="resolveNotes.set($event)"
-                class="w-full bg-slate-50 border border-slate-200 rounded p-2 text-xs text-slate-900 focus:border-slate-400 focus:bg-white focus:outline-none"
+                class="w-full bg-slate-50 border border-slate-200 rounded p-2 text-xs text-slate-900 focus:border-emerald-600 focus:bg-white focus:outline-none"
               />
             </div>
           </div>
@@ -788,7 +1109,7 @@
       </div>
     }
 
-    <!-- OFFICIAL JOINT RECONCILIATION CERTIFICATE (JRC) MODAL -->
+    <!-- JRC CERTIFICATE MODAL -->
     @if (showCertificateModal()) {
       <div class="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4">
         <div class="bg-white text-slate-900 rounded-xl max-w-2xl w-full p-8 shadow-2xl space-y-6 border border-slate-200">
@@ -802,10 +1123,10 @@
           <div class="grid grid-cols-2 text-xs gap-3 bg-slate-50 p-4 rounded border border-slate-200">
             <div><span class="text-slate-500">Mill Name:</span> <strong class="block text-slate-900">Sri Lakshmi Rice Industries</strong></div>
             <div><span class="text-slate-500">Procurement Period:</span> <strong class="block text-slate-900">Kharif KMS 2025-26</strong></div>
-            <div><span class="text-slate-500">Reconciled Paddy Inward:</span> <strong class="block text-slate-900 font-mono">{{ formatNum(reconcileService.settlementSummary().totalReconciledPaddyQtl) }} Quintals</strong></div>
-            <div><span class="text-slate-500">Required 67% Rice Delivery:</span> <strong class="block text-slate-900 font-mono">{{ formatNum(reconcileService.settlementSummary().targetRiceRequiredQtl) }} Quintals</strong></div>
-            <div><span class="text-slate-500">FCI Rice Depot Deliveries:</span> <strong class="block text-slate-900 font-mono">{{ formatNum(reconcileService.settlementSummary().totalRiceDeliveredQtl) }} Quintals</strong></div>
-            <div><span class="text-slate-500">Net Approved Subsidy Amount:</span> <strong class="block text-emerald-700 font-mono text-sm">{{ formatInr(reconcileService.settlementSummary().netApprovedAmount) }}</strong></div>
+            <div><span class="text-slate-500">Reconciled Paddy Inward:</span> <strong class="block text-slate-900 font-mono">{{ formatNum(reconcileService.settlementSummary().totalPaddyQtl) }} Quintals</strong></div>
+            <div><span class="text-slate-500">Required 67% Rice Delivery:</span> <strong class="block text-slate-900 font-mono">{{ formatNum(reconcileService.settlementSummary().totalRiceQtl) }} Quintals</strong></div>
+            <div><span class="text-slate-500">Approval Status:</span> <strong class="block text-emerald-700 font-mono uppercase">{{ reconcileService.settlementSummary().approvalStatus }}</strong></div>
+            <div><span class="text-slate-500">Net Approved Subsidy Amount:</span> <strong class="block text-emerald-700 font-mono text-sm">{{ formatInr(reconcileService.settlementSummary().totalPayableAmount) }}</strong></div>
           </div>
 
           <div class="border-t border-slate-200 pt-4 flex items-center justify-between text-xs text-slate-600">
@@ -815,7 +1136,7 @@
             </div>
             <div class="text-right">
               <p class="font-semibold text-slate-900">Authorized by Civil Supplies Officer</p>
-              <p class="text-[10px] text-emerald-700 font-mono">DCSO DIGITAL SEAL: #7F88-VERIFIED</p>
+              <p class="text-[10px] text-emerald-700 font-mono">DCSO DIGITAL SEAL: #7F88-APPROVED</p>
             </div>
           </div>
 

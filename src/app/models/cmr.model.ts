@@ -1,4 +1,4 @@
-﻿export interface GovtLotRecord {
+export interface GovtLotRecord {
   id: string;
   transitPass: string;
   ppcCenter: string;
@@ -18,6 +18,7 @@ export interface MillGateRecord {
   transitPassRef: string;
   vehicleRegNo: string;
   inwardDate: string;
+  farmerName?: string;
   grossWtKg: number;
   tareWtKg: number;
   netPaddyQtl: number;
@@ -40,13 +41,14 @@ export interface CMRDeliveryRecord {
 
 export interface ReconciledItem {
   id: string;
+  farmerName: string;
   govtRecord: GovtLotRecord | null;
   millRecord: MillGateRecord | null;
-  status: "EXACT_MATCH" | "MISMATCH" | "MISSING_IN_MILL" | "MISSING_IN_GOVT" | "RESOLVED";
-  discrepancyType: string;
+  govtQty: number;
+  millQty: number;
   qtyDiff: number;
-  moistureDiff: number;
-  bagDiff: number;
+  status: "Match" | "Mismatch" | "Missing In Mill" | "Missing In Govt";
+  discrepancyType: string;
   aiReasoning: string;
   finalReconciledQty: number;
   resolutionDetails?: {
@@ -55,39 +57,34 @@ export interface ReconciledItem {
     notes: string;
     timestamp: string;
   } | null;
-  sourceCategory: "MATCHED_PAIR" | "GOVT_ONLY" | "MILL_ONLY";
 }
 
 export interface SettlementSummary {
-  totalGovtPaddyQtl: number;
-  totalMillPaddyQtl: number;
-  totalReconciledPaddyQtl: number;
+  totalPaddyQtl: number;
+  totalRiceQtl: number;
+  totalDeliveredRiceQtl: number;
+  totalPendingRiceQtl: number;
+  totalPayableAmount: number;
+  millingCharges: number;
+  handlingCharges: number;
+  gunnyCredit: number;
   matchedCount: number;
   mismatchCount: number;
-  missingInMillCount: number;
-  missingInGovtCount: number;
   totalLots: number;
   matchPercentage: string;
-  
-  targetRiceRequiredQtl: number;
-  totalRiceDeliveredQtl: number;
-  pendingRiceDeliveryQtl: number;
-  otrCompliancePercent: string;
-
-  millingChargesPayable: number;
-  handlingChargesPayable: number;
-  gunnyDepreciationCredit: number;
-  grossPayableAmount: number;
-  netApprovedAmount: number;
-  withheldAmount: number;
+  approvalStatus: "PENDING" | "APPROVED" | "REJECTED" | "CORRECTION_REQUESTED";
+  approvalRemarks: string;
+  approvedBy: string;
+  approvedAt: string;
 }
 
 export interface AuditLogEntry {
   id: string;
-  timestamp: string;
-  actor: string;
+  dateStr: string;
+  changeDescription: string;
+  oldValue: string;
+  newValue: string;
+  changedBy: string;
   role: string;
-  action: string;
-  details: string;
-  badgeColor: string;
+  category: "QUANTITY" | "APPROVAL" | "UPLOAD" | "DISPUTE";
 }
