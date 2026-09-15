@@ -2,15 +2,9 @@ import { Component, inject, signal, computed } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { ReconcileService } from "./services/reconcile.service";
+import { AuthService, AuthUser } from "./services/auth.service";
 import { ReconciledItem, GovtLotRecord, MillGateRecord, FarmerProfile, FarmerLoadRecord } from "./models/cmr.model";
 
-export interface AuthUser {
-  userId: string;
-  name: string;
-  role: "MILL_OPERATOR" | "GOVT_OFFICER";
-  org: string;
-  designation: string;
-}
 
 export interface MillSummary {
   millId: string;
@@ -33,6 +27,7 @@ export interface MillSummary {
 })
 export class App {
   readonly reconcileService = inject(ReconcileService);
+  readonly authService = inject(AuthService);
   readonly Math = Math;
 
   // App View State: 'LANDING' | 'PORTAL'
@@ -179,7 +174,7 @@ export class App {
     return this.reconcileService.reconciledItems().filter((item) => item.status !== "Match" || item.resolutionDetails != null);
   });
 
-  // Auth Methods
+    // Auth Methods
   setLoginRole(role: "MILL_OPERATOR" | "GOVT_OFFICER") {
     this.selectedLoginRole.set(role);
     this.authErrorMessage.set(null);
@@ -201,61 +196,43 @@ export class App {
     event.preventDefault();
     this.authErrorMessage.set(null);
 
-    const role = this.selectedLoginRole();
-    const enteredId = (this.loginUserId() || "").trim().toLowerCase();
-    const enteredPass = (this.loginPassword() || "").trim();
+    const result = this.authService.authenticate(
+      this.loginUserId(),
+      this.loginPassword(),
+      this.selectedLoginRole()
+    );
 
-    if (role === "MILL_OPERATOR") {
-      const validMillerIds = ["ts-wgl-mr-4412", "miller@lakshmirice.in", "miller@cmr.in", "miller"];
-      const validMillerPass = ["Miller@2025", "miller123", "password"];
-
-      if (validMillerIds.includes(enteredId) && (validMillerPass.includes(enteredPass) || enteredPass.length >= 4)) {
-        this.authenticatedUser.set({
-          userId: "TS-WGL-MR-4412",
-          name: "S. Murthy",
-          role: "MILL_OPERATOR",
-          org: "Sri Lakshmi Rice Industries",
-          designation: "Authorized Mill Manager"
-        });
-        this.currentView.set("PORTAL");
-        this.showToast("Welcome S. Murthy (Rice Mill User)");
-        return;
-      } else {
-        this.authErrorMessage.set("Invalid credentials. Use: TS-WGL-MR-4412 / Miller@2025");
-        return;
+    if (result.success && result.user) {
+      this.authenticatedUser.set(result.user);
+      if (result.user.assignedMillId) {
+        this.selectedMillId.set(result.user.assignedMillId);
       }
-    }
-
-    if (role === "GOVT_OFFICER") {
-      const validGovtIds = ["dcso.wgl@telangana.gov.in", "officer-ts-884", "inspector@gov.in", "officer"];
-      const validGovtPass = ["Govt@Civil2025", "admin123", "password"];
-
-      if (validGovtIds.includes(enteredId) && (validGovtPass.includes(enteredPass) || enteredPass.length >= 4)) {
-        this.authenticatedUser.set({
-          userId: "DCSO-WARANGAL-08",
-          name: "Officer A (R. Kumar, DCSO)",
-          role: "GOVT_OFFICER",
-          org: "District Food & Civil Supplies Department, Warangal",
-          designation: "District Civil Supplies Officer"
-        });
-        this.currentView.set("PORTAL");
-        this.showToast("Welcome Officer A (Government Officer Dashboard)");
-        return;
-      } else {
-        this.authErrorMessage.set("Invalid credentials. Use: dcso.wgl@telangana.gov.in / Govt@Civil2025");
-        return;
-      }
+      this.currentView.set("PORTAL");
+      this.showToast(`Welcome ${result.user.name} (${result.user.designation})`);
+    } else {
+      this.authErrorMessage.set(result.error || "Authentication failed.");
     }
   }
 
+  performQuickLogin(role: "MILL_OPERATOR" | "GOVT_OFFICER", millId?: string) {
+    this.authErrorMessage.set(null);
+    const user = this.authService.quickLogin(role, millId);
+    this.authenticatedUser.set(user);
+    if (user.assignedMillId) {
+      this.selectedMillId.set(user.assignedMillId);
+    }
+    this.currentView.set("PORTAL");
+    this.showToast(`⚡ Fast Sign-in: ${user.name}`);
+  }
+
   logout() {
+    this.authService.logout();
     this.authenticatedUser.set(null);
     this.authErrorMessage.set(null);
     this.currentView.set("LANDING");
     this.showToast("Logged out successfully.");
   }
 
-  // DIRECT GOVT API LIVE FETCH METHOD
   switchDistrictMill(millId: string) {
     this.selectedMillId.set(millId);
     const mill = this.currentActiveMill();

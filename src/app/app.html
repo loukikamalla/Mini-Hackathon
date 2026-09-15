@@ -90,6 +90,30 @@
           </div>
 
           <!-- Login Form -->
+          <!-- 1-Click Fast Login Access Bar -->
+          <div class="space-y-2 pt-1">
+            <span class="text-xs font-black uppercase text-slate-400 tracking-wider block">1-Click Fast Sign-In:</span>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <button 
+                type="button"
+                (click)="performQuickLogin('GOVT_OFFICER')"
+                class="p-2.5 bg-purple-50 hover:bg-purple-100 text-purple-950 border border-purple-200 rounded-xl text-xs font-black transition flex items-center justify-center gap-1.5 shadow-sm">
+                <span>🏛️ Officer DCSO</span>
+              </button>
+              <button 
+                type="button"
+                (click)="performQuickLogin('MILL_OPERATOR', 'TS-WGL-MR-4412')"
+                class="p-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-950 border border-emerald-200 rounded-xl text-xs font-black transition flex items-center justify-center gap-1.5 shadow-sm">
+                <span>🏭 Sri Lakshmi Mill</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="relative flex items-center justify-center">
+            <div class="border-t border-slate-200 w-full"></div>
+            <span class="bg-white px-3 text-[11px] font-bold text-slate-400 uppercase">Or Enter Credentials</span>
+          </div>
+
           <form (submit)="performDirectLogin($event)" class="space-y-4">
             
             @if (authErrorMessage()) {
