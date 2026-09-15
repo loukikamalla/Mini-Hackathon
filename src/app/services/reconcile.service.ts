@@ -34,10 +34,11 @@ export class ReconcileService {
   readonly GUNNY_DEPRECIATION_RATE = 2.20;
   readonly MAX_ALLOWED_MOISTURE = 17.0;
 
-  // Live API Connection State
+  // Live Backend API Connection State
   isApiConnected = signal<boolean>(true);
-  apiEndpoint = signal<string>("https://civilsupplies.telangana.gov.in/api/v2/cmr-procurement");
-  lastApiSyncTime = signal<string>("Just now (Live Feed)");
+  apiEndpoint = signal<string>("http://localhost:5000/api/v2/cmr-procurement");
+  backendHealthUrl = signal<string>("http://localhost:5000/api/v2/health");
+  lastApiSyncTime = signal<string>("Just now (Live Backend Feed)");
   syncCount = signal<number>(1);
   activeMillId = signal<string>("TS-WGL-MR-4412");
 
