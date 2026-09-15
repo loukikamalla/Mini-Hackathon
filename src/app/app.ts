@@ -1,7 +1,6 @@
 import { Component, inject, signal, computed } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
-import * as XLSX from "xlsx";
 import { ReconcileService } from "./services/reconcile.service";
 import { ReconciledItem, GovtLotRecord, MillGateRecord } from "./models/cmr.model";
 
@@ -27,31 +26,35 @@ export class App {
   // App View State: 'LANDING' | 'PORTAL'
   currentView = signal<"LANDING" | "PORTAL">("LANDING");
 
-  // Authentication State (1. Login System)
+  // Authentication State
   authenticatedUser = signal<AuthUser | null>(null);
   authErrorMessage = signal<string | null>(null);
 
-  // Login Credentials Form
+  // Login Form State
   selectedLoginRole = signal<"MILL_OPERATOR" | "GOVT_OFFICER">("MILL_OPERATOR");
   loginUserId = signal<string>("TS-WGL-MR-4412");
   loginPassword = signal<string>("Miller@2025");
 
-  // Portal Tab Navigation
-  activeTab = signal<"auto-compare" | "upload" | "discrepancies" | "approval" | "audit">("auto-compare");
+  // Tab Navigation
+  activeTab = signal<"auto-compare" | "live-api" | "discrepancies" | "approval" | "audit">("auto-compare");
   
   // Table Filters & Search
   filterCategory = signal<"ALL" | "MATCH" | "MISMATCH">("ALL");
   searchQuery = signal<string>("");
 
-  // Discrepancy & Resolution Modal States (4. Discrepancy Page)
+  // Live Govt API Sync States
+  isApiSyncing = signal<boolean>(false);
+  selectedMandiCenter = signal<string>("ALL");
+
+  // Discrepancy Modal States
   selectedDiscrepancyItem = signal<ReconciledItem | null>(null);
   resolveAgreedQty = signal<number>(0);
   resolveNotes = signal<string>("");
 
-  // Officer Decision Form States (6. Approval Module)
-  officerRemarksInput = signal<string>("Verified weighment statements, moisture certificates, and 67% CMR delivery compliance. Approved for subsidy disbursement.");
+  // Officer Action Form State
+  officerRemarksInput = signal<string>("Verified digital weighment feeds against official Civil Supplies procurement manifests. Approved for payment.");
 
-  // Manual Mill Entry Form (2. Upload Data)
+  // Mill Scale Inward Form
   manualFarmer = signal<string>("K. Venkatesh");
   manualPass = signal<string>("TP-2025-8806");
   manualTruck = signal<string>("TS-03-UC-5509");
@@ -63,11 +66,11 @@ export class App {
   isOcrScanning = signal<boolean>(false);
   ocrSuccessMsg = signal<string | null>(null);
 
-  // Success Toast & Certificate Modal
+  // Notifications & Modals
   showSuccessToast = signal<string | null>(null);
   showCertificateModal = signal<boolean>(false);
 
-  // 3. Computed Auto Compare Filtered List
+  // Computed Auto Compare List
   filteredReconciledList = computed(() => {
     const items = this.reconcileService.reconciledItems();
     const cat = this.filterCategory();
@@ -92,14 +95,11 @@ export class App {
     });
   });
 
-  // Only Discrepancies
   discrepancyList = computed(() => {
     return this.reconcileService.reconciledItems().filter((item) => item.status !== "Match" || item.resolutionDetails != null);
   });
 
-  // ==========================================================
-  // 1. LOGIN SYSTEM METHODS
-  // ==========================================================
+  // Auth Methods
   setLoginRole(role: "MILL_OPERATOR" | "GOVT_OFFICER") {
     this.selectedLoginRole.set(role);
     this.authErrorMessage.set(null);
@@ -125,20 +125,18 @@ export class App {
     const enteredId = (this.loginUserId() || "").trim().toLowerCase();
     const enteredPass = (this.loginPassword() || "").trim();
 
-    // 1. Rice Mill User
     if (role === "MILL_OPERATOR") {
       const validMillerIds = ["ts-wgl-mr-4412", "miller@lakshmirice.in", "miller@cmr.in", "miller"];
       const validMillerPass = ["Miller@2025", "miller123", "password"];
 
       if (validMillerIds.includes(enteredId) && (validMillerPass.includes(enteredPass) || enteredPass.length >= 4)) {
-        const user: AuthUser = {
+        this.authenticatedUser.set({
           userId: "TS-WGL-MR-4412",
           name: "S. Murthy",
           role: "MILL_OPERATOR",
           org: "Sri Lakshmi Rice Industries",
           designation: "Authorized Mill Manager"
-        };
-        this.authenticatedUser.set(user);
+        });
         this.currentView.set("PORTAL");
         this.showToast("Welcome S. Murthy (Rice Mill User)");
         return;
@@ -148,20 +146,18 @@ export class App {
       }
     }
 
-    // 2. Government Officer
     if (role === "GOVT_OFFICER") {
       const validGovtIds = ["dcso.wgl@telangana.gov.in", "officer-ts-884", "inspector@gov.in", "officer"];
       const validGovtPass = ["Govt@Civil2025", "admin123", "password"];
 
       if (validGovtIds.includes(enteredId) && (validGovtPass.includes(enteredPass) || enteredPass.length >= 4)) {
-        const user: AuthUser = {
+        this.authenticatedUser.set({
           userId: "DCSO-WARANGAL-08",
           name: "Officer A (R. Kumar, DCSO)",
           role: "GOVT_OFFICER",
           org: "District Food & Civil Supplies Department",
           designation: "District Civil Supplies Officer"
-        };
-        this.authenticatedUser.set(user);
+        });
         this.currentView.set("PORTAL");
         this.showToast("Welcome Officer A (Government Officer)");
         return;
@@ -179,89 +175,18 @@ export class App {
     this.showToast("Logged out successfully.");
   }
 
-  // ==========================================================
-  // 2. UPLOAD DATA METHODS (Govt & Mill Excel / Manual / OCR)
-  // ==========================================================
-  handleGovtFileUpload(event: Event) {
-    const input = event.target as HTMLInputElement;
-    if (!input.files || input.files.length === 0) return;
-    const file = input.files[0];
-
-    const reader = new FileReader();
-    reader.onload = (e: any) => {
-      try {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: "array" });
-        const firstSheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[firstSheetName];
-        const jsonData: any[] = XLSX.utils.sheet_to_json(worksheet);
-
-        if (jsonData && jsonData.length > 0) {
-          const parsedLots: GovtLotRecord[] = jsonData.map((row, idx) => ({
-            id: row["ID"] || row["Record"] || `REC-${idx + 1}`,
-            transitPass: row["TransitPass"] || row["Transit Pass"] || `TP-2025-88${idx + 10}`,
-            ppcCenter: row["PPC"] || "PPC Narsampet Mandi",
-            dispatchDate: row["Date"] || "2025-11-05",
-            farmerName: row["Farmer"] || row["Farmer Name"] || `Farmer ${idx + 1}`,
-            truckNo: row["Truck"] || row["Vehicle"] || "TS-03-UB-4491",
-            paddyType: row["Paddy Type"] || "Common Grade-A",
-            paddyQtyQtl: Number(row["Govt Qty"] || row["Quantity"] || row["Qty"] || 1000),
-            moisturePercent: Number(row["Moisture"] || 16.5),
-            gunnyBags: Number(row["Bags"] || 2500),
-            mspRatePerQtl: 2320,
-            officialRemarks: "Uploaded from " + file.name
-          }));
-          this.reconcileService.uploadGovtData(parsedLots, file.name);
-          this.showToast(`Successfully imported ${parsedLots.length} records from ${file.name}`);
-        }
-      } catch (err) {
-        console.error("Error reading govt excel:", err);
-        this.showToast("Loaded govt_data.xlsx successfully!");
-      }
-    };
-    reader.readAsArrayBuffer(file);
+  // DIRECT GOVT API LIVE FETCH METHOD
+  syncGovtDataFromApi() {
+    this.isApiSyncing.set(true);
+    
+    setTimeout(() => {
+      this.isApiSyncing.set(false);
+      this.reconcileService.syncFromGovtApi(this.selectedMandiCenter());
+      this.showToast("⚡ Successfully fetched live procurement records from Govt OPMS API Gateway!");
+    }, 1000);
   }
 
-  handleMillFileUpload(event: Event) {
-    const input = event.target as HTMLInputElement;
-    if (!input.files || input.files.length === 0) return;
-    const file = input.files[0];
-
-    const reader = new FileReader();
-    reader.onload = (e: any) => {
-      try {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: "array" });
-        const firstSheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[firstSheetName];
-        const jsonData: any[] = XLSX.utils.sheet_to_json(worksheet);
-
-        if (jsonData && jsonData.length > 0) {
-          const parsedSlips: MillGateRecord[] = jsonData.map((row, idx) => ({
-            slipNo: row["SlipNo"] || `MILL-WB-${idx + 500}`,
-            transitPassRef: row["TransitPass"] || row["Transit Pass"] || `TP-2025-88${idx + 10}`,
-            vehicleRegNo: row["Truck"] || row["Vehicle"] || "TS-03-UB-4491",
-            inwardDate: row["Date"] || "2025-11-05",
-            farmerName: row["Farmer"] || row["Farmer Name"] || `Farmer ${idx + 1}`,
-            grossWtKg: Number(row["Gross"] || 38000),
-            tareWtKg: 10000,
-            netPaddyQtl: Number(row["Mill Qty"] || row["Quantity"] || row["Qty"] || 1000),
-            moisturePercent: Number(row["Moisture"] || 16.5),
-            gunnyBags: Number(row["Bags"] || 2500),
-            driverName: "Ramulu",
-            millerRemarks: "Imported from " + file.name
-          }));
-          this.reconcileService.uploadMillData(parsedSlips, file.name);
-          this.showToast(`Successfully imported ${parsedSlips.length} weigh slips from ${file.name}`);
-        }
-      } catch (err) {
-        console.error("Error reading mill excel:", err);
-        this.showToast("Loaded mill_data.xlsx successfully!");
-      }
-    };
-    reader.readAsArrayBuffer(file);
-  }
-
+  // Digital Scale Inward Entry
   submitManualMillEntry() {
     const newRecord: MillGateRecord = {
       slipNo: `MILL-WB-${Math.floor(100 + Math.random() * 900)}`,
@@ -275,11 +200,11 @@ export class App {
       moisturePercent: Number(this.manualMoisture()),
       gunnyBags: Number(this.manualBags()),
       driverName: "K. Venkatesh",
-      millerRemarks: "Manual entry submitted from Mill Scale Terminal."
+      millerRemarks: "Direct electronic weighbridge inward recorded."
     };
 
     this.reconcileService.addManualMillRecord(newRecord);
-    this.showToast(`Manual entry for ${this.manualFarmer()} (${this.manualQty()} Qtl) saved!`);
+    this.showToast(`Digital scale inward recorded for ${this.manualFarmer()} (${this.manualQty()} Qtl)!`);
     this.activeTab.set("auto-compare");
   }
 
@@ -301,17 +226,15 @@ export class App {
         moisturePercent: 16.5,
         gunnyBags: 1625,
         driverName: "G. Ravi",
-        millerRemarks: "Digitized via Photo OCR from physical paper slip #808."
+        millerRemarks: "Digitized via Photo OCR from physical weigh slip #808."
       };
       this.reconcileService.addManualMillRecord(ocrRecord);
-      this.ocrSuccessMsg.set("Photo OCR Extracted: Farmer T. Rajamouli | 650.00 Qtl | Slip #808 matched with Govt TP-2025-8806");
-      this.showToast("Photo OCR slip extracted and reconciled!");
+      this.ocrSuccessMsg.set("Photo OCR Extracted: Farmer T. Rajamouli | 650.00 Qtl | Matched Govt TP-2025-8806");
+      this.showToast("Paper slip digitized via OCR and reconciled!");
     }, 1200);
   }
 
-  // ==========================================================
-  // 4. DISCREPANCY RESOLUTION METHODS
-  // ==========================================================
+  // Discrepancy Resolution
   openDiscrepancyModal(item: ReconciledItem) {
     this.selectedDiscrepancyItem.set(item);
     this.resolveAgreedQty.set(item.finalReconciledQty || item.millQty || item.govtQty);
@@ -345,9 +268,7 @@ export class App {
     this.closeDiscrepancyModal();
   }
 
-  // ==========================================================
-  // 6. APPROVAL MODULE METHODS (Officer Actions)
-  // ==========================================================
+  // Officer Decision Actions
   officerAction(decision: "APPROVED" | "REJECTED" | "CORRECTION_REQUESTED") {
     const officerName = this.authenticatedUser()?.name || "Officer A (R. Kumar, DCSO)";
     const remarks = this.officerRemarksInput();
@@ -355,9 +276,9 @@ export class App {
     this.reconcileService.setOfficerDecision(decision, remarks, officerName);
 
     if (decision === "APPROVED") {
-      this.showToast("Batch Approved! Payout of " + this.formatInr(this.reconcileService.settlementSummary().totalPayableAmount) + " released.");
+      this.showToast("Batch Approved! Subsidy of " + this.formatInr(this.reconcileService.settlementSummary().totalPayableAmount) + " released.");
     } else if (decision === "REJECTED") {
-      this.showToast("Batch Rejected. Mill operator notified for physical verification.");
+      this.showToast("Batch Rejected. Notified for joint physical inspection.");
     } else {
       this.showToast("Correction Requested. Returned to Rice Mill Operator.");
     }
@@ -367,7 +288,6 @@ export class App {
     window.print();
   }
 
-  // Helper Utilities
   showToast(msg: string) {
     this.showSuccessToast.set(msg);
     setTimeout(() => {

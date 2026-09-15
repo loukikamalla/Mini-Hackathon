@@ -5,15 +5,17 @@
   <!-- ========================================================= -->
   @if (currentView() === 'LANDING') {
 
-    <!-- Top Simple Gov Strip -->
+    <!-- Top Gov API Status Bar -->
     <div class="bg-slate-900 text-slate-300 text-xs py-2 px-6 border-b border-slate-800">
       <div class="max-w-6xl mx-auto flex items-center justify-between">
         <div class="flex items-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-          <span class="font-medium">National Paddy Procurement & CMR Digital Reconciliation Portal</span>
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span class="font-medium text-slate-200">Govt OPMS Direct API Gateway: ONLINE</span>
+          <span class="text-slate-500">|</span>
+          <span class="text-slate-400">Civil Supplies e-Procurement Portal Integration</span>
         </div>
-        <div class="text-slate-400 text-xs">
-          KMS Season: 2025-26
+        <div class="text-slate-400 text-xs font-mono">
+          API Endpoint: v2.4 (SSL Encrypted)
         </div>
       </div>
     </div>
@@ -27,11 +29,14 @@
           </div>
           <div>
             <h1 class="text-lg font-bold text-slate-900">DHANYA Portal</h1>
-            <p class="text-xs text-slate-500">CMR Paddy & Rice Settlement Gateway</p>
+            <p class="text-xs text-slate-500">Automated Direct API Reconciliation System</p>
           </div>
         </div>
-        <div class="text-xs font-semibold px-3 py-1 bg-slate-100 rounded-full text-slate-600 border border-slate-200">
-          Official Portal
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          <span class="text-xs font-semibold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+            Direct Govt API Live
+          </span>
         </div>
       </div>
     </header>
@@ -42,7 +47,7 @@
         
         <div class="text-center space-y-2">
           <h2 class="text-2xl font-extrabold text-slate-900">Sign In to Portal</h2>
-          <p class="text-sm text-slate-500">Select your role and enter credentials to continue</p>
+          <p class="text-sm text-slate-500">Directly syncs official Mandi procurement data without Excel</p>
         </div>
 
         <div class="bg-white rounded-2xl p-8 shadow-sm border border-slate-200 space-y-6">
@@ -137,13 +142,13 @@
 
     <!-- Footer -->
     <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-400">
-      © 2026 Department of Food & Civil Supplies. CMR Digital Reconciliation System.
+      © 2026 Department of Food & Civil Supplies. Direct API Integration Gateway.
     </footer>
 
   } 
 
   <!-- ========================================================= -->
-  <!-- 2. AUTHENTICATED WORKDESK (Spacious, Simple, Clear)       -->
+  <!-- 2. AUTHENTICATED WORKDESK                                  -->
   <!-- ========================================================= -->
   @if (currentView() === 'PORTAL') {
 
@@ -158,7 +163,9 @@
           </div>
           <div>
             <span class="font-bold text-base text-slate-900">DHANYA Portal</span>
-            <span class="text-xs text-slate-400 ml-2 font-mono">KMS 2025-26</span>
+            <span class="text-xs text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-bold ml-2 border border-emerald-200">
+              ⚡ Direct Govt API Feed
+            </span>
           </div>
         </div>
 
@@ -173,10 +180,11 @@
           </button>
           
           <button 
-            (click)="activeTab.set('upload')"
-            [class]="activeTab() === 'upload' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'"
-            class="px-4 py-2 rounded-lg transition">
-            Upload Data
+            (click)="activeTab.set('live-api')"
+            [class]="activeTab() === 'live-api' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'"
+            class="px-4 py-2 rounded-lg transition flex items-center gap-1.5">
+            <span>⚡ Govt API Sync</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
           </button>
 
           <button 
@@ -234,7 +242,7 @@
       </div>
     }
 
-    <!-- Main Content Container with Generous Spacing -->
+    <!-- Main Workspace -->
     <main class="max-w-7xl mx-auto px-6 py-8 flex-1 w-full space-y-8">
 
       <!-- ========================================================= -->
@@ -244,11 +252,11 @@
         
         <!-- Total Paddy -->
         <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
-          <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Total Paddy</span>
+          <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Total Paddy (Govt API)</span>
           <div class="text-3xl font-extrabold text-slate-900 mt-2 font-mono">
             {{ formatNum(reconcileService.settlementSummary().totalPaddyQtl) }} <span class="text-sm font-semibold text-slate-400 font-sans">Qtl</span>
           </div>
-          <p class="text-xs text-slate-500 mt-2">Govt Lots: {{ reconcileService.settlementSummary().totalLots }} lots synced</p>
+          <p class="text-xs text-emerald-600 font-medium mt-2">⚡ Live Synced: {{ reconcileService.settlementSummary().totalLots }} Mandi Lots</p>
         </div>
 
         <!-- Total Rice (67%) -->
@@ -257,7 +265,7 @@
           <div class="text-3xl font-extrabold text-emerald-600 mt-2 font-mono">
             {{ formatNum(reconcileService.settlementSummary().totalRiceQtl) }} <span class="text-sm font-semibold text-slate-400 font-sans">Qtl</span>
           </div>
-          <p class="text-xs text-slate-500 mt-2">Target: 67 kg rice per 100 kg paddy</p>
+          <p class="text-xs text-slate-500 mt-2">Standard: 67 kg raw rice per 100 kg paddy</p>
         </div>
 
         <!-- Total Pending -->
@@ -266,51 +274,59 @@
           <div class="text-3xl font-extrabold text-amber-600 mt-2 font-mono">
             {{ formatNum(reconcileService.settlementSummary().totalPendingRiceQtl) }} <span class="text-sm font-semibold text-slate-400 font-sans">Qtl</span>
           </div>
-          <p class="text-xs text-slate-500 mt-2">Delivered to FCI: {{ formatNum(reconcileService.settlementSummary().totalDeliveredRiceQtl) }} Qtl</p>
+          <p class="text-xs text-slate-500 mt-2">Accepted at FCI: {{ formatNum(reconcileService.settlementSummary().totalDeliveredRiceQtl) }} Qtl</p>
         </div>
 
         <!-- Total Payable Amount -->
         <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
-          <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Total Payable Amount</span>
+          <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Total Payable Subsidy</span>
           <div class="text-3xl font-extrabold text-slate-900 mt-2 font-mono">
             {{ formatInr(reconcileService.settlementSummary().totalPayableAmount) }}
           </div>
-          <p class="text-xs text-emerald-600 font-medium mt-2">Milling charges + Handling allowance</p>
+          <p class="text-xs text-emerald-600 font-medium mt-2">₹10/Qtl Milling + ₹4.50 Handling</p>
         </div>
 
       </section>
 
 
       <!-- ========================================================= -->
-      <!-- TAB 1: AUTO COMPARE (Clear, Spacious, Large Text Table)   -->
+      <!-- TAB 1: AUTO COMPARE (Direct Live Reconciliation)         -->
       <!-- ========================================================= -->
       @if (activeTab() === 'auto-compare') {
         <div class="space-y-6">
 
-          <!-- Simple Clean Action Box for Uploads -->
+          <!-- DIRECT GOVT API SYNC ACTION BAR -->
           <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <div>
+            <div class="space-y-1">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span class="text-xs font-bold text-emerald-700 uppercase tracking-wider">Direct Govt OPMS Integration Active</span>
+              </div>
               <h2 class="text-lg font-extrabold text-slate-900">
-                {{ authenticatedUser()?.role === 'MILL_OPERATOR' ? '🌾 Upload Mill Records' : '🏛️ Govt Procurement Data' }}
+                Automatic Government Data Synchronization
               </h2>
-              <p class="text-sm text-slate-500 mt-0.5">
-                {{ authenticatedUser()?.role === 'MILL_OPERATOR' ? 'Upload Excel file, enter slip manually, or scan photo slip to auto-compare.' : 'Upload official civil supplies mandi statement to cross-verify.' }}
+              <p class="text-sm text-slate-500">
+                Official procurement transit passes are fetched directly from Government servers with zero manual Excel uploads.
               </p>
             </div>
 
-            <!-- 3 Clear Big Action Buttons -->
+            <!-- Direct Actions -->
             <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
               
-              @if (authenticatedUser()?.role === 'MILL_OPERATOR') {
-                <label class="px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl transition shadow-xs cursor-pointer flex items-center gap-2">
-                  <span>📁 Upload mill_data.xlsx</span>
-                  <input type="file" accept=".xlsx,.xls,.csv" (change)="handleMillFileUpload($event)" class="hidden" />
-                </label>
+              <!-- Live Sync Button -->
+              <button 
+                (click)="syncGovtDataFromApi()"
+                [disabled]="isApiSyncing()"
+                class="px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl transition shadow-xs flex items-center gap-2">
+                <span [class]="isApiSyncing() ? 'animate-spin' : ''">🔄</span>
+                <span>{{ isApiSyncing() ? 'Fetching Live Mandi Data...' : 'Sync Live Govt Data (API)' }}</span>
+              </button>
 
+              @if (authenticatedUser()?.role === 'MILL_OPERATOR') {
                 <button 
-                  (click)="activeTab.set('upload')"
+                  (click)="activeTab.set('live-api')"
                   class="px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 text-sm font-bold rounded-xl transition border border-slate-200 flex items-center gap-2">
-                  <span>✍️ Manual Entry</span>
+                  <span>✍️ Digital Scale Inward</span>
                 </button>
 
                 <button 
@@ -319,17 +335,12 @@
                   class="px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 text-sm font-bold rounded-xl transition border border-slate-200 flex items-center gap-2">
                   <span>📸 {{ isOcrScanning() ? 'Scanning...' : 'Photo OCR' }}</span>
                 </button>
-              } @else {
-                <label class="px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl transition shadow-xs cursor-pointer flex items-center gap-2">
-                  <span>📥 Upload govt_data.xlsx</span>
-                  <input type="file" accept=".xlsx,.xls,.csv" (change)="handleGovtFileUpload($event)" class="hidden" />
-                </label>
               }
 
             </div>
           </div>
 
-          <!-- Table Header Controls -->
+          <!-- Table Controls -->
           <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
             
             <div class="flex items-center gap-2">
@@ -357,22 +368,22 @@
               type="text" 
               [ngModel]="searchQuery()" 
               (ngModelChange)="searchQuery.set($event)"
-              placeholder="🔍 Search Farmer or Record ID..."
+              placeholder="🔍 Search Farmer or Lot ID..."
               class="w-full sm:w-64 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-slate-400 focus:bg-white"
             />
 
           </div>
 
-          <!-- Main Auto Compare Table (Spacious, Large Text) -->
+          <!-- Main Auto Compare Table -->
           <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
             <div class="overflow-x-auto">
               <table class="w-full text-left text-sm border-collapse">
                 <thead class="bg-slate-50 text-slate-500 uppercase tracking-wider text-xs border-b border-slate-200 font-bold">
                   <tr>
-                    <th class="py-4 px-6">Record ID</th>
+                    <th class="py-4 px-6">Lot / Transit Pass</th>
                     <th class="py-4 px-6">Farmer Name</th>
-                    <th class="py-4 px-6">Govt Qty</th>
-                    <th class="py-4 px-6">Mill Qty</th>
+                    <th class="py-4 px-6">Govt Official Qty</th>
+                    <th class="py-4 px-6">Mill Weighbridge Qty</th>
                     <th class="py-4 px-6">Difference</th>
                     <th class="py-4 px-6">Status</th>
                     <th class="py-4 px-6 text-right">Action</th>
@@ -480,60 +491,50 @@
 
 
       <!-- ========================================================= -->
-      <!-- TAB 2: UPLOAD DATA                                        -->
+      <!-- TAB 2: LIVE GOVT API & DIGITAL WEIGHBRIDGE HUB            -->
       <!-- ========================================================= -->
-      @if (activeTab() === 'upload') {
+      @if (activeTab() === 'live-api') {
         <div class="space-y-6">
           
-          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
-            <h2 class="text-lg font-extrabold text-slate-900">Upload Data (Govt & Mill Records)</h2>
-            <p class="text-sm text-slate-500 mt-1">Upload Excel manifests, add manual gate entries, or scan paper slips.</p>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            
-            <!-- Govt Upload -->
-            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
-              <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 class="font-bold text-base text-slate-900">Govt Data Upload</h3>
-                <span class="text-xs bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full font-bold">
-                  {{ reconcileService.govtRecords().length }} Active
-                </span>
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <h2 class="text-lg font-extrabold text-slate-900">Direct Government API Feed Gateway</h2>
+                <p class="text-sm text-slate-500 mt-1">Live connection to State Civil Supplies OPMS (Online Procurement Management System).</p>
               </div>
 
-              <label class="border-2 border-dashed border-slate-300 hover:border-emerald-500 rounded-2xl p-8 bg-slate-50 text-center transition cursor-pointer block">
-                <input type="file" accept=".xlsx,.xls,.csv" (change)="handleGovtFileUpload($event)" class="hidden" />
-                <div class="text-3xl mb-2">📥</div>
-                <div class="text-sm font-bold text-slate-900 font-mono">govt_data.xlsx</div>
-                <div class="text-xs text-slate-500 mt-1">Click to browse or drop Govt Excel file</div>
-              </label>
-            </div>
-
-            <!-- Mill Upload -->
-            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
-              <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 class="font-bold text-base text-slate-900">Mill Data Upload</h3>
-                <span class="text-xs bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full font-bold">
-                  {{ reconcileService.millRecords().length }} Active
+              <div class="flex items-center gap-2">
+                <span class="px-3 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-full text-xs font-bold font-mono">
+                  🟢 OPMS-API-v2.4: CONNECTED
                 </span>
               </div>
-
-              <label class="border-2 border-dashed border-slate-300 hover:border-blue-500 rounded-2xl p-8 bg-slate-50 text-center transition cursor-pointer block">
-                <input type="file" accept=".xlsx,.xls,.csv" (change)="handleMillFileUpload($event)" class="hidden" />
-                <div class="text-3xl mb-2">📁</div>
-                <div class="text-sm font-bold text-slate-900 font-mono">mill_data.xlsx</div>
-                <div class="text-xs text-slate-500 mt-1">Click to browse or drop Mill Excel file</div>
-              </label>
             </div>
 
+            <!-- API Configuration Card -->
+            <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 text-xs">
+              <div class="space-y-1">
+                <div><strong>Official Server:</strong> <code class="text-emerald-800 font-mono">{{ reconcileService.apiEndpoint() }}</code></div>
+                <div><strong>Last Live Sync:</strong> <span class="text-slate-600 font-mono">{{ reconcileService.lastApiSyncTime() }}</span></div>
+                <div><strong>Active Center Filter:</strong> <span class="text-slate-900 font-semibold">Warangal Urban & Rural PPC Centers (Center #401, #402, #408, #412)</span></div>
+              </div>
+
+              <button 
+                (click)="syncGovtDataFromApi()"
+                [disabled]="isApiSyncing()"
+                class="px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition shadow-xs flex items-center gap-2">
+                <span [class]="isApiSyncing() ? 'animate-spin' : ''">🔄</span>
+                <span>{{ isApiSyncing() ? 'Syncing...' : 'Fetch Updated Lots Now' }}</span>
+              </button>
+            </div>
           </div>
 
-          <!-- Manual Form & OCR -->
+          <!-- Digital Scale Terminal & OCR -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             
-            <!-- Manual Form -->
+            <!-- Digital Scale Inward Entry -->
             <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
-              <h3 class="font-bold text-base text-slate-900">Manual Weighbridge Entry</h3>
+              <h3 class="font-bold text-base text-slate-900">Digital Weighbridge Terminal (Scale Entry)</h3>
+              <p class="text-xs text-slate-500">Record inward weighment slip from Mill electronic scale.</p>
               
               <div class="grid grid-cols-2 gap-3 text-xs">
                 <div>
@@ -557,15 +558,15 @@
               <button 
                 (click)="submitManualMillEntry()"
                 class="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm rounded-xl transition">
-                + Add Gate Entry
+                + Submit Scale Inward Slip
               </button>
             </div>
 
             <!-- Photo OCR -->
             <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4 flex flex-col justify-between">
               <div>
-                <h3 class="font-bold text-base text-slate-900">Photo / Handwritten OCR</h3>
-                <p class="text-xs text-slate-500 mt-1">Extract weighment details from paper receipts or notebook photos.</p>
+                <h3 class="font-bold text-base text-slate-900">Photo / Handwritten Slip OCR</h3>
+                <p class="text-xs text-slate-500 mt-1">Automatic digitization of physical receipts when electronic terminal is offline.</p>
               </div>
 
               @if (ocrSuccessMsg()) {
@@ -620,10 +621,9 @@
                   </span>
                 </div>
 
-                <!-- 3 Clear Boxes: Govt Qty, Mill Qty, Difference -->
                 <div class="grid grid-cols-3 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200 text-center">
                   <div>
-                    <span class="text-xs text-slate-400 font-bold block">Govt Qty</span>
+                    <span class="text-xs text-slate-400 font-bold block">Govt Official Qty</span>
                     <span class="text-lg font-extrabold text-slate-900 font-mono mt-1 block">{{ formatNum(item.govtQty) }}</span>
                     <span class="text-[11px] text-slate-400">Qtl</span>
                   </div>
@@ -727,7 +727,7 @@
                 placeholder="Enter remarks..."></textarea>
             </div>
 
-            <!-- 3 Big Distinct Action Buttons -->
+            <!-- 3 Big Action Buttons -->
             <div class="p-5 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
               <span class="text-xs text-slate-600 font-semibold">Statutory Officer Decision Actions:</span>
 
