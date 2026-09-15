@@ -128,7 +128,7 @@ export class App {
   setDemoCredentials(role: "MILL_OPERATOR" | "GOVT_OFFICER") {
     this.authErrorMessage.set(null);
     if (role === "MILL_OPERATOR") {
-      this.loginUserId.set("TS-WGL-MR-4412");
+      this.loginUserId.set("Loukika");
       this.loginPassword.set("Miller@2025");
     } else {
       this.loginUserId.set("dcso.wgl@telangana.gov.in");

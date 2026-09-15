@@ -57,61 +57,61 @@ export class AuthService {
 
     // 2. Rice Mill Operators
     {
-      userIds: ['ts-wgl-mr-4412', 'miller@lakshmi.in', 'miller@lakshmirice.in', 'miller', 'lakshmi'],
-      passwords: ['Miller@2025', 'miller123', 'password', '1234', 'lakshmi123'],
+      userIds: ['loukika', 'ts-wgl-mr-4412', 'miller@lakshmi.in', 'miller@lakshmirice.in', 'miller', 'lakshmi'],
+      passwords: ['Miller@2025', 'miller123', 'password', '1234', 'loukika', 'loukika123', 'lakshmi123'],
       role: 'MILL_OPERATOR',
       userProfile: {
         userId: 'TS-WGL-MR-4412',
-        name: 'S. Murthy (Mill Manager)',
-        email: 'miller@lakshmi.in',
+        name: 'Loukika (Mill Manager)',
+        email: 'loukika@srilakshmirice.in',
         role: 'MILL_OPERATOR',
         org: 'Sri Lakshmi Rice Industries',
-        designation: 'Authorized Weighbridge Inward Manager',
+        designation: 'Managing Partner & Weighbridge Inward Manager',
         assignedMillId: 'TS-WGL-MR-4412',
         assignedDistrict: 'Warangal Urban'
       }
     },
     {
-      userIds: ['ts-wgl-mr-1108', 'miller@kakatiya.in', 'kakatiya'],
-      passwords: ['Kakatiya@2025', 'miller123', 'password', '1234'],
+      userIds: ['krishna', 'ts-wgl-mr-1108', 'miller@kakatiya.in', 'kakatiya'],
+      passwords: ['Miller@2025', 'miller123', 'password', '1234', 'krishna', 'krishna123', 'kakatiya@2025'],
       role: 'MILL_OPERATOR',
       userProfile: {
         userId: 'TS-WGL-MR-1108',
-        name: 'V. Rajeshwar (Mill Operator)',
-        email: 'miller@kakatiya.in',
+        name: 'Krishna (Mill Manager)',
+        email: 'krishna@kakatiya.in',
         role: 'MILL_OPERATOR',
         org: 'Kakatiya Modern Agro Mills',
-        designation: 'Authorized Weighbridge Manager',
+        designation: 'Managing Partner & Weighbridge Inward Manager',
         assignedMillId: 'TS-WGL-MR-1108',
         assignedDistrict: 'Warangal Rural'
       }
     },
     {
-      userIds: ['ts-wgl-mr-3391', 'miller@parboiled.in', 'parboiled'],
-      passwords: ['Miller@2025', 'miller123', 'password', '1234'],
+      userIds: ['vamsi', 'ts-wgl-mr-3391', 'miller@parboiled.in', 'parboiled'],
+      passwords: ['Miller@2025', 'miller123', 'password', '1234', 'vamsi', 'vamsi123'],
       role: 'MILL_OPERATOR',
       userProfile: {
         userId: 'TS-WGL-MR-3391',
-        name: 'K. Srinivas (Mill Operator)',
-        email: 'miller@parboiled.in',
+        name: 'Vamsi (Mill Manager)',
+        email: 'vamsi@parboiled.in',
         role: 'MILL_OPERATOR',
         org: 'Telangana Parboiled Rice Corp',
-        designation: 'Authorized Mill Manager',
+        designation: 'Managing Partner & Weighbridge Inward Manager',
         assignedMillId: 'TS-WGL-MR-3391',
         assignedDistrict: 'Wardhannapet'
       }
     },
     {
-      userIds: ['ts-wgl-mr-2204', 'miller@bhadrakali.in', 'bhadrakali'],
-      passwords: ['Miller@2025', 'miller123', 'password', '1234'],
+      userIds: ['lasya', 'ts-wgl-mr-2204', 'miller@bhadrakali.in', 'bhadrakali'],
+      passwords: ['Miller@2025', 'miller123', 'password', '1234', 'lasya', 'lasya123'],
       role: 'MILL_OPERATOR',
       userProfile: {
         userId: 'TS-WGL-MR-2204',
-        name: 'G. Mallaiah (Mill Manager)',
-        email: 'miller@bhadrakali.in',
+        name: 'Lasya (Mill Manager)',
+        email: 'lasya@bhadrakali.in',
         role: 'MILL_OPERATOR',
         org: 'Bhadrakali Agri Modern Foods',
-        designation: 'Authorized Weighbridge Inward Manager',
+        designation: 'Managing Partner & Weighbridge Inward Manager',
         assignedMillId: 'TS-WGL-MR-2204',
         assignedDistrict: 'Chennaraopet'
       }

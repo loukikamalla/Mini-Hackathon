@@ -147,21 +147,78 @@ app.post('/api/v2/auth/login', (req, res) => {
       });
     }
   } else if (role === 'MILL_OPERATOR') {
-    if (userId === 'TS-WGL-MR-4412' && password === 'Miller@2025') {
-      return res.json({
-        success: true,
-        token: "jwt-miller-auth-token-4412",
-        user: {
-          id: "MILLER-WGL-4412",
-          name: "S. Murthy",
-          role: "MILL_OPERATOR",
-          email: "operations@srilakshmirice.in",
-          designation: "Managing Partner & Weighbridge Incharge",
-          assignedMillId: "TS-WGL-MR-4412",
-          millName: "Sri Lakshmi Rice Industries",
-          location: "Narsampet Road, Warangal Urban"
-        }
-      });
+    const u = (userId || '').trim().toLowerCase();
+    const validPasswords = ['miller@2025', 'miller123', 'password', '1234', u, u + '123', 'kakatiya@2025'];
+    const isPassValid = validPasswords.includes((password || '').trim().toLowerCase());
+
+    if (isPassValid) {
+      if (u === 'loukika' || u === 'ts-wgl-mr-4412' || u === 'miller' || u === 'lakshmi') {
+        return res.json({
+          success: true,
+          token: "jwt-miller-auth-token-4412",
+          user: {
+            id: "TS-WGL-MR-4412",
+            name: "Loukika (Mill Manager)",
+            role: "MILL_OPERATOR",
+            email: "loukika@srilakshmirice.in",
+            designation: "Managing Partner & Weighbridge Inward Manager",
+            assignedMillId: "TS-WGL-MR-4412",
+            millName: "Sri Lakshmi Rice Industries",
+            location: "Narsampet Road, Warangal Urban"
+          }
+        });
+      }
+
+      if (u === 'krishna' || u === 'ts-wgl-mr-1108' || u === 'kakatiya') {
+        return res.json({
+          success: true,
+          token: "jwt-miller-auth-token-1108",
+          user: {
+            id: "TS-WGL-MR-1108",
+            name: "Krishna (Mill Manager)",
+            role: "MILL_OPERATOR",
+            email: "krishna@kakatiya.in",
+            designation: "Managing Partner & Weighbridge Inward Manager",
+            assignedMillId: "TS-WGL-MR-1108",
+            millName: "Kakatiya Modern Agro Mills",
+            location: "Parkal Highway, Warangal Rural"
+          }
+        });
+      }
+
+      if (u === 'vamsi' || u === 'ts-wgl-mr-3391' || u === 'parboiled') {
+        return res.json({
+          success: true,
+          token: "jwt-miller-auth-token-3391",
+          user: {
+            id: "TS-WGL-MR-3391",
+            name: "Vamsi (Mill Manager)",
+            role: "MILL_OPERATOR",
+            email: "vamsi@parboiled.in",
+            designation: "Managing Partner & Weighbridge Inward Manager",
+            assignedMillId: "TS-WGL-MR-3391",
+            millName: "Telangana Parboiled Rice Corp",
+            location: "Wardhannapet MLS Point"
+          }
+        });
+      }
+
+      if (u === 'lasya' || u === 'ts-wgl-mr-2204' || u === 'bhadrakali') {
+        return res.json({
+          success: true,
+          token: "jwt-miller-auth-token-2204",
+          user: {
+            id: "TS-WGL-MR-2204",
+            name: "Lasya (Mill Manager)",
+            role: "MILL_OPERATOR",
+            email: "lasya@bhadrakali.in",
+            designation: "Managing Partner & Weighbridge Inward Manager",
+            assignedMillId: "TS-WGL-MR-2204",
+            millName: "Bhadrakali Agri Modern Foods",
+            location: "Chennaraopet Road, Warangal Rural"
+          }
+        });
+      }
     }
   }
 
