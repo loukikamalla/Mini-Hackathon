@@ -8,7 +8,8 @@ import {
   AuditLogEntry,
   FarmerProfile,
   FarmerNotification,
-  FarmerLoadRecord
+  FarmerLoadRecord,
+  MillSummary
 } from "../models/cmr.model";
 
 export interface MillDataset {
@@ -594,11 +595,21 @@ export class ReconcileService {
     };
 
     this.auditLogs.update((logs) => [log, ...logs]);
+
+    // Persist to database
+    if (this.millDatabases[this.activeMillId()]) {
+      this.millDatabases[this.activeMillId()].govtLots = [...this.govtLots()];
+      this.millDatabases[this.activeMillId()].millSlips = [...this.millSlips()];
+    }
   }
 
   // Miller Weighbridge Entry
   addMillGateRecord(record: MillGateRecord): void {
     this.millSlips.update((slips) => [record, ...slips]);
+
+    if (this.millDatabases[this.activeMillId()]) {
+      this.millDatabases[this.activeMillId()].millSlips = [...this.millSlips()];
+    }
 
     const log: AuditLogEntry = {
       id: "LOG-" + (this.auditLogs().length + 1).toString().padStart(3, '0'),
@@ -612,5 +623,73 @@ export class ReconcileService {
     };
 
     this.auditLogs.update((logs) => [log, ...logs]);
+  }
+
+  // Live dynamic mill summaries matching exact dispute counts
+  getDistrictMillSummaries(): MillSummary[] {
+    const millIds = ["TS-WGL-MR-4412", "TS-WGL-MR-1108", "TS-WGL-MR-3391", "TS-WGL-MR-2204"];
+    return millIds.map((mid) => {
+      const db = this.millDatabases[mid];
+      if (!db) {
+        return {
+          millId: mid,
+          millName: mid,
+          location: "Warangal",
+          paddyAllocatedQtl: 0,
+          riceTargetQtl: 0,
+          deliveredRiceQtl: 0,
+          complianceRate: "0.0%",
+          pendingDisputes: 0,
+          status: "COMPLIANT" as const
+        };
+      }
+
+      const govt = (this.activeMillId() === mid) ? this.govtLots() : db.govtLots;
+      const mill = (this.activeMillId() === mid) ? this.millSlips() : db.millSlips;
+      const cmrs = (this.activeMillId() === mid) ? this.cmrDeliveries() : db.cmrDeliveries;
+
+      let pendingDisputes = 0;
+      let totalPaddy = 0;
+
+      govt.forEach((g) => {
+        totalPaddy += g.paddyQtyQtl;
+        const m = mill.find((s) => 
+          (s.transitPassRef && s.transitPassRef.trim().toLowerCase() === g.transitPass.trim().toLowerCase()) ||
+          (s.vehicleRegNo && s.vehicleRegNo.replace(/[^a-zA-Z0-9]/g, '').toLowerCase() === g.truckNo.replace(/[^a-zA-Z0-9]/g, '').toLowerCase())
+        );
+        if (!m || (m.netPaddyQtl !== g.paddyQtyQtl)) {
+          pendingDisputes++;
+        }
+      });
+
+      mill.forEach((m) => {
+        const matched = govt.some((g) => 
+          (m.transitPassRef && m.transitPassRef.trim().toLowerCase() === g.transitPass.trim().toLowerCase()) ||
+          (m.vehicleRegNo && m.vehicleRegNo.replace(/[^a-zA-Z0-9]/g, '').toLowerCase() === g.truckNo.replace(/[^a-zA-Z0-9]/g, '').toLowerCase())
+        );
+        if (!matched) {
+          pendingDisputes++;
+        }
+      });
+
+      const riceTarget = Math.round(totalPaddy * this.RAW_RICE_OTR * 100) / 100;
+      let deliveredRice = 0;
+      cmrs.forEach((c) => deliveredRice += c.riceDeliveredQtl);
+      const compliance = riceTarget > 0 ? ((deliveredRice / riceTarget) * 100).toFixed(1) + "%" : "0.0%";
+      const status: "COMPLIANT" | "UNDER_REVIEW" | "DISPUTE_FLAGGED" = 
+        pendingDisputes === 0 ? "COMPLIANT" : (pendingDisputes > 1 ? "DISPUTE_FLAGGED" : "UNDER_REVIEW");
+
+      return {
+        millId: db.millId,
+        millName: db.millName,
+        location: db.location,
+        paddyAllocatedQtl: totalPaddy,
+        riceTargetQtl: riceTarget,
+        deliveredRiceQtl: deliveredRice,
+        complianceRate: compliance,
+        pendingDisputes: pendingDisputes,
+        status: status
+      };
+    });
   }
 }

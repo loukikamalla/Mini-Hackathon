@@ -144,3 +144,15 @@ export interface FarmerNotification {
   status: "DELIVERED_SMS" | "DISPATCHING";
   messageText: string;
 }
+
+export interface MillSummary {
+  millId: string;
+  millName: string;
+  location: string;
+  paddyAllocatedQtl: number;
+  riceTargetQtl: number;
+  deliveredRiceQtl: number;
+  complianceRate: string;
+  pendingDisputes: number;
+  status: "COMPLIANT" | "UNDER_REVIEW" | "DISPUTE_FLAGGED";
+}

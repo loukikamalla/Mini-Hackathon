@@ -3,20 +3,7 @@ import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { ReconcileService } from "./services/reconcile.service";
 import { AuthService, AuthUser } from "./services/auth.service";
-import { ReconciledItem, GovtLotRecord, MillGateRecord, FarmerProfile, FarmerLoadRecord } from "./models/cmr.model";
-
-
-export interface MillSummary {
-  millId: string;
-  millName: string;
-  location: string;
-  paddyAllocatedQtl: number;
-  riceTargetQtl: number;
-  deliveredRiceQtl: number;
-  complianceRate: string;
-  pendingDisputes: number;
-  status: "COMPLIANT" | "UNDER_REVIEW" | "DISPUTE_FLAGGED";
-}
+import { ReconciledItem, GovtLotRecord, MillGateRecord, FarmerProfile, FarmerLoadRecord, MillSummary } from "./models/cmr.model";
 
 @Component({
   selector: "app-root",
@@ -53,53 +40,10 @@ export class App {
   selectedMandiCenter = signal<string>("ALL");
   selectedMillId = signal<string>("TS-WGL-MR-4412");
 
-  // List of District Mills under Officer Jurisdiction
-    districtMills = signal<MillSummary[]>([
-    {
-      millId: "TS-WGL-MR-4412",
-      millName: "Sri Lakshmi Rice Industries",
-      location: "Narsampet Road, Warangal Urban",
-      paddyAllocatedQtl: 6350.00,
-      riceTargetQtl: 4254.50,
-      deliveredRiceQtl: 3050.00,
-      complianceRate: "71.7%",
-      pendingDisputes: 3,
-      status: "UNDER_REVIEW"
-    },
-    {
-      millId: "TS-WGL-MR-1108",
-      millName: "Kakatiya Modern Agro Mills",
-      location: "Parkal Highway, Warangal Rural",
-      paddyAllocatedQtl: 4800.00,
-      riceTargetQtl: 3216.00,
-      deliveredRiceQtl: 3216.00,
-      complianceRate: "100.0%",
-      pendingDisputes: 0,
-      status: "COMPLIANT"
-    },
-    {
-      millId: "TS-WGL-MR-3391",
-      millName: "Telangana Parboiled Rice Corp",
-      location: "Wardhannapet MLS Point",
-      paddyAllocatedQtl: 5500.00,
-      riceTargetQtl: 3685.00,
-      deliveredRiceQtl: 2100.00,
-      complianceRate: "57.0%",
-      pendingDisputes: 2,
-      status: "DISPUTE_FLAGGED"
-    },
-    {
-      millId: "TS-WGL-MR-2204",
-      millName: "Bhadrakali Agri Modern Foods",
-      location: "Chennaraopet Road, Warangal Rural",
-      paddyAllocatedQtl: 7200.00,
-      riceTargetQtl: 4824.00,
-      deliveredRiceQtl: 4500.00,
-      complianceRate: "93.2%",
-      pendingDisputes: 1,
-      status: "UNDER_REVIEW"
-    }
-  ]);
+  // Dynamic Live District Mills under Officer Jurisdiction (computed from live dataset)
+  districtMills = computed<MillSummary[]>(() => {
+    return this.reconcileService.getDistrictMillSummaries();
+  });
 
   currentActiveMill = computed(() => {
     return this.districtMills().find(m => m.millId === this.selectedMillId()) || this.districtMills()[0];
