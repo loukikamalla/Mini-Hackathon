@@ -1,4 +1,4 @@
-// DHANYA CMR Reconcile Client Script
+// DHANYA Simple Client Controller
 
 let currentRole = 'GOVERNMENT_OFFICER';
 let currentMillCode = 'TS-WGL-MR-4412';
@@ -10,14 +10,13 @@ let settlementData = {};
 let activeDisputeRecordId = null;
 
 const MILL_METADATA = {
-  'TS-WGL-MR-4412': { name: 'Sri Lakshmi Rice Industries', manager: 'Loukika', quota: 3500 },
-  'TS-WGL-MR-1108': { name: 'Kakatiya Modern Agro Mills', manager: 'Krishna', quota: 4200 },
-  'TS-WGL-MR-3391': { name: 'Telangana Parboiled Rice Corp', manager: 'Vamsi', quota: 5000 },
-  'TS-WGL-MR-2204': { name: 'Bhadrakali Agri Modern Foods', manager: 'Lasya', quota: 2800 }
+  'TS-WGL-MR-4412': { name: 'Sri Lakshmi Rice Industries', manager: 'Loukika', quota: '3,500 MT' },
+  'TS-WGL-MR-1108': { name: 'Kakatiya Modern Agro Mills', manager: 'Krishna', quota: '4,200 MT' },
+  'TS-WGL-MR-3391': { name: 'Telangana Parboiled Rice Corp', manager: 'Vamsi', quota: '5,000 MT' },
+  'TS-WGL-MR-2204': { name: 'Bhadrakali Agri Modern Foods', manager: 'Lasya', quota: '2,800 MT' }
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // Check session storage for user login from landing page
   const storedUser = sessionStorage.getItem('dhanya_user');
   if (storedUser) {
     try {
@@ -32,12 +31,40 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (e) {}
   }
 
+  updateUIForRole();
   await fetchProcurementRecords();
   await fetchSettlementSummary();
-  updateUIForRole();
 });
 
-// 1. Fetch Records
+// 1. AUTO-FETCH DIRECT FROM LIVE OPMS API
+async function autoFetchFromAPI() {
+  const btn = document.getElementById('autoFetchBtn');
+  const spinner = document.getElementById('syncSpinner');
+  const lastSync = document.getElementById('lastSyncTime');
+  
+  if (spinner) spinner.classList.remove('hidden');
+  if (btn) btn.disabled = true;
+
+  try {
+    const res = await fetch('/api/v2/cmr-procurement?millCode=' + currentMillCode + '&sync=live');
+    const data = await res.json();
+    if (data.success) {
+      activeRecords = data.data;
+      renderTable(activeRecords);
+      await fetchSettlementSummary();
+      
+      const now = new Date();
+      if (lastSync) lastSync.innerText = 'Synced: ' + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }
+  } catch (err) {
+    console.error('Auto-fetch error:', err);
+  } finally {
+    if (spinner) spinner.classList.add('hidden');
+    if (btn) btn.disabled = false;
+  }
+}
+
+// 2. Fetch Records
 async function fetchProcurementRecords() {
   try {
     const res = await fetch('/api/v2/cmr-procurement?millCode=' + currentMillCode);
@@ -48,11 +75,11 @@ async function fetchProcurementRecords() {
       updateKPIs();
     }
   } catch (err) {
-    console.error('Fetch error:', err);
+    console.error(err);
   }
 }
 
-// 2. Fetch Settlement
+// 3. Fetch Settlement Summary
 async function fetchSettlementSummary() {
   try {
     const res = await fetch('/api/v2/settlement?millCode=' + currentMillCode);
@@ -63,56 +90,56 @@ async function fetchSettlementSummary() {
       renderStatutoryHub();
     }
   } catch (err) {
-    console.error('Settlement error:', err);
+    console.error(err);
   }
 }
 
-// 3. Render Table
+// 4. Render Table Rows
 function renderTable(records) {
   const tbody = document.getElementById('reconcileTableBody');
   if (!tbody) return;
   tbody.innerHTML = '';
 
   const badge = document.getElementById('recordsCountBadge');
-  if (badge) badge.innerText = records.length + ' Records';
+  if (badge) badge.innerText = records.length + ' Items';
 
   records.forEach(r => {
     const isMatch = r.reconciliationStatus === 'MATCH';
     const tr = document.createElement('tr');
-    tr.className = isMatch ? 'hover:bg-gray-50 transition' : 'bg-amber-50/50 hover:bg-amber-50 transition';
+    tr.className = isMatch ? 'hover:bg-gray-50' : 'bg-amber-50/50 hover:bg-amber-50';
 
     tr.innerHTML = `
-      <td class="py-2.5 px-4 font-semibold text-gray-900">${r.truckNo}</td>
-      <td class="py-2.5 px-4 text-gray-600">${r.passNo}</td>
-      <td class="py-2.5 px-4 font-sans">
-        <div class="text-gray-900 font-medium">${r.farmerName}</div>
+      <td class="py-2.5 px-3 font-semibold text-gray-900">${r.truckNo}</td>
+      <td class="py-2.5 px-3 text-gray-600">${r.passNo}</td>
+      <td class="py-2.5 px-3">
+        <div class="font-medium text-gray-900">${r.farmerName}</div>
         <div class="text-[10px] text-gray-500 font-mono">${r.farmerAadhaar}</div>
       </td>
-      <td class="py-2.5 px-4 text-right text-gray-700">${r.govtNetKg.toLocaleString()} kg</td>
-      <td class="py-2.5 px-4 text-right font-semibold ${isMatch ? 'text-emerald-700' : 'text-amber-800'}">${r.millNetKg.toLocaleString()} kg</td>
-      <td class="py-2.5 px-4 text-center">
+      <td class="py-2.5 px-3 text-right">${r.govtNetKg.toLocaleString()} kg</td>
+      <td class="py-2.5 px-3 text-right font-semibold ${isMatch ? 'text-emerald-700' : 'text-amber-800'}">${r.millNetKg.toLocaleString()} kg</td>
+      <td class="py-2.5 px-3 text-center">
         <span class="px-1.5 py-0.5 rounded text-[11px] ${r.moisture > 17.0 ? 'bg-rose-100 text-rose-800 font-bold' : 'bg-gray-100 text-gray-700'}">
           ${r.moisture}%
         </span>
       </td>
-      <td class="py-2.5 px-4 text-right font-semibold ${r.netVarianceKg < 0 ? 'text-amber-700' : 'text-gray-500'}">
+      <td class="py-2.5 px-3 text-right font-semibold ${r.netVarianceKg < 0 ? 'text-amber-700' : 'text-gray-500'}">
         ${r.netVarianceKg === 0 ? '0 kg' : r.netVarianceKg + ' kg'}
       </td>
-      <td class="py-2.5 px-4 text-center">
+      <td class="py-2.5 px-3 text-center">
         <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isMatch ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
           ${isMatch ? 'MATCH' : 'MISMATCH'}
         </span>
       </td>
-      <td class="py-2.5 px-4 text-[11px] text-gray-600 font-sans max-w-xs truncate" title="${r.discrepancyReason}">
+      <td class="py-2.5 px-3 text-[11px] text-gray-600 max-w-xs truncate" title="${r.discrepancyReason}">
         ${r.discrepancyReason}
       </td>
-      <td class="py-2.5 px-4 text-center">
+      <td class="py-2.5 px-3 text-center">
         ${!isMatch ? `
-          <button onclick="openDisputeModal(${r.id})" class="px-2 py-1 bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-semibold rounded shadow-sm">
+          <button onclick="openDisputeModal(${r.id})" class="px-2 py-0.5 bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-semibold rounded">
             Resolve
           </button>
         ` : `
-          <span class="text-xs text-emerald-700 font-semibold">Verified</span>
+          <span class="text-xs text-emerald-700 font-medium">Verified</span>
         `}
       </td>
     `;
@@ -120,7 +147,7 @@ function renderTable(records) {
   });
 }
 
-// 4. Update KPIs
+// 5. Update KPI Cards
 function updateKPIs() {
   const totalKg = activeRecords.reduce((acc, r) => acc + r.millNetKg, 0);
   const totalQtl = (totalKg / 100).toFixed(2);
@@ -139,12 +166,12 @@ function updateKPIs() {
   const elCmr = document.getElementById('kpiCmrTarget');
   if (elCmr) elCmr.innerText = cmrTarget + ' Qtl';
   const elDisp = document.getElementById('kpiDisputes');
-  if (elDisp) elDisp.innerText = pendingDisputes + ' Pending';
+  if (elDisp) elDisp.innerText = pendingDisputes + ' Batches';
   const elSub = document.getElementById('kpiTotalSubsidy');
   if (elSub) elSub.innerText = '₹ ' + Number(totalSubsidy).toLocaleString();
 }
 
-// 5. Render Statutory Hub
+// 6. Render Statutory Decision Hub
 function renderStatutoryHub() {
   const container = document.getElementById('statutoryDecisionContainer');
   if (!container) return;
@@ -152,60 +179,43 @@ function renderStatutoryHub() {
 
   if (isApproved) {
     container.innerHTML = `
-      <div class="bg-emerald-50 border border-emerald-300 p-4 rounded-lg space-y-3">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-full bg-emerald-700 text-white flex items-center justify-center font-bold text-sm">
-              ✓
-            </div>
-            <div>
-              <div class="flex items-center gap-2">
-                <h4 class="text-sm font-bold text-emerald-950">Statutory Subsidy Approved & Cleared</h4>
-                <span class="px-2 py-0.5 text-[10px] font-bold uppercase bg-emerald-200 text-emerald-900 rounded">Cleared</span>
-              </div>
-              <p class="text-xs text-emerald-800 mt-0.5">JRC Certificate issued by Officer R. Kumar (DCSO) • Farmer DBT SMS alerts dispatched</p>
-            </div>
-          </div>
-
-          <div class="flex items-center gap-2">
-            <button onclick="openJrcModal()" class="px-3 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white font-semibold text-xs rounded shadow-sm">
-              📄 View JRC Certificate
-            </button>
-            <button onclick="openSmsModal()" class="px-3 py-1.5 bg-white hover:bg-gray-50 text-emerald-900 border border-emerald-300 font-semibold text-xs rounded shadow-sm">
-              📱 View SMS Logs (6)
-            </button>
+      <div class="bg-emerald-50 border border-emerald-300 p-3.5 rounded flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div class="flex items-center gap-2.5">
+          <span class="w-6 h-6 rounded-full bg-emerald-700 text-white flex items-center justify-center font-bold text-xs">✓</span>
+          <div>
+            <div class="font-bold text-emerald-950 text-xs">Statutory Subsidy Approved & Cleared for Payment</div>
+            <div class="text-[11px] text-emerald-800">Token: PFMS-TS-2025-CLEAR-${currentMillCode.slice(-4)} • SMS Alerts Sent</div>
           </div>
         </div>
 
-        <div class="pt-2 border-t border-emerald-200 flex items-center justify-between text-xs">
-          <span class="font-mono text-emerald-800 font-semibold">Payment Token: PFMS-TS-2025-CLEAR-${currentMillCode.slice(-4)}</span>
-          <button onclick="requestRecalibration()" class="font-bold text-amber-800 hover:underline">
-            Need to change? Reopen batch →
+        <div class="flex items-center gap-2">
+          <button onclick="openJrcModal()" class="px-3 py-1 bg-emerald-800 hover:bg-emerald-700 text-white text-xs font-semibold rounded">
+            📄 View JRC Certificate
           </button>
+          <button onclick="openSmsModal()" class="px-3 py-1 bg-white hover:bg-gray-50 text-emerald-900 border border-emerald-300 text-xs font-semibold rounded">
+            📱 View SMS Logs
+          </button>
+          <button onclick="requestRecalibration()" class="text-xs text-amber-800 underline ml-2">Reopen</button>
         </div>
       </div>
     `;
   } else {
     container.innerHTML = `
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <button onclick="approveSubsidyBatch()" class="py-3 px-4 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-lg shadow-sm transition text-center">
-          <div>✓ Approve & Release Subsidy</div>
-          <div class="text-[10px] font-normal opacity-90">Issue JRC Certificate & SMS Alert</div>
+      <div class="flex flex-wrap items-center gap-2">
+        <button onclick="approveSubsidyBatch()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded shadow-sm">
+          ✓ Approve & Release Subsidy
         </button>
-        <button onclick="alert('Batch marked for halt.')" class="py-3 px-4 bg-rose-700 hover:bg-rose-800 text-white font-bold text-xs rounded-lg shadow-sm transition text-center">
-          <div>✕ Reject Batch</div>
-          <div class="text-[10px] font-normal opacity-90">Halt subsidy disbursement</div>
+        <button onclick="alert('Batch halted.')" class="px-3 py-2 bg-rose-700 hover:bg-rose-800 text-white font-semibold text-xs rounded">
+          ✕ Reject Batch
         </button>
-        <button onclick="alert('Notice sent to Miller for recalibration.')" class="py-3 px-4 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-lg shadow-sm transition text-center">
-          <div>⚠️ Request Correction</div>
-          <div class="text-[10px] font-normal opacity-90">Ask Miller for recalibration</div>
+        <button onclick="alert('Notice sent to Miller for recalibration.')" class="px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs rounded">
+          ⚠️ Request Correction
         </button>
       </div>
     `;
   }
 }
 
-// 6. Approve Subsidy
 async function approveSubsidyBatch() {
   const totalKg = activeRecords.reduce((acc, r) => acc + r.millNetKg, 0);
   const totalQtl = totalKg / 100;
@@ -232,7 +242,7 @@ async function approveSubsidyBatch() {
       openJrcModal();
     }
   } catch (err) {
-    console.error('Approve error:', err);
+    console.error(err);
   }
 }
 
@@ -241,68 +251,33 @@ function requestRecalibration() {
   renderStatutoryHub();
 }
 
-// 7. Role Switching
 function updateUIForRole() {
   const isOfficer = currentRole === 'GOVERNMENT_OFFICER';
   const nameEl = document.getElementById('userDisplayName');
   if (nameEl) nameEl.innerText = currentUserDisplayName;
   const roleEl = document.getElementById('userRoleName');
-  if (roleEl) roleEl.innerText = isOfficer ? 'Government Officer' : 'Rice Mill Manager';
-  const initEl = document.getElementById('userInitial');
-  if (initEl) initEl.innerText = isOfficer ? 'O' : 'M';
+  if (roleEl) roleEl.innerText = isOfficer ? 'Officer (DCSO)' : 'Rice Miller';
   
-  const ingSec = document.getElementById('millerIngestionSection');
-  if (ingSec) {
-    ingSec.style.display = isOfficer ? 'none' : 'block';
-  }
-
   const banEl = document.getElementById('bannerTitle');
   if (banEl) {
     banEl.innerText = isOfficer ? 
       'Warangal District Civil Supplies Oversight' : 
       currentMillName + ' (' + currentMillCode + ')';
   }
+
+  const quotaEl = document.getElementById('millQuotaLabel');
+  if (quotaEl) {
+    quotaEl.innerText = isOfficer ? 'All 4 Mills Monitored' : 'Allocated Quota: ' + (MILL_METADATA[currentMillCode]?.quota || '3,500 MT');
+  }
 }
 
-function loginAs(username, password) {
-  fetch('/api/v2/auth/login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password })
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.success) {
-      currentRole = data.role;
-      currentUserDisplayName = data.displayName;
-      if (data.millCode) {
-        currentMillCode = data.millCode;
-        currentMillName = data.millName;
-        currentManagerName = data.displayName;
-      }
-      sessionStorage.setItem('dhanya_user', JSON.stringify(data));
-      closeLoginModal();
-      updateUIForRole();
-      fetchProcurementRecords();
-      fetchSettlementSummary();
-    }
-  });
-}
-
-function switchMillView(millCode) {
-  document.querySelectorAll('.mill-pill').forEach(btn => {
-    if (btn.dataset.mill === millCode) {
-      btn.className = 'mill-pill px-2.5 py-1 rounded text-xs font-medium border bg-emerald-700 text-white border-emerald-800';
-    } else {
-      btn.className = 'mill-pill px-2.5 py-1 rounded text-xs font-medium border bg-white text-gray-700 border-gray-300 hover:bg-gray-50';
-    }
-  });
-
+function switchMillFromSelect(millCode) {
   if (millCode !== 'ALL' && MILL_METADATA[millCode]) {
     currentMillCode = millCode;
     currentMillName = MILL_METADATA[millCode].name;
     currentManagerName = MILL_METADATA[millCode].manager;
   }
+  updateUIForRole();
   fetchProcurementRecords();
   fetchSettlementSummary();
 }
@@ -314,9 +289,6 @@ function filterRecords(type) {
 }
 
 // Modals
-function openLoginModal() { document.getElementById('loginModal').classList.remove('hidden'); }
-function closeLoginModal() { document.getElementById('loginModal').classList.add('hidden'); }
-
 function openJrcModal() {
   const totalKg = activeRecords.reduce((acc, r) => acc + r.millNetKg, 0);
   const totalQtl = (totalKg / 100).toFixed(2);
@@ -341,25 +313,25 @@ function openSmsModal() {
   container.innerHTML = '';
   
   const farmers = [
-    { name: 'K. Mallesh', phone: '9848011221', amt: '₹ 3,68,000', bank: 'SBI Narsampet', time: '10:15 AM' },
-    { name: 'B. Ramesh', phone: '9848011222', amt: '₹ 3,18,550', bank: 'APGVB Geesugonda', time: '10:16 AM' },
-    { name: 'G. Venkatiah', phone: '9848011223', amt: '₹ 4,14,000', bank: 'UBI Wardhannapet', time: '10:17 AM' },
-    { name: 'M. Saritha', phone: '9848011224', amt: '₹ 2,69,100', bank: 'HDFC Atmakur', time: '10:18 AM' },
-    { name: 'P. Sammaiah', phone: '9848011225', amt: '₹ 3,91,000', bank: 'SBI Parkal', time: '10:19 AM' },
-    { name: 'V. Narsaiah', phone: '9848011226', amt: '₹ 3,45,000', bank: 'APGVB Rayaparthy', time: '10:20 AM' }
+    { name: 'K. Mallesh', phone: '9848011221', amt: '₹ 3,68,000', bank: 'SBI Narsampet' },
+    { name: 'B. Ramesh', phone: '9848011222', amt: '₹ 3,18,550', bank: 'APGVB Geesugonda' },
+    { name: 'G. Venkatiah', phone: '9848011223', amt: '₹ 4,14,000', bank: 'UBI Wardhannapet' },
+    { name: 'M. Saritha', phone: '9848011224', amt: '₹ 2,69,100', bank: 'HDFC Atmakur' },
+    { name: 'P. Sammaiah', phone: '9848011225', amt: '₹ 3,91,000', bank: 'SBI Parkal' },
+    { name: 'V. Narsaiah', phone: '9848011226', amt: '₹ 3,45,000', bank: 'APGVB Rayaparthy' }
   ];
 
   farmers.forEach(f => {
     const card = document.createElement('div');
-    card.className = 'bg-gray-50 p-2.5 rounded border border-gray-200 flex items-center justify-between text-xs';
+    card.className = 'bg-gray-50 p-2 rounded border border-gray-200 flex items-center justify-between text-xs';
     card.innerHTML = `
       <div>
         <div class="font-bold text-gray-900">${f.name} <span class="font-normal text-gray-500 font-mono">(${f.phone})</span></div>
-        <div class="text-[10px] text-emerald-800">DBT payment to ${f.bank}</div>
+        <div class="text-[10px] text-emerald-800">Direct DBT to ${f.bank}</div>
       </div>
       <div class="text-right font-mono">
         <div class="font-bold text-emerald-800">${f.amt}</div>
-        <div class="text-[10px] text-gray-500">${f.time} • Sent</div>
+        <div class="text-[10px] text-gray-500">Sent</div>
       </div>
     `;
     container.appendChild(card);
@@ -385,7 +357,6 @@ function closeDisputeModal() { document.getElementById('disputeModal').classList
 
 async function submitDisputeResolution() {
   const agreed = parseFloat(document.getElementById('dispAgreedQty').value);
-  const notes = document.getElementById('dispNotes').value;
 
   try {
     const res = await fetch('/api/v2/disputes/resolve', {
@@ -394,7 +365,7 @@ async function submitDisputeResolution() {
       body: JSON.stringify({
         recordId: activeDisputeRecordId,
         agreedQuantity: agreed,
-        notes: notes
+        notes: 'Joint physical scale inspection calibrated'
       })
     });
     const data = await res.json();
@@ -404,27 +375,6 @@ async function submitDisputeResolution() {
       await fetchSettlementSummary();
     }
   } catch (err) {
-    console.error('Dispute error:', err);
+    console.error(err);
   }
-}
-
-function handleExcelUpload(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  alert('Uploaded ' + file.name + '. Reconciling with Government OPMS manifest...');
-}
-
-function handleOcrPhotoUpload(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const formData = new FormData();
-  formData.append('photo', file);
-
-  fetch('/api/v2/ingest/ocr-slip', { method: 'POST', body: formData })
-    .then(r => r.json())
-    .then(data => {
-      if (data.success) {
-        alert('OCR Digitized Record: ' + data.detectedFields.truckNo + ' (Net: ' + data.detectedFields.netKg + ' kg, Moisture: ' + data.detectedFields.moisturePercent + '%)');
-      }
-    });
 }

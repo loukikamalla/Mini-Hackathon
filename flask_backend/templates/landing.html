@@ -3,196 +3,100 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DHANYA - Paddy Procurement & CMR Reconciliation Portal</title>
+  <title>DHANYA - Portal Login</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    body { font-family: 'Inter', sans-serif; }
   </style>
 </head>
-<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col antialiased">
+<body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col justify-between antialiased">
 
-  <!-- TOP GOVT STRIP -->
-  <div class="bg-emerald-800 text-white text-xs py-1.5 px-4 sm:px-8 border-b border-emerald-900">
-    <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-1">
-      <div class="flex items-center gap-2">
-        <span class="font-bold tracking-wide">Government of Telangana</span>
-        <span class="text-emerald-300">|</span>
-        <span>Department of Food & Civil Supplies</span>
-        <span class="text-emerald-300">|</span>
-        <span>Warangal District</span>
-      </div>
-      <div class="text-emerald-100 flex items-center gap-2">
-        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-        <span>OPMS Online System v2.4 (Active)</span>
-      </div>
+  <!-- Top Simple Bar -->
+  <div class="bg-emerald-800 text-white text-xs py-2 px-4 text-center sm:text-left">
+    <div class="max-w-4xl mx-auto flex items-center justify-between">
+      <span>Government of Telangana • Food & Civil Supplies Department</span>
+      <span class="hidden sm:inline text-emerald-200">CMR 67% Digital Reconciliation Portal</span>
     </div>
   </div>
 
-  <!-- MAIN HEADER / BANNER -->
-  <header class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-30">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="w-12 h-12 rounded-lg bg-emerald-700 text-white flex items-center justify-center font-bold text-2xl shadow-sm">
+  <!-- Centered Login Box -->
+  <main class="flex-1 flex items-center justify-center p-4">
+    <div class="bg-white border border-gray-300 w-full max-w-md rounded-xl p-8 shadow-md space-y-6">
+      
+      <!-- Title -->
+      <div class="text-center space-y-1">
+        <div class="inline-flex items-center justify-center w-12 h-12 bg-emerald-700 text-white text-2xl rounded-lg shadow-sm">
           🌾
         </div>
-        <div>
-          <div class="flex items-center gap-2">
-            <h1 class="text-xl font-bold text-gray-900">DHANYA</h1>
-            <span class="bg-emerald-100 text-emerald-800 text-[11px] font-semibold px-2 py-0.5 rounded border border-emerald-200">Mini-Hackathon Project</span>
-          </div>
-          <p class="text-xs text-gray-500">Custom Milling of Rice (CMR 67%) Digital Reconciliation & Subsidy System</p>
-        </div>
+        <h1 class="text-2xl font-bold text-gray-900 pt-2">DHANYA Login</h1>
+        <p class="text-xs text-gray-500">Paddy Procurement & Rice Mill Reconciliation System</p>
       </div>
 
-      <div class="flex items-center gap-3">
-        <a href="#loginSection" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold rounded-md shadow-sm transition">
-          Login to Portal
-        </a>
-      </div>
-    </div>
-  </header>
-
-  <!-- HERO & PROBLEM STATEMENT -->
-  <main class="max-w-6xl mx-auto px-4 sm:px-6 py-8 flex-1 space-y-8">
-    
-    <!-- Hero Box -->
-    <div class="bg-white border border-gray-200 rounded-xl p-6 sm:p-8 shadow-sm">
-      <div class="max-w-3xl space-y-4">
-        <span class="inline-block bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-semibold px-2.5 py-1 rounded">
-          Problem Statement & Solution
-        </span>
-        <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight">
-          Automated Reconciliation of Rice Mill Records with Government Mandi Procurement Data
-        </h2>
-        <p class="text-sm text-gray-600 leading-relaxed">
-          Currently, rice mills maintain physical registers or Excel sheets while the government issues official OPMS manifests. Manual cross-checking of truck numbers, tare weights, and moisture causes calculation errors and delays in subsidy clearance. 
-        </p>
-        <p class="text-sm text-gray-600 leading-relaxed">
-          <b>DHANYA</b> is a web application built using <b>Python Flask and Supabase PostgreSQL</b> that automates this entire lifecycle: it ingests multi-format records, identifies discrepancies (moisture cuts >17%, scale variations), computes statutory <b>67% CMR out-turn quota</b>, and generates official digital <b>Joint Reconciliation Certificates (JRC)</b> for direct subsidy approval.
-        </p>
-      </div>
-
-      <!-- Quick Metrics Grid -->
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 mt-6 border-t border-gray-100 text-center">
-        <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
-          <div class="text-xl font-bold text-emerald-700 font-mono">67%</div>
-          <div class="text-xs text-gray-600 font-medium">CMR Out-Turn Target</div>
-        </div>
-        <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
-          <div class="text-xl font-bold text-gray-800 font-mono">4 Mills</div>
-          <div class="text-xs text-gray-600 font-medium">Warangal District</div>
-        </div>
-        <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
-          <div class="text-xl font-bold text-amber-600 font-mono">17% Limit</div>
-          <div class="text-xs text-gray-600 font-medium">Moisture Tolerance</div>
-        </div>
-        <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
-          <div class="text-xl font-bold text-emerald-700 font-mono">DBT Enabled</div>
-          <div class="text-xs text-gray-600 font-medium">Direct Farmer Payment</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- PORTAL LOGIN & DEMO USERS -->
-    <div id="loginSection" class="bg-white border border-gray-200 rounded-xl p-6 sm:p-8 shadow-sm space-y-6">
-      <div class="border-b border-gray-200 pb-4">
-        <h3 class="text-lg font-bold text-gray-900">Select User Login (Demo Accounts)</h3>
-        <p class="text-xs text-gray-500 mt-1">Click any role below to launch the dashboard directly with pre-loaded data</p>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        
-        <!-- Officer Box -->
-        <div class="border border-gray-200 rounded-xl p-5 hover:border-emerald-500 transition bg-slate-50/50 space-y-4 flex flex-col justify-between">
-          <div class="space-y-2">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded border border-emerald-200">Government Portal</span>
-              <span class="text-xs text-gray-400 font-mono">dcso.wgl</span>
-            </div>
-            <h4 class="text-base font-bold text-gray-900">District Civil Supplies Officer (DCSO)</h4>
-            <p class="text-xs text-gray-600">
-              Warangal District authority login. Access district-wide oversight, inspect disputes across 4 mills, and approve subsidy batches to issue JRC certificates.
-            </p>
-          </div>
-          <button onclick="loginUser('dcso.wgl@telangana.gov.in', 'Govt@Civil2025')" class="w-full py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-lg shadow-sm transition">
-            Login as DCSO Officer (Officer R. Kumar) →
+      <!-- Quick Demo Account Buttons -->
+      <div class="space-y-1.5">
+        <label class="block text-xs font-semibold text-gray-700">Quick Select Account (Demo):</label>
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <button type="button" onclick="setCredentials('dcso.wgl@telangana.gov.in', 'Govt@Civil2025')" class="p-2 text-left bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-300 rounded font-medium transition">
+            🏛️ DCSO Officer
+          </button>
+          <button type="button" onclick="setCredentials('Loukika', 'Miller@2025')" class="p-2 text-left bg-gray-50 hover:bg-gray-100 text-gray-800 border border-gray-300 rounded font-medium transition">
+            🌾 Loukika (Sri Lakshmi)
+          </button>
+          <button type="button" onclick="setCredentials('krishna', 'Miller@2025')" class="p-2 text-left bg-gray-50 hover:bg-gray-100 text-gray-800 border border-gray-300 rounded font-medium transition">
+            🌾 Krishna (Kakatiya)
+          </button>
+          <button type="button" onclick="setCredentials('Vamsi', 'Miller@2025')" class="p-2 text-left bg-gray-50 hover:bg-gray-100 text-gray-800 border border-gray-300 rounded font-medium transition">
+            🌾 Vamsi (Telangana Corp)
           </button>
         </div>
-
-        <!-- Mill Manager Box -->
-        <div class="border border-gray-200 rounded-xl p-5 hover:border-emerald-500 transition bg-slate-50/50 space-y-4">
-          <div class="space-y-1">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-bold uppercase tracking-wider text-blue-800 bg-blue-100 px-2 py-0.5 rounded border border-blue-200">Rice Mill Operators</span>
-              <span class="text-xs text-gray-400">4 Mill Managers</span>
-            </div>
-            <h4 class="text-base font-bold text-gray-900">Rice Mill Manager Login</h4>
-            <p class="text-xs text-gray-600">
-              Each manager accesses only their mill's inward weighbridge entries, OCR register uploads, and allocated quotas.
-            </p>
-          </div>
-
-          <div class="grid grid-cols-2 gap-2 pt-1">
-            <button onclick="loginUser('Loukika', 'Miller@2025')" class="p-2.5 bg-white hover:bg-emerald-50 border border-gray-200 hover:border-emerald-400 rounded-lg text-left transition">
-              <div class="text-xs font-bold text-gray-900">Loukika</div>
-              <div class="text-[11px] text-gray-500">Sri Lakshmi (4412)</div>
-            </button>
-
-            <button onclick="loginUser('krishna', 'Miller@2025')" class="p-2.5 bg-white hover:bg-emerald-50 border border-gray-200 hover:border-emerald-400 rounded-lg text-left transition">
-              <div class="text-xs font-bold text-gray-900">Krishna</div>
-              <div class="text-[11px] text-gray-500">Kakatiya (1108)</div>
-            </button>
-
-            <button onclick="loginUser('Vamsi', 'Miller@2025')" class="p-2.5 bg-white hover:bg-emerald-50 border border-gray-200 hover:border-emerald-400 rounded-lg text-left transition">
-              <div class="text-xs font-bold text-gray-900">Vamsi</div>
-              <div class="text-[11px] text-gray-500">Telangana Corp (3391)</div>
-            </button>
-
-            <button onclick="loginUser('Lasya', 'Miller@2025')" class="p-2.5 bg-white hover:bg-emerald-50 border border-gray-200 hover:border-emerald-400 rounded-lg text-left transition">
-              <div class="text-xs font-bold text-gray-900">Lasya</div>
-              <div class="text-[11px] text-gray-500">Bhadrakali (2204)</div>
-            </button>
-          </div>
-        </div>
-
       </div>
+
+      <!-- Login Form -->
+      <form onsubmit="handleLogin(event)" class="space-y-4 pt-1 text-xs">
+        <div>
+          <label class="block font-semibold text-gray-700 mb-1">Username / Email ID</label>
+          <input type="text" id="username" required placeholder="Enter username or email" class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:border-emerald-600 text-sm text-gray-900">
+        </div>
+
+        <div>
+          <label class="block font-semibold text-gray-700 mb-1">Password</label>
+          <input type="password" id="password" required placeholder="••••••••" class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:border-emerald-600 text-sm text-gray-900">
+        </div>
+
+        <div id="loginError" class="hidden text-rose-700 font-semibold text-xs bg-rose-50 border border-rose-200 p-2 rounded">
+          Invalid username or password.
+        </div>
+
+        <button type="submit" id="loginBtn" class="w-full py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm rounded-md shadow-sm transition">
+          Sign In →
+        </button>
+      </form>
+
     </div>
-
-    <!-- TECH STACK & SYSTEM ARCHITECTURE -->
-    <div class="bg-white border border-gray-200 rounded-xl p-6 sm:p-8 shadow-sm space-y-4">
-      <h3 class="text-base font-bold text-gray-900 border-b border-gray-200 pb-3">System Architecture & Tech Stack</h3>
-      
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs text-gray-600">
-        <div class="p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-1.5">
-          <div class="font-bold text-gray-900 text-sm">🐍 Backend (Python Flask)</div>
-          <p>Flask 3.0 REST API with Blueprints, handling authentication, automated Excel reconciliation via Pandas, and JRC PDF generation via ReportLab.</p>
-        </div>
-
-        <div class="p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-1.5">
-          <div class="font-bold text-gray-900 text-sm">⚡ Database (Supabase / Postgres)</div>
-          <p>PostgreSQL schema with 7 relational tables storing Mandi manifests, inward weighbridge scale data, settlement ledgers, and audit logs.</p>
-        </div>
-
-        <div class="p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-1.5">
-          <div class="font-bold text-gray-900 text-sm">💻 Frontend (HTML5 & Tailwind)</div>
-          <p>Clean, lightweight responsive interface without heavy node dependencies, providing role-based views for DCSO and mill operators.</p>
-        </div>
-      </div>
-    </div>
-
   </main>
 
-  <!-- FOOTER -->
-  <footer class="bg-white border-t border-gray-200 py-6 px-4 text-center text-xs text-gray-500">
-    <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-      <div>DHANYA: Paddy Procurement & CMR Reconciliation System • Mini-Hackathon</div>
-      <div>Python Flask + Supabase PostgreSQL</div>
-    </div>
+  <!-- Bottom Footer -->
+  <footer class="py-3 text-center text-xs text-gray-500 border-t border-gray-200 bg-white">
+    <span>DHANYA • Custom Milling of Rice (CMR 67%) • Warangal District</span>
   </footer>
 
   <script>
-    function loginUser(username, password) {
+    function setCredentials(user, pass) {
+      document.getElementById('username').value = user;
+      document.getElementById('password').value = pass;
+    }
+
+    // Default pre-fill
+    setCredentials('dcso.wgl@telangana.gov.in', 'Govt@Civil2025');
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const errBox = document.getElementById('loginError');
+      errBox.classList.add('hidden');
+
       fetch('/api/v2/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -204,7 +108,8 @@
           sessionStorage.setItem('dhanya_user', JSON.stringify(data));
           window.location.href = '/dashboard';
         } else {
-          alert('Login failed: ' + data.message);
+          errBox.innerText = data.message || 'Invalid credentials';
+          errBox.classList.remove('hidden');
         }
       })
       .catch(err => {
