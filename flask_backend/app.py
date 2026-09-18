@@ -24,6 +24,10 @@ def create_app():
 
     @app.route('/')
     def root():
+        return render_template('landing.html')
+
+    @app.route('/dashboard')
+    def dashboard():
         return render_template('index.html')
 
     @app.route('/api/v2')
