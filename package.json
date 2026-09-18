@@ -4,6 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
+    "flask-server": "python flask_backend/app.py",
     "server": "node server/server.js",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
