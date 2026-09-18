@@ -3,34 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DHANYA - National CMR 67% Digital Reconciliation & Subsidy Clearance System</title>
+  <title>DHANYA - Reconciliation Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Inter', 'sans-serif'],
-            mono: ['JetBrains Mono', 'monospace']
-          },
-          colors: {
-            brand: {
-              50: '#f0fdf4',
-              100: '#dcfce7',
-              500: '#22c55e',
-              600: '#16a34a',
-              700: '#15803d',
-              800: '#166534',
-              900: '#14532d',
-              950: '#052e16'
-            }
-          }
-        }
-      }
-    }
-  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   <style>
+    body { font-family: 'Inter', sans-serif; }
     @media print {
       body * { visibility: hidden; }
       #jrcCertificateModal, #jrcCertificateModal * { visibility: visible; }
@@ -38,368 +15,315 @@
     }
   </style>
 </head>
-<body class="bg-slate-900 text-slate-100 font-sans min-h-screen flex flex-col antialiased selection:bg-emerald-500 selection:text-white">
+<body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col antialiased">
 
-  <!-- TOP HEADER -->
-  <header class="bg-slate-950/80 backdrop-blur border-b border-slate-800 sticky top-0 z-40">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+  <!-- TOP GOVT STRIP -->
+  <div class="bg-emerald-800 text-white text-xs py-1 px-4 sm:px-8 border-b border-emerald-900">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="font-bold">Government of Telangana</span>
+        <span>•</span>
+        <span>Food & Civil Supplies Department (Warangal)</span>
+      </div>
+      <div class="text-[11px] text-emerald-200">
+        <span>OPMS Live Connected</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <header class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-950/50 text-xl font-black text-slate-950">
+        <div class="w-9 h-9 rounded-md bg-emerald-700 text-white flex items-center justify-center font-bold text-lg">
           🌾
         </div>
         <div>
           <div class="flex items-center gap-2">
-            <span class="font-black text-lg tracking-wider text-white">DHANYA</span>
-            <span class="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded bg-emerald-950/80 text-emerald-400 border border-emerald-800/60">CMR 67% Portal</span>
+            <span class="font-bold text-base text-gray-900">DHANYA</span>
+            <span class="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 border border-gray-200">Reconciliation Portal</span>
           </div>
-          <p class="text-xs text-slate-400 hidden sm:block">Telangana Food & Civil Supplies Department • Supabase + Flask Engine</p>
         </div>
       </div>
 
-      <!-- ACTIVE USER / ROLE INFO -->
       <div class="flex items-center gap-3">
-        <div id="liveOpmsBadge" class="hidden md:flex items-center gap-1.5 px-3 py-1 bg-emerald-950/60 border border-emerald-800/50 rounded-full text-xs text-emerald-300">
-          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span>Live Telangana OPMS Sync</span>
-        </div>
-
-        <div id="userProfileBadge" class="flex items-center gap-3 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-xl">
-          <div class="w-8 h-8 rounded-lg bg-emerald-800/60 text-emerald-300 font-bold flex items-center justify-center text-sm" id="userInitial">
-            O
-          </div>
-          <div class="text-left hidden sm:block">
-            <div class="text-xs font-bold text-white leading-tight" id="userDisplayName">Officer R. Kumar (DCSO)</div>
-            <div class="text-[10px] text-slate-400" id="userRoleName">Government Officer</div>
-          </div>
-        </div>
-
-        <a href="/" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-emerald-400 border border-emerald-800/60 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
-          <span>← Portal Home</span>
+        <a href="/" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded border border-gray-300 transition">
+          ← Home Page
         </a>
 
-        <button onclick="openLoginModal()" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl border border-slate-700 transition">
-          Switch User / Login
+        <!-- User Badge -->
+        <div class="flex items-center gap-2 px-3 py-1 bg-gray-50 border border-gray-200 rounded-md">
+          <div class="w-6 h-6 rounded bg-emerald-700 text-white font-bold flex items-center justify-center text-xs" id="userInitial">
+            O
+          </div>
+          <div class="text-left text-xs">
+            <div class="font-semibold text-gray-900 leading-tight" id="userDisplayName">Officer R. Kumar (DCSO)</div>
+            <div class="text-[10px] text-gray-500" id="userRoleName">Government Officer</div>
+          </div>
+        </div>
+
+        <button onclick="openLoginModal()" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold rounded shadow-sm transition">
+          Switch User
         </button>
       </div>
     </div>
   </header>
 
-  <!-- SUBHEADER / DISTRICT BANNER -->
-  <div class="bg-gradient-to-r from-emerald-950/90 via-slate-950 to-teal-950/90 border-b border-emerald-900/30 py-4 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
+  <!-- SUBHEADER / DISTRICT BAR -->
+  <div class="bg-white border-b border-gray-200 py-3 px-4 sm:px-6">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-3">
       <div>
-        <div class="flex items-center gap-2">
-          <span class="text-xs font-bold uppercase tracking-widest text-emerald-400">Statutory CMR Lifecycle</span>
-          <span class="text-slate-500">•</span>
-          <span class="text-xs text-slate-400">Warangal District Oversight</span>
-        </div>
-        <h1 class="text-xl sm:text-2xl font-black text-white mt-1" id="bannerTitle">
+        <h2 class="text-base sm:text-lg font-bold text-gray-900" id="bannerTitle">
           Warangal District Civil Supplies Oversight
-        </h1>
+        </h2>
+        <p class="text-xs text-gray-500">Custom Milling of Rice (CMR 67% Out-Turn Obligation & Subsidy Clearance)</p>
       </div>
 
-      <!-- QUICK ACTIONS / SWITCH MILL PILLS -->
-      <div id="quickMillBar" class="flex items-center gap-2 overflow-x-auto pb-1 max-w-full">
-        <span class="text-xs text-slate-400 whitespace-nowrap">View Mill:</span>
-        <button onclick="switchMillView('ALL')" class="mill-pill active-pill px-3 py-1 rounded-lg text-xs font-bold border transition bg-emerald-600 text-white border-emerald-500" data-mill="ALL">All Mills (4)</button>
-        <button onclick="switchMillView('TS-WGL-MR-4412')" class="mill-pill px-3 py-1 rounded-lg text-xs font-bold border transition bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700" data-mill="TS-WGL-MR-4412">Sri Lakshmi (4412)</button>
-        <button onclick="switchMillView('TS-WGL-MR-1108')" class="mill-pill px-3 py-1 rounded-lg text-xs font-bold border transition bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700" data-mill="TS-WGL-MR-1108">Kakatiya (1108)</button>
-        <button onclick="switchMillView('TS-WGL-MR-3391')" class="mill-pill px-3 py-1 rounded-lg text-xs font-bold border transition bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700" data-mill="TS-WGL-MR-3391">Telangana Parboiled (3391)</button>
-        <button onclick="switchMillView('TS-WGL-MR-2204')" class="mill-pill px-3 py-1 rounded-lg text-xs font-bold border transition bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700" data-mill="TS-WGL-MR-2204">Bhadrakali (2204)</button>
+      <!-- Quick Mill Selector -->
+      <div id="quickMillBar" class="flex items-center gap-1.5 overflow-x-auto text-xs">
+        <span class="text-gray-500 whitespace-nowrap font-medium">Select Mill:</span>
+        <button onclick="switchMillView('ALL')" class="mill-pill px-2.5 py-1 rounded text-xs font-medium border bg-emerald-700 text-white border-emerald-800" data-mill="ALL">All Mills (4)</button>
+        <button onclick="switchMillView('TS-WGL-MR-4412')" class="mill-pill px-2.5 py-1 rounded text-xs font-medium border bg-white text-gray-700 border-gray-300 hover:bg-gray-50" data-mill="TS-WGL-MR-4412">Sri Lakshmi</button>
+        <button onclick="switchMillView('TS-WGL-MR-1108')" class="mill-pill px-2.5 py-1 rounded text-xs font-medium border bg-white text-gray-700 border-gray-300 hover:bg-gray-50" data-mill="TS-WGL-MR-1108">Kakatiya</button>
+        <button onclick="switchMillView('TS-WGL-MR-3391')" class="mill-pill px-2.5 py-1 rounded text-xs font-medium border bg-white text-gray-700 border-gray-300 hover:bg-gray-50" data-mill="TS-WGL-MR-3391">Telangana Corp</button>
+        <button onclick="switchMillView('TS-WGL-MR-2204')" class="mill-pill px-2.5 py-1 rounded text-xs font-medium border bg-white text-gray-700 border-gray-300 hover:bg-gray-50" data-mill="TS-WGL-MR-2204">Bhadrakali</button>
       </div>
     </div>
   </div>
 
   <!-- MAIN CONTAINER -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-8">
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full space-y-6">
 
-    <!-- 4 STATUTORY KPI CARDS -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-      <!-- Card 1: Total Paddy -->
-      <div class="bg-slate-950/70 border border-slate-800 p-5 rounded-3xl relative overflow-hidden shadow-lg group hover:border-emerald-700/50 transition">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Paddy Inward</span>
-          <span class="p-2 rounded-xl bg-emerald-950/80 text-emerald-400 text-sm">⚖️</span>
+    <!-- 4 KPI SUMMARY CARDS -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      
+      <!-- Card 1 -->
+      <div class="bg-white border border-gray-200 p-4 rounded-lg shadow-sm">
+        <div class="flex items-center justify-between text-xs text-gray-500 font-semibold uppercase">
+          <span>Total Paddy Inward</span>
+          <span>⚖️</span>
         </div>
-        <div class="mt-3">
-          <div class="text-2xl sm:text-3xl font-black text-white" id="kpiTotalPaddy">92,000 kg</div>
-          <div class="text-xs text-emerald-400 font-semibold mt-1" id="kpiTotalPaddyQtl">920.00 Quintals (6 Batches)</div>
-        </div>
-        <div class="mt-4 pt-3 border-t border-slate-800/60 text-[11px] text-slate-400 flex items-center justify-between">
-          <span>OPMS Verified Weight</span>
-          <span class="text-emerald-400 font-bold">100% Ingested</span>
-        </div>
+        <div class="mt-2 text-2xl font-bold text-gray-900" id="kpiTotalPaddy">92,000 kg</div>
+        <div class="text-xs text-emerald-700 font-medium mt-0.5" id="kpiTotalPaddyQtl">920.00 Qtl (6 Batches)</div>
       </div>
 
-      <!-- Card 2: 67% CMR Target -->
-      <div class="bg-slate-950/70 border border-slate-800 p-5 rounded-3xl relative overflow-hidden shadow-lg group hover:border-teal-700/50 transition">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Statutory 67% CMR</span>
-          <span class="p-2 rounded-xl bg-teal-950/80 text-teal-400 text-sm">🍚</span>
+      <!-- Card 2 -->
+      <div class="bg-white border border-gray-200 p-4 rounded-lg shadow-sm">
+        <div class="flex items-center justify-between text-xs text-gray-500 font-semibold uppercase">
+          <span>67% CMR Rice Target</span>
+          <span>🍚</span>
         </div>
-        <div class="mt-3">
-          <div class="text-2xl sm:text-3xl font-black text-white" id="kpiCmrTarget">616.40 Qtl</div>
-          <div class="text-xs text-teal-400 font-semibold mt-1">Raw Rice Delivery Target</div>
-        </div>
-        <div class="mt-4 pt-3 border-t border-slate-800/60 text-[11px] text-slate-400 flex items-center justify-between">
-          <span>Conversion Ratio</span>
-          <span class="text-teal-400 font-bold">100 Qtl = 67 Qtl</span>
-        </div>
+        <div class="mt-2 text-2xl font-bold text-emerald-700 font-mono" id="kpiCmrTarget">616.40 Qtl</div>
+        <div class="text-xs text-gray-500 mt-0.5">Statutory 67% Raw Rice Return</div>
       </div>
 
-      <!-- Card 3: Pending Disputes -->
-      <div class="bg-slate-950/70 border border-slate-800 p-5 rounded-3xl relative overflow-hidden shadow-lg group hover:border-amber-700/50 transition">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Discrepancies</span>
-          <span class="p-2 rounded-xl bg-amber-950/80 text-amber-400 text-sm">⚠️</span>
+      <!-- Card 3 -->
+      <div class="bg-white border border-gray-200 p-4 rounded-lg shadow-sm">
+        <div class="flex items-center justify-between text-xs text-gray-500 font-semibold uppercase">
+          <span>Discrepancies</span>
+          <span>⚠️</span>
         </div>
-        <div class="mt-3">
-          <div class="text-2xl sm:text-3xl font-black text-amber-400" id="kpiDisputes">2 Pending</div>
-          <div class="text-xs text-slate-400 mt-1">Moisture & Tare Variances</div>
-        </div>
-        <div class="mt-4 pt-3 border-t border-slate-800/60 text-[11px] text-slate-400 flex items-center justify-between">
-          <span>Tolerance Threshold</span>
-          <span class="text-amber-400 font-bold">Max 17.0% Moisture</span>
-        </div>
+        <div class="mt-2 text-2xl font-bold text-amber-600 font-mono" id="kpiDisputes">2 Pending</div>
+        <div class="text-xs text-gray-500 mt-0.5">Moisture / Tare Discrepancies</div>
       </div>
 
-      <!-- Card 4: Total Payable Subsidy -->
-      <div class="bg-slate-950/70 border border-slate-800 p-5 rounded-3xl relative overflow-hidden shadow-lg group hover:border-emerald-700/50 transition">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Payable Subsidy</span>
-          <span class="p-2 rounded-xl bg-emerald-950/80 text-emerald-400 text-sm">💰</span>
+      <!-- Card 4 -->
+      <div class="bg-white border border-gray-200 p-4 rounded-lg shadow-sm">
+        <div class="flex items-center justify-between text-xs text-gray-500 font-semibold uppercase">
+          <span>Total Payable Subsidy</span>
+          <span>💰</span>
         </div>
-        <div class="mt-3">
-          <div class="text-2xl sm:text-3xl font-black text-emerald-400" id="kpiTotalSubsidy">₹ 17,388.00</div>
-          <div class="text-xs text-slate-400 mt-1">Milling + Handling + Gunny</div>
-        </div>
-        <div class="mt-4 pt-3 border-t border-slate-800/60 text-[11px] text-slate-400 flex items-center justify-between">
-          <span>DBT Direct Payout</span>
-          <span class="text-emerald-400 font-bold">PFMS Treasury Ready</span>
-        </div>
+        <div class="mt-2 text-2xl font-bold text-gray-900 font-mono" id="kpiTotalSubsidy">₹ 17,388.00</div>
+        <div class="text-xs text-gray-500 mt-0.5">Milling (₹10) + Handling (₹4.50) + Gunny</div>
       </div>
+
     </div>
 
-    <!-- INGESTION & DIGITIZATION BAR (VISIBLE TO MILL MANAGERS) -->
-    <div id="millerIngestionSection" class="bg-slate-950/80 border border-slate-800 p-6 rounded-3xl space-y-4">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <!-- MILLER INGESTION ACTION BAR (VISIBLE FOR MILL MANAGERS) -->
+    <div id="millerIngestionSection" class="bg-white border border-gray-200 p-4 rounded-lg shadow-sm space-y-3">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h3 class="text-base sm:text-lg font-black text-white flex items-center gap-2">
-            <span>📥 Multi-Source Data Ingestion & Digitization</span>
-            <span class="text-xs font-bold px-2 py-0.5 bg-slate-800 text-slate-300 rounded">Miller Console</span>
-          </h3>
-          <p class="text-xs text-slate-400 mt-1">Upload Government OPMS Excel, Mill Scale Manifest, or Photograph of handwritten notebook register</p>
+          <h3 class="text-sm font-bold text-gray-900">Data Ingestion (Mill Console)</h3>
+          <p class="text-xs text-gray-500">Upload official OPMS Excel manifests, photograph of notebook register, or enter weighbridge scale slip</p>
         </div>
 
-        <div class="flex flex-wrap items-center gap-3">
-          <button onclick="document.getElementById('excelFileInput').click()" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold rounded-xl shadow transition flex items-center gap-2">
-            <span>📊 Upload Excel Sheets</span>
+        <div class="flex flex-wrap items-center gap-2">
+          <button onclick="document.getElementById('excelFileInput').click()" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded border border-gray-300 transition">
+            📁 Upload Excel Files
           </button>
           <input type="file" id="excelFileInput" class="hidden" accept=".xlsx,.xls,.csv" onchange="handleExcelUpload(event)">
 
-          <button onclick="document.getElementById('ocrPhotoInput').click()" class="px-4 py-2.5 bg-emerald-800 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow transition flex items-center gap-2">
-            <span>📸 Photo OCR Digitizer</span>
+          <button onclick="document.getElementById('ocrPhotoInput').click()" class="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold rounded border border-emerald-300 transition">
+            📷 Photo OCR Scan
           </button>
           <input type="file" id="ocrPhotoInput" class="hidden" accept="image/*" onchange="handleOcrPhotoUpload(event)">
 
-          <button onclick="openManualSlipModal()" class="px-4 py-2.5 bg-teal-800 hover:bg-teal-700 text-white text-xs font-bold rounded-xl shadow transition flex items-center gap-2">
-            <span>✍️ Manual Scale Slip</span>
+          <button onclick="openManualSlipModal()" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded border border-gray-300 transition">
+            ✍️ Manual Scale Slip
           </button>
         </div>
       </div>
     </div>
 
-    <!-- RECONCILIATION MASTER TABLE -->
-    <div class="bg-slate-950/90 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl">
-      <div class="p-5 sm:p-6 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <!-- RECONCILIATION TABLE -->
+    <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+      <div class="p-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <div class="flex items-center gap-2.5">
-            <h2 class="text-lg font-black text-white">Inward Weighbridge & OPMS Reconciled Records</h2>
-            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-950 text-emerald-400 border border-emerald-800/80" id="recordsCountBadge">6 Records</span>
+          <div class="flex items-center gap-2">
+            <h3 class="text-sm font-bold text-gray-900">Reconciled Weighbridge & Mandi Manifest Records</h3>
+            <span class="bg-gray-100 text-gray-700 text-xs font-semibold px-2 py-0.5 rounded" id="recordsCountBadge">6 Records</span>
           </div>
-          <p class="text-xs text-slate-400 mt-1">Automated cross-verification of Vehicle Numbers, Transit Passes, Gross/Tare/Net weights & Moisture percentages</p>
+          <p class="text-xs text-gray-500 mt-0.5">Cross-verification of truck numbers, transit passes, net weights, and moisture content</p>
         </div>
 
-        <div class="flex items-center gap-3">
-          <button onclick="filterRecords('ALL')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-bold border border-slate-700">All</button>
-          <button onclick="filterRecords('MATCH')" class="px-3 py-1.5 bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 rounded-lg text-xs font-bold border border-emerald-800">Matches (4)</button>
-          <button onclick="filterRecords('MISMATCH')" class="px-3 py-1.5 bg-amber-950/80 hover:bg-amber-900 text-amber-300 rounded-lg text-xs font-bold border border-amber-800">Mismatches (2)</button>
+        <div class="flex items-center gap-2 text-xs">
+          <button onclick="filterRecords('ALL')" class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded border border-gray-300">All</button>
+          <button onclick="filterRecords('MATCH')" class="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-medium rounded border border-emerald-300">Matches (4)</button>
+          <button onclick="filterRecords('MISMATCH')" class="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 font-medium rounded border border-amber-300">Mismatches (2)</button>
         </div>
       </div>
 
-      <!-- TABLE CONTAINER -->
+      <!-- TABLE -->
       <div class="overflow-x-auto">
-        <table class="w-full text-left text-sm text-slate-300">
-          <thead class="bg-slate-900/90 text-[11px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800">
+        <table class="w-full text-left text-xs text-gray-700">
+          <thead class="bg-gray-50 text-[11px] font-bold text-gray-600 uppercase border-b border-gray-200">
             <tr>
-              <th class="py-3.5 px-4">Truck / Pass No</th>
-              <th class="py-3.5 px-4">Farmer Details</th>
-              <th class="py-3.5 px-4 text-right">Govt Net (Kg)</th>
-              <th class="py-3.5 px-4 text-right">Mill Net (Kg)</th>
-              <th class="py-3.5 px-4 text-center">Moisture</th>
-              <th class="py-3.5 px-4 text-right">Variance</th>
-              <th class="py-3.5 px-4 text-center">Status</th>
-              <th class="py-3.5 px-4">Discrepancy Explanation</th>
-              <th class="py-3.5 px-4 text-center">Action</th>
+              <th class="py-3 px-4">Truck No</th>
+              <th class="py-3 px-4">Pass No</th>
+              <th class="py-3 px-4">Farmer Details</th>
+              <th class="py-3 px-4 text-right">Govt Net</th>
+              <th class="py-3 px-4 text-right">Mill Net</th>
+              <th class="py-3 px-4 text-center">Moisture</th>
+              <th class="py-3 px-4 text-right">Variance</th>
+              <th class="py-3 px-4 text-center">Status</th>
+              <th class="py-3 px-4">Discrepancy Notes</th>
+              <th class="py-3 px-4 text-center">Action</th>
             </tr>
           </thead>
-          <tbody id="reconcileTableBody" class="divide-y divide-slate-800/60 font-mono text-xs">
-            <!-- Dynamic Rows Injected by JS -->
+          <tbody id="reconcileTableBody" class="divide-y divide-gray-200 font-mono">
+            <!-- Injected by JavaScript -->
           </tbody>
         </table>
       </div>
     </div>
 
-    <!-- STATUTORY DECISION HUB (OFFICER APPROVAL) -->
-    <div class="bg-slate-950/90 border border-slate-800 p-6 sm:p-8 rounded-3xl shadow-2xl space-y-6">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
-        <div>
-          <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">Statutory Clearance Authority</span>
-          <h3 class="text-xl font-black text-white mt-1">Official CMR Subsidy Settlement Hub</h3>
-        </div>
-        <div class="flex items-center gap-2 text-xs text-slate-400">
-          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-          <span>DCSO Warangal Digital Endorsement Active</span>
-        </div>
+    <!-- STATUTORY CLEARANCE HUB (OFFICER DECISION) -->
+    <div class="bg-white border border-gray-200 p-5 rounded-lg shadow-sm space-y-4">
+      <div class="border-b border-gray-200 pb-3">
+        <h3 class="text-sm font-bold text-gray-900">Official Statutory Subsidy Clearance Hub</h3>
+        <p class="text-xs text-gray-500">Officer approval releases direct subsidy payout, generates digital JRC certificate, and sends farmer SMS alerts</p>
       </div>
 
       <div id="statutoryDecisionContainer">
-        <!-- Will toggle dynamically between Action Buttons or Already Approved Green Card -->
+        <!-- Will toggle dynamically -->
       </div>
     </div>
 
   </main>
 
   <!-- FOOTER -->
-  <footer class="bg-slate-950 border-t border-slate-800/80 py-6 text-center text-xs text-slate-500">
-    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-      <div>DHANYA • Custom Milling of Rice (CMR) 67% Digital Reconciliation Platform</div>
-      <div class="font-mono">Python Flask 3.0 • Supabase PostgreSQL • Warangal District</div>
-    </div>
+  <footer class="bg-white border-t border-gray-200 py-4 text-center text-xs text-gray-500">
+    <div>DHANYA • Custom Milling of Rice (CMR 67%) Digital Reconciliation Portal</div>
   </footer>
 
   <!-- ======================== MODALS ======================== -->
 
-  <!-- 1. LOGIN / SWITCH USER MODAL -->
-  <div id="loginModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 max-w-lg w-full rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 relative">
-      <div class="flex items-center justify-between border-b border-slate-800 pb-4">
-        <div>
-          <h3 class="text-lg font-black text-white">Select User Role & Profile</h3>
-          <p class="text-xs text-slate-400 mt-0.5">Switch between DCSO Officer or 4 Rice Mill Managers</p>
-        </div>
-        <button onclick="closeLoginModal()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
+  <!-- 1. LOGIN MODAL -->
+  <div id="loginModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white border border-gray-200 max-w-md w-full rounded-xl p-6 shadow-xl space-y-4 relative">
+      <div class="flex items-center justify-between border-b border-gray-200 pb-3">
+        <h3 class="text-sm font-bold text-gray-900">Switch User / Demo Account</h3>
+        <button onclick="closeLoginModal()" class="text-gray-400 hover:text-gray-700 font-bold">✕</button>
       </div>
 
-      <div class="space-y-3">
-        <!-- DCSO Option -->
-        <button onclick="loginAs('dcso.wgl@telangana.gov.in', 'Govt@Civil2025')" class="w-full p-3.5 bg-slate-800/70 hover:bg-emerald-950/60 border border-slate-700 hover:border-emerald-600 rounded-2xl flex items-center justify-between text-left transition group">
-          <div class="flex items-center gap-3">
-            <span class="text-2xl">🏛️</span>
-            <div>
-              <div class="text-xs font-bold text-white group-hover:text-emerald-400">Civil Supplies Officer (DCSO)</div>
-              <div class="text-[11px] text-slate-400">Officer R. Kumar • Warangal District Oversight</div>
-            </div>
+      <div class="space-y-2 text-xs">
+        <button onclick="loginAs('dcso.wgl@telangana.gov.in', 'Govt@Civil2025')" class="w-full p-3 bg-gray-50 hover:bg-emerald-50 border border-gray-200 hover:border-emerald-500 rounded-lg text-left transition flex items-center justify-between">
+          <div>
+            <div class="font-bold text-gray-900">Officer R. Kumar (DCSO)</div>
+            <div class="text-gray-500">Warangal District Civil Supplies Officer</div>
           </div>
-          <span class="text-xs text-slate-400 group-hover:text-emerald-400 font-bold">Login →</span>
+          <span class="text-emerald-700 font-semibold">Select →</span>
         </button>
 
-        <!-- Miller 1: Loukika -->
-        <button onclick="loginAs('Loukika', 'Miller@2025')" class="w-full p-3.5 bg-slate-800/70 hover:bg-emerald-950/60 border border-slate-700 hover:border-emerald-600 rounded-2xl flex items-center justify-between text-left transition group">
-          <div class="flex items-center gap-3">
-            <span class="text-2xl">🌾</span>
-            <div>
-              <div class="text-xs font-bold text-white group-hover:text-emerald-400">Loukika (Sri Lakshmi Rice Industries)</div>
-              <div class="text-[11px] text-slate-400">Code: TS-WGL-MR-4412 • Quota: 3,500 MT</div>
-            </div>
+        <button onclick="loginAs('Loukika', 'Miller@2025')" class="w-full p-3 bg-gray-50 hover:bg-emerald-50 border border-gray-200 hover:border-emerald-500 rounded-lg text-left transition flex items-center justify-between">
+          <div>
+            <div class="font-bold text-gray-900">Loukika (Sri Lakshmi Rice Industries)</div>
+            <div class="text-gray-500">Mill Code: TS-WGL-MR-4412 (3,500 MT Quota)</div>
           </div>
-          <span class="text-xs text-slate-400 group-hover:text-emerald-400 font-bold">Login →</span>
+          <span class="text-emerald-700 font-semibold">Select →</span>
         </button>
 
-        <!-- Miller 2: Krishna -->
-        <button onclick="loginAs('krishna', 'Miller@2025')" class="w-full p-3.5 bg-slate-800/70 hover:bg-emerald-950/60 border border-slate-700 hover:border-emerald-600 rounded-2xl flex items-center justify-between text-left transition group">
-          <div class="flex items-center gap-3">
-            <span class="text-2xl">🌾</span>
-            <div>
-              <div class="text-xs font-bold text-white group-hover:text-emerald-400">Krishna (Kakatiya Modern Agro Mills)</div>
-              <div class="text-[11px] text-slate-400">Code: TS-WGL-MR-1108 • Quota: 4,200 MT</div>
-            </div>
+        <button onclick="loginAs('krishna', 'Miller@2025')" class="w-full p-3 bg-gray-50 hover:bg-emerald-50 border border-gray-200 hover:border-emerald-500 rounded-lg text-left transition flex items-center justify-between">
+          <div>
+            <div class="font-bold text-gray-900">Krishna (Kakatiya Modern Agro Mills)</div>
+            <div class="text-gray-500">Mill Code: TS-WGL-MR-1108 (4,200 MT Quota)</div>
           </div>
-          <span class="text-xs text-slate-400 group-hover:text-emerald-400 font-bold">Login →</span>
+          <span class="text-emerald-700 font-semibold">Select →</span>
         </button>
 
-        <!-- Miller 3: Vamsi -->
-        <button onclick="loginAs('Vamsi', 'Miller@2025')" class="w-full p-3.5 bg-slate-800/70 hover:bg-emerald-950/60 border border-slate-700 hover:border-emerald-600 rounded-2xl flex items-center justify-between text-left transition group">
-          <div class="flex items-center gap-3">
-            <span class="text-2xl">🌾</span>
-            <div>
-              <div class="text-xs font-bold text-white group-hover:text-emerald-400">Vamsi (Telangana Parboiled Rice Corp)</div>
-              <div class="text-[11px] text-slate-400">Code: TS-WGL-MR-3391 • Quota: 5,000 MT</div>
-            </div>
+        <button onclick="loginAs('Vamsi', 'Miller@2025')" class="w-full p-3 bg-gray-50 hover:bg-emerald-50 border border-gray-200 hover:border-emerald-500 rounded-lg text-left transition flex items-center justify-between">
+          <div>
+            <div class="font-bold text-gray-900">Vamsi (Telangana Parboiled Corp)</div>
+            <div class="text-gray-500">Mill Code: TS-WGL-MR-3391 (5,000 MT Quota)</div>
           </div>
-          <span class="text-xs text-slate-400 group-hover:text-emerald-400 font-bold">Login →</span>
+          <span class="text-emerald-700 font-semibold">Select →</span>
         </button>
 
-        <!-- Miller 4: Lasya -->
-        <button onclick="loginAs('Lasya', 'Miller@2025')" class="w-full p-3.5 bg-slate-800/70 hover:bg-emerald-950/60 border border-slate-700 hover:border-emerald-600 rounded-2xl flex items-center justify-between text-left transition group">
-          <div class="flex items-center gap-3">
-            <span class="text-2xl">🌾</span>
-            <div>
-              <div class="text-xs font-bold text-white group-hover:text-emerald-400">Lasya (Bhadrakali Agri Modern Foods)</div>
-              <div class="text-[11px] text-slate-400">Code: TS-WGL-MR-2204 • Quota: 2,800 MT</div>
-            </div>
+        <button onclick="loginAs('Lasya', 'Miller@2025')" class="w-full p-3 bg-gray-50 hover:bg-emerald-50 border border-gray-200 hover:border-emerald-500 rounded-lg text-left transition flex items-center justify-between">
+          <div>
+            <div class="font-bold text-gray-900">Lasya (Bhadrakali Agri Foods)</div>
+            <div class="text-gray-500">Mill Code: TS-WGL-MR-2204 (2,800 MT Quota)</div>
           </div>
-          <span class="text-xs text-slate-400 group-hover:text-emerald-400 font-bold">Login →</span>
+          <span class="text-emerald-700 font-semibold">Select →</span>
         </button>
       </div>
     </div>
   </div>
 
   <!-- 2. JRC CERTIFICATE MODAL -->
-  <div id="jrcCertificateModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
-    <div class="bg-white text-slate-900 max-w-2xl w-full rounded-3xl p-8 sm:p-10 shadow-2xl space-y-6 relative border-4 border-emerald-700">
-      <div class="text-center space-y-1">
-        <div class="text-xs font-black uppercase tracking-widest text-emerald-800">Government of Telangana</div>
-        <div class="text-xs font-bold text-slate-600">Department of Food & Civil Supplies • Warangal District</div>
-        <h2 class="text-lg sm:text-xl font-black text-emerald-950 pt-1">STATUTORY JOINT RECONCILIATION & SUBSIDY CERTIFICATE (JRC)</h2>
-        <div class="text-xs font-mono font-bold text-emerald-700 pt-1" id="jrcCertId">JRC-2025-TS-4412</div>
+  <div id="jrcCertificateModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white text-gray-900 max-w-2xl w-full rounded-xl p-6 sm:p-8 shadow-2xl space-y-4 border border-gray-300">
+      <div class="text-center space-y-0.5 border-b border-gray-200 pb-3">
+        <div class="text-xs font-bold uppercase tracking-wider text-emerald-800">Government of Telangana</div>
+        <div class="text-xs text-gray-500">Department of Food & Civil Supplies • Warangal District</div>
+        <h3 class="text-base font-bold text-gray-900 pt-1">JOINT RECONCILIATION & CMR SUBSIDY CLEARANCE CERTIFICATE (JRC)</h3>
+        <div class="text-xs font-mono font-semibold text-emerald-700" id="jrcCertId">JRC-2025-TS-4412</div>
       </div>
 
-      <div class="grid grid-cols-2 gap-4 text-xs font-medium border-y border-slate-200 py-4">
-        <div><span class="text-slate-500">Rice Mill:</span> <b id="jrcMillName">Sri Lakshmi Rice Industries</b></div>
-        <div><span class="text-slate-500">Mill Code:</span> <b id="jrcMillCode">TS-WGL-MR-4412</b></div>
-        <div><span class="text-slate-500">Mill Manager:</span> <b id="jrcManagerName">Loukika</b></div>
-        <div><span class="text-slate-500">District Officer:</span> <b>Officer R. Kumar (DCSO)</b></div>
-        <div><span class="text-slate-500">Reconciled Paddy:</span> <b id="jrcTotalPaddy">920.00 Qtl</b></div>
-        <div><span class="text-slate-500">67% CMR Rice Target:</span> <b id="jrcCmrTarget" class="text-emerald-800 font-black">616.40 Qtl</b></div>
-        <div class="col-span-2 bg-emerald-50 p-2.5 rounded-xl border border-emerald-200 flex justify-between items-center">
-          <span class="font-bold text-emerald-900">Total Statutory Subsidy Approved:</span>
-          <span class="font-black text-emerald-900 text-sm" id="jrcSubsidyAmt">₹ 17,388.00</span>
+      <div class="grid grid-cols-2 gap-3 text-xs bg-gray-50 p-3.5 rounded-lg border border-gray-200">
+        <div><span class="text-gray-500">Rice Mill:</span> <b id="jrcMillName">Sri Lakshmi Rice Industries</b></div>
+        <div><span class="text-gray-500">Mill Code:</span> <b id="jrcMillCode">TS-WGL-MR-4412</b></div>
+        <div><span class="text-gray-500">Mill Manager:</span> <b id="jrcManagerName">Loukika</b></div>
+        <div><span class="text-gray-500">District Officer:</span> <b>Officer R. Kumar (DCSO)</b></div>
+        <div><span class="text-gray-500">Total Paddy:</span> <b id="jrcTotalPaddy">920.00 Qtl</b></div>
+        <div><span class="text-gray-500">67% CMR Rice Target:</span> <b id="jrcCmrTarget" class="text-emerald-800">616.40 Qtl</b></div>
+        <div class="col-span-2 pt-1 border-t border-gray-200 flex justify-between font-bold">
+          <span>Approved Subsidy Amount:</span>
+          <span class="text-emerald-800" id="jrcSubsidyAmt">₹ 17,388.00</span>
         </div>
       </div>
 
-      <p class="text-[11px] text-slate-600 leading-relaxed">
-        <b>Statutory Endorsement:</b> This certifies that the inward weighbridge manifests have been digitally reconciled with the Telangana OPMS Mandi manifest stream. The 67% CMR delivery obligation is finalized, and direct subsidy release is authorized under PFMS Treasury.
+      <p class="text-[11px] text-gray-600 leading-relaxed">
+        <b>Statutory Endorsement:</b> Certified that inward weighbridge manifests have been reconciled with OPMS Mandi records. The 67% CMR delivery obligation is finalized, and subsidy clearance is authorized under PFMS Treasury.
       </p>
 
-      <!-- SIGNATURES -->
-      <div class="grid grid-cols-2 gap-8 pt-8 border-t border-slate-300 text-xs">
-        <div class="text-left">
-          <div class="font-bold text-slate-900" id="jrcSignManager">Loukika</div>
-          <div class="text-[10px] text-slate-500">Authorized Signatory (Rice Mill)</div>
+      <!-- Signatures -->
+      <div class="grid grid-cols-2 gap-6 pt-6 border-t border-gray-200 text-xs">
+        <div>
+          <div class="font-bold text-gray-900" id="jrcSignManager">Loukika</div>
+          <div class="text-[10px] text-gray-500">Authorized Signatory (Rice Mill)</div>
         </div>
         <div class="text-right">
-          <div class="font-bold text-slate-900">Officer R. Kumar (DCSO)</div>
-          <div class="text-[10px] text-slate-500">District Civil Supplies Officer, Warangal</div>
+          <div class="font-bold text-gray-900">Officer R. Kumar (DCSO)</div>
+          <div class="text-[10px] text-gray-500">District Civil Supplies Officer, Warangal</div>
         </div>
       </div>
 
-      <!-- BUTTONS -->
-      <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-200">
-        <button onclick="window.print()" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-1.5">
-          <span>🖨️ Print / Save PDF</span>
+      <div class="flex items-center justify-end gap-2 pt-3 border-t border-gray-200">
+        <button onclick="window.print()" class="px-3 py-1.5 bg-gray-900 hover:bg-gray-800 text-white text-xs font-semibold rounded shadow-sm">
+          Print Certificate
         </button>
-        <button onclick="closeJrcModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-xs rounded-xl transition">
+        <button onclick="closeJrcModal()" class="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-800 text-xs font-semibold rounded">
           Close
         </button>
       </div>
@@ -407,22 +331,17 @@
   </div>
 
   <!-- 3. SMS LOGS MODAL -->
-  <div id="smsLogsModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 max-w-xl w-full rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 relative">
-      <div class="flex items-center justify-between border-b border-slate-800 pb-4">
-        <div>
-          <h3 class="text-lg font-black text-white">Farmer DBT SMS Broadcast Logs</h3>
-          <p class="text-xs text-slate-400 mt-0.5">Automated subsidy payment alerts sent to 6 registered farmers</p>
-        </div>
-        <button onclick="closeSmsModal()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
+  <div id="smsLogsModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white border border-gray-200 max-w-lg w-full rounded-xl p-6 shadow-xl space-y-4">
+      <div class="flex items-center justify-between border-b border-gray-200 pb-3">
+        <h3 class="text-sm font-bold text-gray-900">Farmer DBT Payment SMS Alerts</h3>
+        <button onclick="closeSmsModal()" class="text-gray-400 hover:text-gray-700 font-bold">✕</button>
       </div>
 
-      <div class="space-y-2.5 max-h-80 overflow-y-auto pr-1" id="smsLogsContainer">
-        <!-- Dynamic SMS Cards -->
-      </div>
+      <div class="space-y-2 max-h-72 overflow-y-auto pr-1 text-xs" id="smsLogsContainer"></div>
 
       <div class="flex justify-end pt-2">
-        <button onclick="closeSmsModal()" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-xl transition">
+        <button onclick="closeSmsModal()" class="px-4 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-800 text-xs font-semibold rounded">
           Close
         </button>
       </div>
@@ -430,34 +349,34 @@
   </div>
 
   <!-- 4. DISPUTE RESOLUTION MODAL -->
-  <div id="disputeModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 max-w-md w-full rounded-3xl p-6 shadow-2xl space-y-5 relative">
-      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-        <h3 class="text-base font-black text-white">Dispute Recalibration Resolver</h3>
-        <button onclick="closeDisputeModal()" class="text-slate-400 hover:text-white font-bold">✕</button>
+  <div id="disputeModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white border border-gray-200 max-w-md w-full rounded-xl p-5 shadow-xl space-y-4 text-xs">
+      <div class="flex items-center justify-between border-b border-gray-200 pb-2">
+        <h3 class="text-sm font-bold text-gray-900">Recalibrate Record Discrepancy</h3>
+        <button onclick="closeDisputeModal()" class="text-gray-400 hover:text-gray-700 font-bold">✕</button>
       </div>
 
-      <div class="space-y-4 text-xs">
-        <div class="bg-slate-800/60 p-3 rounded-2xl space-y-1">
-          <div class="flex justify-between"><span class="text-slate-400">Truck No:</span> <b class="text-white" id="dispTruckNo">TS03UB4481</b></div>
-          <div class="flex justify-between"><span class="text-slate-400">Govt Net Weight:</span> <b class="text-white" id="dispGovtNet">14,000 kg</b></div>
-          <div class="flex justify-between"><span class="text-slate-400">Current Variance:</span> <b class="text-amber-400" id="dispVariance">-150 kg</b></div>
+      <div class="space-y-3">
+        <div class="bg-gray-50 p-3 rounded border border-gray-200 space-y-1">
+          <div class="flex justify-between"><span class="text-gray-500">Truck No:</span> <b class="text-gray-900" id="dispTruckNo">TS03UB4481</b></div>
+          <div class="flex justify-between"><span class="text-gray-500">Govt Net Weight:</span> <b class="text-gray-900" id="dispGovtNet">14,000 kg</b></div>
+          <div class="flex justify-between"><span class="text-gray-500">Current Variance:</span> <b class="text-amber-700" id="dispVariance">-150 kg</b></div>
         </div>
 
         <div>
-          <label class="block text-slate-400 mb-1 font-semibold">Joint Inspection Agreed Net Quantity (Kg):</label>
-          <input type="number" id="dispAgreedQty" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white font-mono font-bold focus:border-emerald-500 focus:outline-none">
+          <label class="block text-gray-700 mb-1 font-semibold">Agreed Net Weight (Kg):</label>
+          <input type="number" id="dispAgreedQty" class="w-full bg-white border border-gray-300 rounded px-3 py-1.5 text-gray-900 font-mono focus:border-emerald-600 focus:outline-none">
         </div>
 
         <div>
-          <label class="block text-slate-400 mb-1 font-semibold">Inspection Officer Notes:</label>
-          <textarea id="dispNotes" rows="2" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white focus:border-emerald-500 focus:outline-none" placeholder="Reason for adjustment..."></textarea>
+          <label class="block text-gray-700 mb-1 font-semibold">Officer Inspection Remarks:</label>
+          <input type="text" id="dispNotes" class="w-full bg-white border border-gray-300 rounded px-3 py-1.5 text-gray-900 focus:border-emerald-600 focus:outline-none" value="Joint weighbridge physical calibration agreed">
         </div>
       </div>
 
-      <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
-        <button onclick="closeDisputeModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition">Cancel</button>
-        <button onclick="submitDisputeResolution()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow transition">Save & Calibrate</button>
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-gray-200">
+        <button onclick="closeDisputeModal()" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded">Cancel</button>
+        <button onclick="submitDisputeResolution()" class="px-4 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold rounded shadow-sm">Save & Resolve</button>
       </div>
     </div>
   </div>
