@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, render_template
 from flask_cors import CORS
 from config import Config
 from routes.auth_routes import auth_bp
@@ -9,11 +9,11 @@ from routes.audit_routes import audit_bp
 from supabase_client import is_supabase_connected
 
 def create_app():
-    app = Flask(__name__)
+    app = Flask(__name__, template_folder='templates', static_folder='static')
     app.config.from_object(Config)
     
-    # Enable CORS for Angular frontend
-    CORS(app, resources={r"/api/*": {"origins": ["http://localhost:4200", "http://127.0.0.1:4200", "*"]}})
+    # Enable CORS
+    CORS(app, resources={r"/api/*": {"origins": "*"}})
 
     # Register Blueprints
     app.register_blueprint(auth_bp, url_prefix='/api/v2/auth')
@@ -24,6 +24,10 @@ def create_app():
 
     @app.route('/')
     def root():
+        return render_template('index.html')
+
+    @app.route('/api/v2')
+    def api_info():
         return jsonify({
             "name": "DHANYA CMR Digital Reconciliation & Subsidy Clearance API",
             "version": "2.0.0 (Flask + Supabase)",
