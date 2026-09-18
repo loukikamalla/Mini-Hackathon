@@ -10,10 +10,10 @@ let settlementData = {};
 let activeDisputeRecordId = null;
 
 const MILL_METADATA = {
-  'TS-WGL-MR-4412': { name: 'Sri Lakshmi Rice Industries', manager: 'Loukika', quota: '3,500 MT' },
-  'TS-WGL-MR-1108': { name: 'Kakatiya Modern Agro Mills', manager: 'Krishna', quota: '4,200 MT' },
-  'TS-WGL-MR-3391': { name: 'Telangana Parboiled Rice Corp', manager: 'Vamsi', quota: '5,000 MT' },
-  'TS-WGL-MR-2204': { name: 'Bhadrakali Agri Modern Foods', manager: 'Lasya', quota: '2,800 MT' }
+  'TS-WGL-MR-4412': { name: 'Sri Lakshmi Rice Industries', manager: 'Loukika', quota: '3,500.00 Qtl' },
+  'TS-WGL-MR-1108': { name: 'Kakatiya Modern Agro Mills', manager: 'Krishna', quota: '4,200.00 Qtl' },
+  'TS-WGL-MR-3391': { name: 'Telangana Parboiled Rice Corp', manager: 'Vamsi', quota: '5,000.00 Qtl' },
+  'TS-WGL-MR-2204': { name: 'Bhadrakali Agri Modern Foods', manager: 'Lasya', quota: '2,800.00 Qtl' }
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -21,14 +21,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (storedUser) {
     try {
       const u = JSON.parse(storedUser);
-      currentRole = u.role;
-      currentUserDisplayName = u.displayName;
+      currentRole = u.role || currentRole;
+      currentUserDisplayName = u.displayName || currentUserDisplayName;
       if (u.millCode) {
         currentMillCode = u.millCode;
-        currentMillName = u.millName;
-        currentManagerName = u.displayName;
+        currentMillName = u.millName || (MILL_METADATA[u.millCode] ? MILL_METADATA[u.millCode].name : currentMillName);
+        currentManagerName = u.displayName || currentManagerName;
       }
-    } catch (e) {}
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   updateUIForRole();
@@ -46,7 +48,11 @@ async function autoFetchFromAPI() {
   if (btn) btn.disabled = true;
 
   try {
-    const res = await fetch('/api/v2/cmr-procurement?millCode=' + currentMillCode + '&sync=live');
+    const fetchUrl = (currentRole === 'GOVERNMENT_OFFICER' && currentMillCode === 'ALL') ? 
+      '/api/v2/cmr-procurement?sync=live' : 
+      '/api/v2/cmr-procurement?millCode=' + currentMillCode + '&sync=live';
+      
+    const res = await fetch(fetchUrl);
     const data = await res.json();
     if (data.success) {
       activeRecords = data.data;
@@ -54,7 +60,7 @@ async function autoFetchFromAPI() {
       await fetchSettlementSummary();
       
       const now = new Date();
-      if (lastSync) lastSync.innerText = 'Synced: ' + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      if (lastSync) lastSync.innerText = 'Synced: ' + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' (OPMS API Live)';
     }
   } catch (err) {
     console.error('Auto-fetch error:', err);
@@ -67,7 +73,11 @@ async function autoFetchFromAPI() {
 // 2. Fetch Records
 async function fetchProcurementRecords() {
   try {
-    const res = await fetch('/api/v2/cmr-procurement?millCode=' + currentMillCode);
+    const fetchUrl = (currentRole === 'GOVERNMENT_OFFICER' && currentMillCode === 'ALL') ? 
+      '/api/v2/cmr-procurement' : 
+      '/api/v2/cmr-procurement?millCode=' + currentMillCode;
+
+    const res = await fetch(fetchUrl);
     const data = await res.json();
     if (data.success) {
       activeRecords = data.data;
@@ -94,7 +104,7 @@ async function fetchSettlementSummary() {
   }
 }
 
-// 4. Render Table Rows
+// 4. Render Table Rows with Clear Typography
 function renderTable(records) {
   const tbody = document.getElementById('reconcileTableBody');
   if (!tbody) return;
@@ -103,43 +113,45 @@ function renderTable(records) {
   const badge = document.getElementById('recordsCountBadge');
   if (badge) badge.innerText = records.length + ' Items';
 
+  const isOfficer = currentRole === 'GOVERNMENT_OFFICER';
+
   records.forEach(r => {
     const isMatch = r.reconciliationStatus === 'MATCH';
     const tr = document.createElement('tr');
-    tr.className = isMatch ? 'hover:bg-gray-50' : 'bg-amber-50/50 hover:bg-amber-50';
+    tr.className = isMatch ? 'hover:bg-slate-50 transition' : 'bg-amber-50/60 hover:bg-amber-50 transition';
 
     tr.innerHTML = `
-      <td class="py-2.5 px-3 font-semibold text-gray-900">${r.truckNo}</td>
-      <td class="py-2.5 px-3 text-gray-600">${r.passNo}</td>
-      <td class="py-2.5 px-3">
-        <div class="font-medium text-gray-900">${r.farmerName}</div>
-        <div class="text-[10px] text-gray-500 font-mono">${r.farmerAadhaar}</div>
+      <td class="py-3 px-3.5 font-bold text-slate-900">${r.truckNo}</td>
+      <td class="py-3 px-3 text-slate-600 font-mono text-xs">${r.passNo}</td>
+      <td class="py-3 px-3.5">
+        <div class="font-bold text-slate-900 font-sans">${r.farmerName}</div>
+        <div class="text-xs text-slate-500 font-mono">${r.farmerAadhaar}</div>
       </td>
-      <td class="py-2.5 px-3 text-right">${r.govtNetKg.toLocaleString()} kg</td>
-      <td class="py-2.5 px-3 text-right font-semibold ${isMatch ? 'text-emerald-700' : 'text-amber-800'}">${r.millNetKg.toLocaleString()} kg</td>
-      <td class="py-2.5 px-3 text-center">
-        <span class="px-1.5 py-0.5 rounded text-[11px] ${r.moisture > 17.0 ? 'bg-rose-100 text-rose-800 font-bold' : 'bg-gray-100 text-gray-700'}">
+      <td class="py-3 px-3 text-right text-slate-700">${r.govtNetKg.toLocaleString()} kg</td>
+      <td class="py-3 px-3 text-right font-bold ${isMatch ? 'text-emerald-700' : 'text-amber-800'}">${r.millNetKg.toLocaleString()} kg</td>
+      <td class="py-3 px-3 text-center">
+        <span class="px-2 py-0.5 rounded text-xs ${r.moisture > 17.0 ? 'bg-rose-100 text-rose-800 font-bold border border-rose-300' : 'bg-slate-100 text-slate-700'}">
           ${r.moisture}%
         </span>
       </td>
-      <td class="py-2.5 px-3 text-right font-semibold ${r.netVarianceKg < 0 ? 'text-amber-700' : 'text-gray-500'}">
+      <td class="py-3 px-3 text-right font-bold ${r.netVarianceKg < 0 ? 'text-amber-700' : 'text-slate-500'}">
         ${r.netVarianceKg === 0 ? '0 kg' : r.netVarianceKg + ' kg'}
       </td>
-      <td class="py-2.5 px-3 text-center">
-        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isMatch ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
-          ${isMatch ? 'MATCH' : 'MISMATCH'}
+      <td class="py-3 px-3 text-center">
+        <span class="px-2.5 py-1 rounded-md text-xs font-bold ${isMatch ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-amber-100 text-amber-800 border border-amber-200'}">
+          ${isMatch ? 'VERIFIED' : 'FLAGGED'}
         </span>
       </td>
-      <td class="py-2.5 px-3 text-[11px] text-gray-600 max-w-xs truncate" title="${r.discrepancyReason}">
+      <td class="py-3 px-3.5 text-xs text-slate-600 max-w-xs font-sans" title="${r.discrepancyReason}">
         ${r.discrepancyReason}
       </td>
-      <td class="py-2.5 px-3 text-center">
+      <td class="py-3 px-3.5 text-center">
         ${!isMatch ? `
-          <button onclick="openDisputeModal(${r.id})" class="px-2 py-0.5 bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-semibold rounded">
-            Resolve
+          <button onclick="openDisputeModal(${r.id})" class="px-3 py-1.5 ${isOfficer ? 'bg-amber-600 hover:bg-amber-700' : 'bg-slate-800 hover:bg-slate-900'} text-white text-xs font-bold rounded-md shadow transition">
+            ${isOfficer ? '⚖️ Resolve' : '⚠️ Recalibrate'}
           </button>
         ` : `
-          <span class="text-xs text-emerald-700 font-medium">Verified</span>
+          <span class="text-xs text-emerald-700 font-bold font-sans">✓ Cleared</span>
         `}
       </td>
     `;
@@ -171,49 +183,75 @@ function updateKPIs() {
   if (elSub) elSub.innerText = '₹ ' + Number(totalSubsidy).toLocaleString();
 }
 
-// 6. Render Statutory Decision Hub
+// 6. Render Statutory Decision Hub (Role-Adaptive)
 function renderStatutoryHub() {
   const container = document.getElementById('statutoryDecisionContainer');
   if (!container) return;
   const isApproved = settlementData.approvalStatus === 'APPROVED';
+  const isOfficer = currentRole === 'GOVERNMENT_OFFICER';
 
   if (isApproved) {
     container.innerHTML = `
-      <div class="bg-emerald-50 border border-emerald-300 p-3.5 rounded flex flex-col sm:flex-row items-center justify-between gap-3">
-        <div class="flex items-center gap-2.5">
-          <span class="w-6 h-6 rounded-full bg-emerald-700 text-white flex items-center justify-center font-bold text-xs">✓</span>
+      <div class="bg-emerald-50 border border-emerald-300 p-4 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <span class="w-8 h-8 rounded-full bg-emerald-700 text-white flex items-center justify-center font-bold text-sm">✓</span>
           <div>
-            <div class="font-bold text-emerald-950 text-xs">Statutory Subsidy Approved & Cleared for Payment</div>
-            <div class="text-[11px] text-emerald-800">Token: PFMS-TS-2025-CLEAR-${currentMillCode.slice(-4)} • SMS Alerts Sent</div>
+            <div class="font-bold text-emerald-950 text-sm sm:text-base">Statutory Subsidy & 67% CMR Approved by DCSO</div>
+            <div class="text-xs sm:text-sm text-emerald-800 mt-0.5">Clearance Token: <code class="font-bold bg-white/70 px-1 py-0.5 rounded">PFMS-TS-2025-CLEAR-${currentMillCode.slice(-4)}</code> • Farmer DBT SMS Gateway Dispatched</div>
           </div>
         </div>
 
-        <div class="flex items-center gap-2">
-          <button onclick="openJrcModal()" class="px-3 py-1 bg-emerald-800 hover:bg-emerald-700 text-white text-xs font-semibold rounded">
-            📄 View JRC Certificate
+        <div class="flex flex-wrap items-center gap-2.5">
+          <button onclick="openJrcModal()" class="px-4 py-2 bg-emerald-800 hover:bg-emerald-900 text-white text-sm font-bold rounded-lg shadow transition">
+            📄 View / Print JRC Certificate
           </button>
-          <button onclick="openSmsModal()" class="px-3 py-1 bg-white hover:bg-gray-50 text-emerald-900 border border-emerald-300 text-xs font-semibold rounded">
-            📱 View SMS Logs
+          <button onclick="openSmsModal()" class="px-3.5 py-2 bg-white hover:bg-emerald-50 text-emerald-900 border border-emerald-300 text-sm font-semibold rounded-lg transition">
+            📱 View Farmer SMS Logs
           </button>
-          <button onclick="requestRecalibration()" class="text-xs text-amber-800 underline ml-2">Reopen</button>
+          ${isOfficer ? `
+            <button onclick="requestRecalibration()" class="text-xs text-amber-800 hover:underline font-semibold ml-1">Reopen Audit</button>
+          ` : ''}
         </div>
       </div>
     `;
   } else {
-    container.innerHTML = `
-      <div class="flex flex-wrap items-center gap-2">
-        <button onclick="approveSubsidyBatch()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded shadow-sm">
-          ✓ Approve & Release Subsidy
-        </button>
-        <button onclick="alert('Batch halted.')" class="px-3 py-2 bg-rose-700 hover:bg-rose-800 text-white font-semibold text-xs rounded">
-          ✕ Reject Batch
-        </button>
-        <button onclick="alert('Notice sent to Miller for recalibration.')" class="px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs rounded">
-          ⚠️ Request Correction
-        </button>
-      </div>
-    `;
+    if (isOfficer) {
+      container.innerHTML = `
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+          <div>
+            <div class="text-sm font-bold text-slate-900">District Officer Authorization Required</div>
+            <div class="text-xs text-slate-500 mt-0.5">Review reconciled quantities before digitally signing JRC & clearing treasury subsidy funds.</div>
+          </div>
+          <div class="flex flex-wrap items-center gap-2.5">
+            <button onclick="approveSubsidyBatch()" class="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm rounded-lg shadow transition">
+              ✓ Approve & Authorize Subsidy
+            </button>
+            <button onclick="alert('Consignment batch held for inspection.')" class="px-3.5 py-2.5 bg-rose-700 hover:bg-rose-800 text-white font-semibold text-sm rounded-lg transition">
+              ✕ Halt Consignment
+            </button>
+          </div>
+        </div>
+      `;
+    } else {
+      container.innerHTML = `
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+          <div>
+            <div class="text-sm font-bold text-slate-900">Subsidy Claim Prepared (Miller Portal)</div>
+            <div class="text-xs text-slate-500 mt-0.5">Milling subsidy claim of ₹10/Qtl + handling fees prepared for Warangal DCSO Sign-Off.</div>
+          </div>
+          <div class="flex items-center gap-2.5">
+            <button onclick="submitMillerClaim()" class="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm rounded-lg shadow transition">
+              📝 Submit Claim to DCSO
+            </button>
+          </div>
+        </div>
+      `;
+    }
   }
+}
+
+function submitMillerClaim() {
+  alert('Subsidy claim and 67% CMR delivery schedule submitted to Warangal District Civil Supplies Office for review!');
 }
 
 async function approveSubsidyBatch() {
@@ -253,21 +291,60 @@ function requestRecalibration() {
 
 function updateUIForRole() {
   const isOfficer = currentRole === 'GOVERNMENT_OFFICER';
+  
   const nameEl = document.getElementById('userDisplayName');
   if (nameEl) nameEl.innerText = currentUserDisplayName;
+  
+  const subTitleEl = document.getElementById('userSubTitle');
+  if (subTitleEl) {
+    subTitleEl.innerText = isOfficer ? 'Warangal District Civil Supplies Oversight' : `${currentMillName} (${currentMillCode})`;
+  }
+
   const roleEl = document.getElementById('userRoleName');
-  if (roleEl) roleEl.innerText = isOfficer ? 'Officer (DCSO)' : 'Rice Miller';
+  if (roleEl) {
+    roleEl.innerText = isOfficer ? 'Officer (DCSO)' : 'Rice Miller';
+    roleEl.className = isOfficer ? 
+      'bg-emerald-50 text-emerald-800 px-2.5 py-1 rounded-md border border-emerald-300 font-semibold text-xs' : 
+      'bg-blue-50 text-blue-800 px-2.5 py-1 rounded-md border border-blue-300 font-semibold text-xs';
+  }
   
   const banEl = document.getElementById('bannerTitle');
   if (banEl) {
     banEl.innerText = isOfficer ? 
       'Warangal District Civil Supplies Oversight' : 
-      currentMillName + ' (' + currentMillCode + ')';
+      currentMillName + ' Console';
   }
 
   const quotaEl = document.getElementById('millQuotaLabel');
   if (quotaEl) {
-    quotaEl.innerText = isOfficer ? 'All 4 Mills Monitored' : 'Allocated Quota: ' + (MILL_METADATA[currentMillCode]?.quota || '3,500 MT');
+    quotaEl.innerText = isOfficer ? 
+      'All 4 Mills Monitored (District View)' : 
+      'Season Quota: ' + (MILL_METADATA[currentMillCode]?.quota || '3,500.00 Qtl');
+  }
+
+  const millSelectContainer = document.getElementById('millSelectContainer');
+  if (millSelectContainer) {
+    if (!isOfficer) {
+      // Lock dropdown for Miller to only show their own mill
+      const select = document.getElementById('millFilterSelect');
+      if (select) {
+        select.value = currentMillCode;
+        select.disabled = true;
+        select.classList.add('bg-slate-100', 'cursor-not-allowed');
+      }
+    }
+  }
+
+  // Update card titles for Miller context
+  if (!isOfficer) {
+    const c1 = document.getElementById('card1Title');
+    if (c1) c1.innerText = 'Mill Inward Paddy';
+    const c2 = document.getElementById('card2Title');
+    if (c2) c2.innerText = 'My 67% CMR Out-Turn Obligation';
+    const c3 = document.getElementById('card3Title');
+    if (c3) c3.innerText = 'Active Flagged Batches';
+    const c4 = document.getElementById('card4Title');
+    if (c4) c4.innerText = 'Accrued Subsidy Claim';
   }
 }
 
@@ -323,15 +400,15 @@ function openSmsModal() {
 
   farmers.forEach(f => {
     const card = document.createElement('div');
-    card.className = 'bg-gray-50 p-2 rounded border border-gray-200 flex items-center justify-between text-xs';
+    card.className = 'bg-slate-50 p-3 rounded-lg border border-slate-200 flex items-center justify-between text-sm';
     card.innerHTML = `
       <div>
-        <div class="font-bold text-gray-900">${f.name} <span class="font-normal text-gray-500 font-mono">(${f.phone})</span></div>
-        <div class="text-[10px] text-emerald-800">Direct DBT to ${f.bank}</div>
+        <div class="font-bold text-slate-900">${f.name} <span class="font-normal text-slate-500 font-mono">(${f.phone})</span></div>
+        <div class="text-xs text-emerald-800">Direct Benefit Transfer to ${f.bank}</div>
       </div>
       <div class="text-right font-mono">
-        <div class="font-bold text-emerald-800">${f.amt}</div>
-        <div class="text-[10px] text-gray-500">Sent</div>
+        <div class="font-bold text-emerald-800 text-sm">${f.amt}</div>
+        <div class="text-xs text-slate-500">Delivered</div>
       </div>
     `;
     container.appendChild(card);
@@ -346,6 +423,18 @@ function openDisputeModal(recordId) {
   const record = activeRecords.find(r => r.id === recordId);
   if (!record) return;
 
+  const isOfficer = currentRole === 'GOVERNMENT_OFFICER';
+
+  const modalTitle = document.getElementById('disputeModalTitle');
+  if (modalTitle) {
+    modalTitle.innerText = isOfficer ? 'Statutory Dispute Resolution & Calibration' : 'Request Weight Recalibration';
+  }
+
+  const submitBtn = document.getElementById('dispSubmitBtn');
+  if (submitBtn) {
+    submitBtn.innerText = isOfficer ? 'Save & Calibrate Weight' : 'Submit Recalibration Request';
+  }
+
   document.getElementById('dispTruckNo').innerText = record.truckNo;
   document.getElementById('dispGovtNet').innerText = record.govtNetKg.toLocaleString() + ' kg';
   document.getElementById('dispVariance').innerText = record.netVarianceKg + ' kg';
@@ -357,6 +446,7 @@ function closeDisputeModal() { document.getElementById('disputeModal').classList
 
 async function submitDisputeResolution() {
   const agreed = parseFloat(document.getElementById('dispAgreedQty').value);
+  const notes = document.getElementById('dispNotes').value.trim();
 
   try {
     const res = await fetch('/api/v2/disputes/resolve', {
@@ -365,7 +455,7 @@ async function submitDisputeResolution() {
       body: JSON.stringify({
         recordId: activeDisputeRecordId,
         agreedQuantity: agreed,
-        notes: 'Joint physical scale inspection calibrated'
+        notes: notes || 'Joint physical weighbridge scale inspection calibrated'
       })
     });
     const data = await res.json();
