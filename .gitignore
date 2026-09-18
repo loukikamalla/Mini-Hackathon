@@ -45,3 +45,11 @@ Thumbs.db
 
 ~$*.xlsx
 *.tmp
+
+# Python & Maven
+__pycache__/
+*.pyc
+/tools/
+/backend/target/
+/flask_backend/uploads/
+/flask_backend/generated_certs/
