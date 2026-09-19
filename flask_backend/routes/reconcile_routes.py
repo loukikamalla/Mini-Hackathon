@@ -238,6 +238,97 @@ def get_procurement_records():
         "source": "Telangana State OPMS Procurement Live Stream"
     })
 
+@reconcile_bp.route('/cmr-procurement/intake', methods=['POST'])
+def record_inward_intake():
+    data = request.get_json(force=True, silent=True) or {}
+    
+    truck_no = str(data.get('truckNo', '')).strip().upper()
+    pass_no = str(data.get('passNo', '')).strip().upper()
+    mill_code = str(data.get('millCode', 'TS-WGL-MR-4412')).strip()
+    farmer_name = str(data.get('farmerName', 'Local Farmer')).strip()
+    farmer_aadhaar = str(data.get('farmerAadhaar', 'XXXX-XXXX-8822')).strip()
+    farmer_phone = str(data.get('farmerPhone', '9848011234')).strip()
+    paddy_variety = str(data.get('paddyVariety', 'BPT-5204 (Sona Masoori)')).strip()
+    
+    govt_gross_kg = float(data.get('govtGrossKg', 0))
+    govt_tare_kg = float(data.get('govtTareKg', 0))
+    govt_net_kg = float(data.get('govtNetKg', 0))
+    if govt_net_kg <= 0 and govt_gross_kg > govt_tare_kg:
+        govt_net_kg = govt_gross_kg - govt_tare_kg
+        
+    mill_gross_kg = float(data.get('millGrossKg', 0))
+    mill_tare_kg = float(data.get('millTareKg', 0))
+    mill_net_kg = float(data.get('millNetKg', 0))
+    if mill_net_kg <= 0 and mill_gross_kg > mill_tare_kg:
+        mill_net_kg = mill_gross_kg - mill_tare_kg
+        
+    moisture = float(data.get('moisture', 16.0))
+    
+    # Reconciliation calculation
+    net_variance_kg = round(govt_net_kg - mill_net_kg, 2)
+    variance_pct = round(abs(net_variance_kg) / max(govt_net_kg, 1) * 100, 2) if govt_net_kg > 0 else 0.0
+    
+    if moisture > 17.0 and variance_pct > 1.0:
+        status = 'MISMATCH'
+        reason = f"Moisture {moisture:.1f}% (>17% threshold) & Tare variance {net_variance_kg:+,.0f} kg ({variance_pct:.2f}%)"
+    elif moisture > 17.0:
+        status = 'MISMATCH'
+        reason = f"Moisture {moisture:.1f}% exceeds statutory 17.0% threshold"
+    elif variance_pct > 1.0:
+        status = 'MISMATCH'
+        reason = f"Scale variance {net_variance_kg:+,.0f} kg ({variance_pct:.2f}%) exceeds statutory ±1.0% tolerance"
+    else:
+        status = 'MATCH'
+        reason = "100% Gross/Net Weight & Moisture verified within statutory ±1% tolerance"
+        
+    new_id = max([r['id'] for r in MOCK_RECORDS] + [0]) + 1
+    new_record = {
+        "id": new_id,
+        "truckNo": truck_no or f"TS03UB{new_id:04d}",
+        "passNo": pass_no or f"TP-2025-{new_id:03d}",
+        "millCode": mill_code,
+        "farmerName": farmer_name,
+        "farmerAadhaar": farmer_aadhaar,
+        "farmerPhone": farmer_phone,
+        "paddyVariety": paddy_variety,
+        "govtGrossKg": govt_gross_kg or (govt_net_kg + 8000),
+        "govtTareKg": govt_tare_kg or 8000,
+        "govtNetKg": govt_net_kg,
+        "millGrossKg": mill_gross_kg or (mill_net_kg + 8000),
+        "millTareKg": mill_tare_kg or 8000,
+        "millNetKg": mill_net_kg,
+        "moisture": moisture,
+        "netVarianceKg": net_variance_kg,
+        "reconciliationStatus": status,
+        "discrepancyReason": reason,
+        "finalAgreedNetKg": mill_net_kg
+    }
+    
+    MOCK_RECORDS.insert(0, new_record)
+    
+    # If mismatch, push alert notification to DCSO
+    if status == 'MISMATCH':
+        from datetime import datetime
+        import uuid
+        now_time = datetime.now().strftime("%I:%M %p")
+        SYSTEM_NOTIFICATIONS.insert(0, {
+            "id": f"notif-{uuid.uuid4().hex[:6]}",
+            "recipient": "DCSO",
+            "sender": f"Mill Gate Intake ({mill_code})",
+            "type": "NEW_DISCREPANCY_FLAGGED",
+            "title": f"Inward Discrepancy Flagged: {new_record['truckNo']}",
+            "message": f"New inward intake for {new_record['truckNo']} flagged mismatch: {reason}.",
+            "recordId": new_id,
+            "timestamp": now_time,
+            "status": "ACTIVE"
+        })
+        
+    return jsonify({
+        "success": True,
+        "message": f"Inward weighbridge intake recorded for Truck {new_record['truckNo']} ({status})",
+        "record": new_record
+    })
+
 @reconcile_bp.route('/settlement', methods=['GET'])
 def get_settlement_summary():
     mill_code = request.args.get('millCode', 'TS-WGL-MR-4412')

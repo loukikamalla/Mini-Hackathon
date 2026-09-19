@@ -827,4 +827,106 @@ function showToast(title, message, type = 'success') {
   }, 4000);
 }
 
+// 12. INWARD WEIGHBRIDGE INTAKE ENTRY CONTROLLER
+function openInwardIntakeModal() {
+  const modal = document.getElementById('inwardIntakeModal');
+  if (modal) {
+    modal.classList.remove('hidden');
+    // Pre-populate sensible defaults if empty
+    const now = new Date();
+    const truckInput = document.getElementById('intakeTruckNo');
+    const passInput = document.getElementById('intakePassNo');
+    if (truckInput && !truckInput.value) {
+      truckInput.value = 'TS03UB' + Math.floor(1000 + Math.random() * 9000);
+    }
+    if (passInput && !passInput.value) {
+      passInput.value = 'TP-2025-' + Math.floor(100 + Math.random() * 900);
+    }
+    updateIntakeMath();
+  }
+}
+
+function closeInwardIntakeModal() {
+  const modal = document.getElementById('inwardIntakeModal');
+  if (modal) modal.classList.add('hidden');
+}
+
+function updateIntakeMath() {
+  const gross = parseFloat(document.getElementById('intakeGrossKg')?.value) || 0;
+  const tare = parseFloat(document.getElementById('intakeTareKg')?.value) || 0;
+  const net = Math.max(0, gross - tare);
+  const qtl = (net / 100).toFixed(2);
+  
+  const preview = document.getElementById('intakeComputedNetPreview');
+  if (preview) {
+    preview.innerText = `${net.toLocaleString()} kg (${qtl} Qtl)`;
+  }
+}
+
+async function submitInwardIntake(event) {
+  event.preventDefault();
+  
+  const btn = document.getElementById('intakeSubmitBtn');
+  if (btn) btn.disabled = true;
+
+  const truckNo = document.getElementById('intakeTruckNo').value.trim();
+  const passNo = document.getElementById('intakePassNo').value.trim();
+  const farmerName = document.getElementById('intakeFarmerName').value.trim();
+  const paddyVariety = document.getElementById('intakePaddyVariety').value;
+  const govtNetKg = parseFloat(document.getElementById('intakeGovtNetKg').value) || 0;
+  const grossKg = parseFloat(document.getElementById('intakeGrossKg').value) || 0;
+  const tareKg = parseFloat(document.getElementById('intakeTareKg').value) || 0;
+  const moisture = parseFloat(document.getElementById('intakeMoisture').value) || 16.0;
+
+  const millNetKg = Math.max(0, grossKg - tareKg);
+
+  try {
+    const res = await fetch('/api/v2/cmr-procurement/intake', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        truckNo: truckNo,
+        passNo: passNo,
+        millCode: (currentMillCode === 'ALL') ? 'TS-WGL-MR-4412' : currentMillCode,
+        farmerName: farmerName,
+        farmerAadhaar: 'XXXX-XXXX-' + Math.floor(1000 + Math.random() * 9000),
+        farmerPhone: '98480112' + Math.floor(10 + Math.random() * 90),
+        paddyVariety: paddyVariety,
+        govtGrossKg: govtNetKg + tareKg,
+        govtTareKg: tareKg,
+        govtNetKg: govtNetKg,
+        millGrossKg: grossKg,
+        millTareKg: tareKg,
+        millNetKg: millNetKg,
+        moisture: moisture
+      })
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      closeInwardIntakeModal();
+      document.getElementById('inwardIntakeForm').reset();
+      
+      await fetchProcurementRecords();
+      await fetchSettlementSummary();
+      await fetchNotifications();
+
+      const isMatch = data.record.reconciliationStatus === 'MATCH';
+      showToast(
+        isMatch ? 'Intake Reconciled (MATCH)' : 'Intake Discrepancy (MISMATCH)',
+        data.message,
+        isMatch ? 'success' : 'warning'
+      );
+    } else {
+      showToast('Error Recording Intake', data.message || 'Validation failed', 'error');
+    }
+  } catch (err) {
+    console.error('Inward intake error:', err);
+    showToast('Network Error', 'Failed to connect to reconciliation engine.', 'error');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+
 

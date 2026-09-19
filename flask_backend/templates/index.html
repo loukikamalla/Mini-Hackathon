@@ -81,8 +81,11 @@
         </p>
       </div>
 
-      <!-- AUTO FETCH ACTION / SYNC -->
+      <!-- AUTO FETCH ACTION / SYNC & WEIGHBRIDGE INTAKE -->
       <div class="flex flex-wrap items-center gap-3">
+        <button onclick="openInwardIntakeModal()" id="inwardIntakeBtn" class="px-4 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-sm rounded-lg shadow-md hover:shadow-emerald-950/20 transition flex items-center gap-2">
+          <span>➕ New Inward Intake (Weighbridge)</span>
+        </button>
         <button onclick="autoFetchFromAPI()" id="autoFetchBtn" class="px-4 py-2.5 bg-[#012B1B] hover:bg-emerald-900 text-white font-bold text-sm rounded-lg shadow-md hover:shadow-emerald-950/20 transition flex items-center gap-2">
           <span id="syncSpinner" class="hidden animate-spin">⟳</span>
           <span>⚡ Auto-Fetch Live OPMS Mandi Stream</span>
@@ -321,6 +324,104 @@
         <span class="text-xs text-slate-400 font-mono" id="notifLastCheckedText">Live Polling Active</span>
         <button onclick="closeNotificationModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 text-sm font-bold rounded-lg transition">Close</button>
       </div>
+    </div>
+  </div>
+
+  <!-- 5. INWARD WEIGHBRIDGE INTAKE ENTRY MODAL -->
+  <div id="inwardIntakeModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white border border-slate-200 max-w-xl w-full rounded-2xl p-6 shadow-2xl space-y-4 text-sm max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+        <div class="flex items-center gap-2.5">
+          <span class="text-2xl">⚖️</span>
+          <div>
+            <h3 class="font-black text-[#012B1B] text-base">New Inward Paddy Intake (Mill Weighbridge Entry)</h3>
+            <p class="text-xs text-slate-500">Record incoming vehicle scale weights & moisture for instant 67% CMR reconciliation</p>
+          </div>
+        </div>
+        <button onclick="closeInwardIntakeModal()" class="text-slate-400 hover:text-slate-700 font-bold text-xl">✕</button>
+      </div>
+
+      <form id="inwardIntakeForm" onsubmit="submitInwardIntake(event)" class="space-y-4">
+        
+        <!-- Row 1: Vehicle & Transit Pass -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1 text-xs uppercase tracking-wide">Truck / Vehicle No *</label>
+            <input type="text" id="intakeTruckNo" required placeholder="e.g. TS03UB8822" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-900 font-bold uppercase focus:bg-white focus:border-emerald-600 focus:outline-none">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1 text-xs uppercase tracking-wide">Govt Transit Pass No (TP) *</label>
+            <input type="text" id="intakePassNo" required placeholder="e.g. TP-2025-095" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-900 font-mono focus:bg-white focus:border-emerald-600 focus:outline-none">
+          </div>
+        </div>
+
+        <!-- Row 2: Farmer & Variety -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1 text-xs uppercase tracking-wide">Farmer Name *</label>
+            <input type="text" id="intakeFarmerName" required placeholder="e.g. K. Mallaiah" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-900 font-semibold focus:bg-white focus:border-emerald-600 focus:outline-none">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1 text-xs uppercase tracking-wide">Paddy Variety *</label>
+            <select id="intakePaddyVariety" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-900 font-medium focus:bg-white focus:border-emerald-600 focus:outline-none">
+              <option value="BPT-5204 (Sona Masoori)">BPT-5204 (Sona Masoori)</option>
+              <option value="RNR-15048 (Telangana Sona)">RNR-15048 (Telangana Sona)</option>
+              <option value="MTU-1010 (Raw Paddy)">MTU-1010 (Raw Paddy)</option>
+              <option value="KNM-118 (Fine Paddy)">KNM-118 (Fine Paddy)</option>
+              <option value="JGL-24423 (Fine)">JGL-24423 (Fine)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Row 3: Govt Net Weight Reference -->
+        <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+          <label class="block font-bold text-slate-700 mb-1 text-xs uppercase tracking-wide">Govt Mandi Transit Pass Net Weight (Kg) *</label>
+          <input type="number" id="intakeGovtNetKg" required placeholder="16000" oninput="updateIntakeMath()" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-slate-900 font-mono font-bold text-base focus:border-emerald-600 focus:outline-none">
+          <div class="text-[11px] text-slate-500 mt-1">Stated net paddy weight on the agricultural procurement transit slip</div>
+        </div>
+
+        <!-- Row 4: Mill Physical Weighbridge Scale Gross & Tare -->
+        <div class="bg-emerald-50/60 p-3.5 rounded-xl border border-emerald-200 space-y-3">
+          <div class="font-bold text-emerald-950 text-xs uppercase tracking-wider flex items-center gap-1.5">
+            <span>🏭 Mill Weighbridge Scale Readings</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block font-bold text-slate-700 mb-1 text-xs">Mill Gross Weight (Kg) *</label>
+              <input type="number" id="intakeGrossKg" required placeholder="24500" oninput="updateIntakeMath()" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-slate-900 font-mono font-bold focus:border-emerald-600 focus:outline-none">
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 mb-1 text-xs">Mill Tare / Empty Truck (Kg) *</label>
+              <input type="number" id="intakeTareKg" required placeholder="8500" oninput="updateIntakeMath()" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-slate-900 font-mono font-bold focus:border-emerald-600 focus:outline-none">
+            </div>
+          </div>
+
+          <!-- Live Math Preview -->
+          <div class="bg-white p-2.5 rounded-lg border border-emerald-300 flex items-center justify-between text-xs">
+            <span class="text-slate-600 font-medium">Calculated Mill Net Paddy:</span>
+            <span class="font-black text-emerald-900 font-mono text-sm" id="intakeComputedNetPreview">0 kg (0.00 Qtl)</span>
+          </div>
+        </div>
+
+        <!-- Row 5: Moisture Meter Reading -->
+        <div>
+          <label class="block font-bold text-slate-700 mb-1 text-xs uppercase tracking-wide">Mill Moisture Meter Reading (% Moisture) *</label>
+          <div class="flex items-center gap-2">
+            <input type="number" step="0.1" id="intakeMoisture" required placeholder="16.2" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-900 font-mono font-bold text-base focus:bg-white focus:border-emerald-600 focus:outline-none">
+            <span class="text-slate-500 font-bold text-base">%</span>
+          </div>
+          <div class="text-[11px] text-slate-500 mt-1">Telangana Civil Supplies permissible threshold: max <b>17.0%</b></div>
+        </div>
+
+        <!-- Modal Actions -->
+        <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-200">
+          <button type="button" onclick="closeInwardIntakeModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-sm transition">Cancel</button>
+          <button type="submit" id="intakeSubmitBtn" class="px-5 py-2 bg-[#012B1B] hover:bg-emerald-950 text-white font-extrabold rounded-lg text-sm shadow-md transition flex items-center gap-1.5">
+            <span>⚡ Save & Auto-Reconcile Consignment</span>
+          </button>
+        </div>
+
+      </form>
     </div>
   </div>
 
