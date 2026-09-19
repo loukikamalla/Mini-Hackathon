@@ -254,43 +254,183 @@ def get_settlement_summary():
         "settlement": stats
     })
 
+from datetime import datetime
+import uuid
+
+# System Bilateral Notifications Store
+SYSTEM_NOTIFICATIONS = [
+    {
+        "id": "notif-101",
+        "recipient": "TS-WGL-MR-4412",
+        "sender": "Officer R. Kumar (DCSO)",
+        "type": "CORRECTION_NOTICE",
+        "title": "Moisture & Scale Notice",
+        "message": "DCSO issued notice on Truck TS03UB1102 (Moisture 18.2% exceeds 17% limit). Joint physical scale recalibration required.",
+        "recordId": 4,
+        "timestamp": datetime.now().strftime("%I:%M %p"),
+        "status": "ACTIVE"
+    }
+]
+
+@reconcile_bp.route('/notifications', methods=['GET'])
+def get_notifications():
+    recipient = request.args.get('recipient', 'ALL')
+    if recipient == 'ALL' or recipient == 'DCSO':
+        # Filter for DCSO or District broad notifications
+        notifs = [n for n in SYSTEM_NOTIFICATIONS if n['recipient'] in ('DCSO', 'ALL')]
+    else:
+        # Filter for specific mill
+        notifs = [n for n in SYSTEM_NOTIFICATIONS if n['recipient'] in (recipient, 'ALL')]
+    
+    return jsonify({
+        "success": True,
+        "count": len(notifs),
+        "notifications": notifs
+    })
+
+@reconcile_bp.route('/notifications/dismiss', methods=['POST'])
+def dismiss_notification():
+    data = request.get_json(force=True, silent=True) or {}
+    notif_id = data.get('id')
+    for n in SYSTEM_NOTIFICATIONS:
+        if n['id'] == notif_id:
+            n['status'] = 'DISMISSED'
+            return jsonify({"success": True, "message": "Notification dismissed"})
+    return jsonify({"success": False, "message": "Notification not found"}), 404
+
 @reconcile_bp.route('/disputes/resolve', methods=['POST'])
 def resolve_dispute():
     data = request.get_json(force=True, silent=True) or {}
     record_id = int(data.get('recordId', 0))
-    action = data.get('action', 'APPROVE_RECALIBRATION')  # 'APPROVE_RECALIBRATION', 'REJECT', 'REQUEST_CORRECTION'
+    action = data.get('action', 'APPROVE_RECALIBRATION')  # 'APPROVE_RECALIBRATION', 'REJECT', 'REQUEST_CORRECTION', 'MILLER_SUBMIT_CORRECTION'
     agreed_qty = float(data.get('agreedQuantity', 0))
     notes = data.get('notes', 'Joint inspection calibrated')
+    user_role = data.get('userRole', 'GOVERNMENT_OFFICER')
+    mill_name = data.get('millName', 'Sri Lakshmi Rice Industries')
+    manager_name = data.get('managerName', 'Loukika')
+
+    now_time = datetime.now().strftime("%I:%M %p")
 
     for r in MOCK_RECORDS:
         if r['id'] == record_id:
-            if action == 'APPROVE_RECALIBRATION' or action == 'APPROVE':
+            # 1. MILLER SUBMITS CORRECTION / RECALIBRATION
+            if action == 'MILLER_SUBMIT_CORRECTION' or user_role == 'RICE_MILLER':
+                r['millNetKg'] = agreed_qty
+                r['finalAgreedNetKg'] = agreed_qty
+                r['netVarianceKg'] = round(r['govtNetKg'] - agreed_qty, 2)
+                r['reconciliationStatus'] = 'CORRECTION_SUBMITTED'
+                r['discrepancyReason'] = f"RECALIBRATED BY MILLER ({manager_name}): {notes} (Submitted Net: {agreed_qty:,.1f} kg) - Awaiting DCSO Approval"
+                
+                # Clear existing mill notice if any
+                for n in SYSTEM_NOTIFICATIONS:
+                    if n.get('recordId') == record_id and n.get('recipient') == r['millCode']:
+                        n['status'] = 'CLEARED_BY_MILLER'
+
+                # Push instant notification to DCSO
+                new_notif = {
+                    "id": f"notif-{uuid.uuid4().hex[:6]}",
+                    "recipient": "DCSO",
+                    "sender": f"Miller ({manager_name}) - {mill_name}",
+                    "type": "MILLER_RECALIBRATION_SUBMITTED",
+                    "title": f"Recalibration Submitted for {r['truckNo']}",
+                    "message": f"Miller {manager_name} recalibrated Truck {r['truckNo']} to {agreed_qty:,.1f} kg ({notes}). Ready for DCSO approval.",
+                    "recordId": record_id,
+                    "timestamp": now_time,
+                    "status": "ACTIVE"
+                }
+                SYSTEM_NOTIFICATIONS.insert(0, new_notif)
+
+                return jsonify({
+                    "success": True,
+                    "message": f"Recalibration submitted successfully! DCSO notified for final verification.",
+                    "updatedRecord": r,
+                    "notification": new_notif
+                })
+
+            # 2. DCSO APPROVES RECALIBRATION
+            elif action == 'APPROVE_RECALIBRATION' or action == 'APPROVE':
                 r['millNetKg'] = agreed_qty
                 r['finalAgreedNetKg'] = agreed_qty
                 r['netVarianceKg'] = round(r['govtNetKg'] - agreed_qty, 2)
                 r['reconciliationStatus'] = 'MATCH'
-                r['discrepancyReason'] = f"RESOLVED: {notes} (Calibrated Net: {agreed_qty:,.1f} kg)"
+                r['discrepancyReason'] = f"RESOLVED & APPROVED BY DCSO: {notes} (Calibrated Net: {agreed_qty:,.1f} kg)"
+
+                # Clear pending DCSO notifications for this record
+                for n in SYSTEM_NOTIFICATIONS:
+                    if n.get('recordId') == record_id:
+                        n['status'] = 'APPROVED'
+
+                # Push notification to Miller
+                new_notif = {
+                    "id": f"notif-{uuid.uuid4().hex[:6]}",
+                    "recipient": r['millCode'],
+                    "sender": "Officer R. Kumar (DCSO)",
+                    "type": "DCSO_APPROVED",
+                    "title": f"Consignment {r['truckNo']} Approved",
+                    "message": f"Officer R. Kumar approved calibrated weight of {agreed_qty:,.1f} kg for Truck {r['truckNo']}.",
+                    "recordId": record_id,
+                    "timestamp": now_time,
+                    "status": "ACTIVE"
+                }
+                SYSTEM_NOTIFICATIONS.insert(0, new_notif)
+
                 return jsonify({
                     "success": True,
                     "message": f"Dispute for {r['truckNo']} calibrated and approved at {agreed_qty:,.1f} kg.",
-                    "updatedRecord": r
+                    "updatedRecord": r,
+                    "notification": new_notif
                 })
+
+            # 3. DCSO REJECTS CONSIGNMENT
             elif action == 'REJECT':
                 r['reconciliationStatus'] = 'REJECTED'
                 r['discrepancyReason'] = f"REJECTED BY DCSO: {notes}"
+                
+                new_notif = {
+                    "id": f"notif-{uuid.uuid4().hex[:6]}",
+                    "recipient": r['millCode'],
+                    "sender": "Officer R. Kumar (DCSO)",
+                    "type": "CONSIGNMENT_REJECTED",
+                    "title": f"Consignment {r['truckNo']} REJECTED",
+                    "message": f"DCSO rejected Truck {r['truckNo']}. Reason: {notes}",
+                    "recordId": record_id,
+                    "timestamp": now_time,
+                    "status": "ACTIVE"
+                }
+                SYSTEM_NOTIFICATIONS.insert(0, new_notif)
+
                 return jsonify({
                     "success": True,
                     "message": f"Consignment {r['truckNo']} was rejected by DCSO authority.",
-                    "updatedRecord": r
+                    "updatedRecord": r,
+                    "notification": new_notif
                 })
+
+            # 4. DCSO ISSUES CORRECTION NOTICE TO MILLER
             elif action == 'REQUEST_CORRECTION':
                 r['reconciliationStatus'] = 'CORRECTION_REQUESTED'
-                r['discrepancyReason'] = f"CORRECTION NOTICE ISSUED: {notes}"
+                r['discrepancyReason'] = f"CORRECTION NOTICE ISSUED BY DCSO: {notes}"
+
+                new_notif = {
+                    "id": f"notif-{uuid.uuid4().hex[:6]}",
+                    "recipient": r['millCode'],
+                    "sender": "Officer R. Kumar (DCSO)",
+                    "type": "CORRECTION_NOTICE",
+                    "title": f"Correction Notice: Truck {r['truckNo']}",
+                    "message": f"DCSO requested scale recalibration for Truck {r['truckNo']}. Justification: {notes}",
+                    "recordId": record_id,
+                    "timestamp": now_time,
+                    "status": "ACTIVE"
+                }
+                SYSTEM_NOTIFICATIONS.insert(0, new_notif)
+
                 return jsonify({
                     "success": True,
-                    "message": f"Correction request dispatched to Miller for {r['truckNo']}.",
-                    "updatedRecord": r
+                    "message": f"Correction request dispatched to Miller for {r['truckNo']} with instant notification.",
+                    "updatedRecord": r,
+                    "notification": new_notif
                 })
 
     return jsonify({"success": False, "message": "Record ID not found"}), 404
+
 

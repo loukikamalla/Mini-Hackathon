@@ -33,8 +33,16 @@
         </div>
       </div>
 
-      <!-- Right User Identity & Logout -->
-      <div class="flex items-center gap-4 text-sm">
+      <!-- Right User Identity, Notifications & Logout -->
+      <div class="flex items-center gap-3.5 text-sm">
+        
+        <!-- Notification Bell with Live Badge -->
+        <button onclick="openNotificationModal()" class="relative p-2 text-emerald-200 hover:text-white bg-emerald-900/60 hover:bg-emerald-900 rounded-lg border border-emerald-700/60 transition flex items-center gap-1.5" title="View Regulatory Notifications">
+          <span class="text-base">🔔</span>
+          <span class="hidden sm:inline text-xs font-bold font-sans">Alerts</span>
+          <span id="notifBadgeCount" class="px-1.5 py-0.2 bg-amber-400 text-slate-950 font-black text-[10px] rounded-full">1</span>
+        </button>
+
         <div class="flex items-center gap-2.5 border-r border-emerald-800/80 pr-4">
           <div class="text-right">
             <div class="font-bold text-slate-100 leading-tight" id="userDisplayName">Officer R. Kumar (DCSO)</div>
@@ -53,6 +61,11 @@
 
   <!-- MAIN BODY -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 flex-1 w-full space-y-6">
+
+    <!-- LIVE ACTIVE REGULATORY NOTIFICATION BANNER (DYNAMICALLY TOGGLED) -->
+    <div id="liveAlertBannerContainer" class="hidden">
+      <!-- Injected by JS -->
+    </div>
 
     <!-- SUBHEADER: CONTEXT BAR & OPMS API SYNC -->
     <div class="bg-white border-l-4 border-l-[#012B1B] border border-slate-200 p-5 rounded-xl shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -282,6 +295,31 @@
       <!-- Action Buttons Container (Adapts for Miller vs DCSO) -->
       <div class="pt-3 border-t border-slate-200" id="disputeModalActionsContainer">
         <!-- Injected dynamically by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. BILATERAL NOTIFICATIONS MODAL -->
+  <div id="notificationsModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white border border-slate-200 max-w-lg w-full rounded-2xl p-6 shadow-2xl space-y-4 text-sm">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+        <div class="flex items-center gap-2.5">
+          <span class="text-2xl">🔔</span>
+          <div>
+            <h3 class="font-black text-[#012B1B] text-base">Regulatory & Compliance Notifications</h3>
+            <p class="text-xs text-slate-500">Live bilateral alerts between Civil Supplies and Mill Managers</p>
+          </div>
+        </div>
+        <button onclick="closeNotificationModal()" class="text-slate-400 hover:text-slate-700 font-bold text-xl">✕</button>
+      </div>
+      
+      <div class="space-y-2.5 max-h-80 overflow-y-auto pr-1" id="notificationsListContainer">
+        <!-- Injected dynamically by JS -->
+      </div>
+
+      <div class="flex items-center justify-between pt-3 border-t border-slate-200">
+        <span class="text-xs text-slate-400 font-mono" id="notifLastCheckedText">Live Polling Active</span>
+        <button onclick="closeNotificationModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 text-sm font-bold rounded-lg transition">Close</button>
       </div>
     </div>
   </div>

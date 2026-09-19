@@ -8,6 +8,7 @@ let currentUserDisplayName = 'Officer R. Kumar (DCSO)';
 let activeRecords = [];
 let settlementData = {};
 let activeDisputeRecordId = null;
+let activeNotifications = [];
 
 const MILL_METADATA = {
   'TS-WGL-MR-4412': { name: 'Sri Lakshmi Rice Industries', manager: 'Loukika', quota: '3,500.00 Qtl' },
@@ -36,6 +37,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   updateUIForRole();
   await fetchProcurementRecords();
   await fetchSettlementSummary();
+  await fetchNotifications();
+
+  // Bilateral Live Polling every 5 seconds
+  setInterval(fetchNotifications, 5000);
 });
 
 // 1. AUTO-FETCH DIRECT FROM LIVE OPMS MANDI STREAM
@@ -409,6 +414,7 @@ function switchMillFromSelect(millCode) {
   updateUIForRole();
   fetchProcurementRecords();
   fetchSettlementSummary();
+  fetchNotifications();
 }
 
 function filterRecords(type) {
@@ -454,6 +460,7 @@ function closeJrcModal() { document.getElementById('jrcCertificateModal').classL
 // 8. Simulated Farmer DBT SMS Gateway Broadcast Logs
 function openSmsModal() {
   const container = document.getElementById('smsLogsContainer');
+  if (!container) return;
   container.innerHTML = '';
   
   // Compute dynamically based on active batches or standard MSP rate (₹2,320/Qtl Grade-A)
@@ -506,7 +513,12 @@ function openDisputeModal(recordId) {
 
   const modalTitle = document.getElementById('disputeModalTitle');
   if (modalTitle) {
-    modalTitle.innerText = isOfficer ? '3-Way Statutory Dispute Resolution & Calibration' : 'Request Weight Recalibration';
+    modalTitle.innerText = isOfficer ? '3-Way Statutory Dispute Resolution & Calibration' : 'Miller Scale Recalibration Console';
+  }
+
+  const subtitleEl = document.getElementById('disputeModalSubtitle');
+  if (subtitleEl) {
+    subtitleEl.innerText = isOfficer ? 'Official DCSO Statutory Determination' : `Correct Weighbridge Tare Variance for ${record.truckNo}`;
   }
 
   document.getElementById('dispTruckNo').innerText = record.truckNo;
@@ -521,15 +533,18 @@ function openDisputeModal(recordId) {
         <div class="flex flex-wrap items-center justify-end gap-2.5">
           <button onclick="closeDisputeModal()" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-sm">Cancel</button>
           <button onclick="submitDisputeResolution('REJECT')" class="px-3.5 py-2 bg-rose-700 hover:bg-rose-800 text-white font-bold rounded-lg text-sm shadow">✕ Reject</button>
-          <button onclick="submitDisputeResolution('REQUEST_CORRECTION')" class="px-3.5 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg text-sm shadow">⚠️ Notice</button>
+          <button onclick="submitDisputeResolution('REQUEST_CORRECTION')" class="px-3.5 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg text-sm shadow">⚠️ Request Correction</button>
           <button onclick="submitDisputeResolution('APPROVE_RECALIBRATION')" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-black rounded-lg text-sm shadow">✓ Calibrate & Approve</button>
         </div>
       `;
     } else {
+      const isNotice = record.reconciliationStatus === 'CORRECTION_REQUESTED';
       actionsContainer.innerHTML = `
         <div class="flex items-center justify-end gap-2.5">
           <button onclick="closeDisputeModal()" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-sm">Cancel</button>
-          <button onclick="submitDisputeResolution('APPROVE_RECALIBRATION')" class="px-4 py-2 bg-[#012B1B] hover:bg-emerald-950 text-white font-black rounded-lg text-sm shadow">Submit Recalibration Request</button>
+          <button onclick="submitDisputeResolution('MILLER_SUBMIT_CORRECTION')" class="px-4 py-2 bg-[#012B1B] hover:bg-emerald-950 text-white font-black rounded-lg text-sm shadow">
+            ${isNotice ? '⚡ Clear Notice & Submit to DCSO' : 'Submit Recalibration to DCSO'}
+          </button>
         </div>
       `;
     }
@@ -551,7 +566,10 @@ async function submitDisputeResolution(actionType = 'APPROVE_RECALIBRATION') {
         recordId: activeDisputeRecordId,
         action: actionType,
         agreedQuantity: agreed,
-        notes: notes || 'Joint physical weighbridge scale inspection calibrated'
+        notes: notes || 'Joint physical weighbridge scale inspection calibrated',
+        userRole: currentRole,
+        millName: currentMillName,
+        managerName: currentManagerName
       })
     });
     const data = await res.json();
@@ -559,9 +577,192 @@ async function submitDisputeResolution(actionType = 'APPROVE_RECALIBRATION') {
       closeDisputeModal();
       await fetchProcurementRecords();
       await fetchSettlementSummary();
+      await fetchNotifications();
     }
   } catch (err) {
     console.error(err);
   }
 }
+
+// 10. BILATERAL NOTIFICATION & ALERT SYSTEM
+async function fetchNotifications() {
+  try {
+    const recipient = (currentRole === 'GOVERNMENT_OFFICER') ? 'DCSO' : currentMillCode;
+    const res = await fetch('/api/v2/notifications?recipient=' + recipient);
+    const data = await res.json();
+    if (data.success) {
+      activeNotifications = data.notifications || [];
+      
+      const activeCount = activeNotifications.filter(n => n.status === 'ACTIVE').length;
+      const badge = document.getElementById('notifBadgeCount');
+      if (badge) {
+        badge.innerText = activeCount;
+        badge.className = activeCount > 0 ? 
+          'px-1.5 py-0.2 bg-amber-400 text-slate-950 font-black text-[10px] rounded-full animate-pulse' :
+          'px-1.5 py-0.2 bg-emerald-800 text-emerald-200 font-bold text-[10px] rounded-full';
+      }
+
+      renderAlertBanner();
+      renderNotifications();
+    }
+  } catch (err) {
+    console.error('Fetch notifications error:', err);
+  }
+}
+
+function renderAlertBanner() {
+  const banner = document.getElementById('liveAlertBannerContainer');
+  if (!banner) return;
+
+  const isOfficer = currentRole === 'GOVERNMENT_OFFICER';
+  const activeAlerts = activeNotifications.filter(n => n.status === 'ACTIVE');
+
+  if (activeAlerts.length === 0) {
+    banner.classList.add('hidden');
+    banner.innerHTML = '';
+    return;
+  }
+
+  const latest = activeAlerts[0];
+  banner.classList.remove('hidden');
+
+  if (isOfficer) {
+    // DCSO View of incoming Miller recalibrations
+    banner.innerHTML = `
+      <div class="bg-amber-50 border-l-4 border-amber-500 border border-amber-200 p-4 rounded-xl shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fadeIn">
+        <div class="flex items-center gap-3">
+          <span class="text-2xl">⚠️</span>
+          <div>
+            <div class="font-black text-amber-950 text-sm sm:text-base">${latest.title}</div>
+            <div class="text-xs text-amber-800 mt-0.5">${latest.message} <span class="font-mono text-slate-500 font-semibold">• ${latest.timestamp}</span></div>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          ${latest.recordId ? `
+            <button onclick="openDisputeModal(${latest.recordId})" class="px-3.5 py-1.5 bg-[#012B1B] hover:bg-emerald-950 text-amber-300 text-xs font-bold rounded-lg shadow transition flex items-center gap-1.5">
+              <span>⚖️ Review & Approve</span>
+            </button>
+          ` : ''}
+          <button onclick="openNotificationModal()" class="px-3 py-1.5 bg-white border border-amber-300 text-amber-900 text-xs font-bold rounded-lg hover:bg-amber-100 transition">
+            View All (${activeAlerts.length})
+          </button>
+        </div>
+      </div>
+    `;
+  } else {
+    // Miller View of incoming DCSO Correction notices or Approvals
+    const isApproval = latest.type === 'DCSO_APPROVED';
+    const bgClass = isApproval ? 'bg-emerald-50 border-emerald-500 border-emerald-200' : 'bg-amber-50 border-amber-500 border-amber-200';
+    const textClass = isApproval ? 'text-emerald-950' : 'text-amber-950';
+    const subTextClass = isApproval ? 'text-emerald-800' : 'text-amber-800';
+
+    banner.innerHTML = `
+      <div class="${bgClass} border-l-4 border p-4 rounded-xl shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fadeIn">
+        <div class="flex items-center gap-3">
+          <span class="text-2xl">${isApproval ? '✓' : '⚠️'}</span>
+          <div>
+            <div class="font-black ${textClass} text-sm sm:text-base">${latest.title}</div>
+            <div class="text-xs ${subTextClass} mt-0.5">${latest.message} <span class="font-mono text-slate-500 font-semibold">• ${latest.timestamp}</span></div>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          ${(latest.recordId && !isApproval) ? `
+            <button onclick="openDisputeModal(${latest.recordId})" class="px-3.5 py-1.5 bg-[#012B1B] hover:bg-emerald-950 text-amber-300 text-xs font-bold rounded-lg shadow transition flex items-center gap-1.5">
+              <span>🔧 Recalibrate Tare Weight Now</span>
+            </button>
+          ` : ''}
+          <button onclick="openNotificationModal()" class="px-3 py-1.5 bg-white border border-slate-300 text-slate-800 text-xs font-bold rounded-lg hover:bg-slate-100 transition">
+            View All (${activeAlerts.length})
+          </button>
+        </div>
+      </div>
+    `;
+  }
+}
+
+function renderNotifications() {
+  const container = document.getElementById('notificationsListContainer');
+  if (!container) return;
+
+  if (activeNotifications.length === 0) {
+    container.innerHTML = `
+      <div class="text-center py-8 text-slate-400">
+        <span class="text-3xl block mb-2">🔕</span>
+        <div class="font-bold text-slate-600">No Notifications</div>
+        <div class="text-xs">All consignments and reconciliation workflows are synchronized.</div>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = '';
+  activeNotifications.forEach(n => {
+    const isActive = n.status === 'ACTIVE';
+    const isApproval = n.type === 'DCSO_APPROVED';
+    const isReject = n.type === 'CONSIGNMENT_REJECTED';
+    const isRecalib = n.type === 'MILLER_RECALIBRATION_SUBMITTED';
+
+    const card = document.createElement('div');
+    card.className = `p-3.5 rounded-xl border ${isActive ? (isApproval ? 'bg-emerald-50/60 border-emerald-300' : isReject ? 'bg-rose-50/60 border-rose-300' : 'bg-amber-50/60 border-amber-300') : 'bg-slate-50 border-slate-200 opacity-60'} space-y-1.5 transition`;
+
+    card.innerHTML = `
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-black uppercase px-2 py-0.5 rounded ${isApproval ? 'bg-emerald-100 text-emerald-900 border border-emerald-300' : isReject ? 'bg-rose-100 text-rose-900 border border-rose-300' : 'bg-amber-100 text-amber-900 border border-amber-300'}">
+            ${n.type.replace(/_/g, ' ')}
+          </span>
+          <span class="text-xs text-slate-500 font-mono">${n.timestamp}</span>
+        </div>
+        <span class="text-[11px] font-bold ${isActive ? 'text-amber-700' : 'text-slate-400'}">
+          ${isActive ? '● Active' : 'Dismissed'}
+        </span>
+      </div>
+
+      <div class="font-bold text-slate-900 text-sm">${n.title}</div>
+      <div class="text-xs text-slate-600 leading-relaxed">${n.message}</div>
+      <div class="text-[11px] text-slate-500 pt-1 border-t border-slate-200/60 flex items-center justify-between">
+        <span>From: <b class="text-slate-800">${n.sender}</b></span>
+        <div class="flex items-center gap-2">
+          ${n.recordId ? `
+            <button onclick="closeNotificationModal(); openDisputeModal(${n.recordId});" class="text-xs text-emerald-900 hover:text-emerald-700 font-bold underline">
+              Action Record #${n.recordId}
+            </button>
+          ` : ''}
+          ${isActive ? `
+            <button onclick="dismissNotification('${n.id}')" class="text-xs text-slate-400 hover:text-slate-700">Dismiss</button>
+          ` : ''}
+        </div>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function openNotificationModal() {
+  renderNotifications();
+  const modal = document.getElementById('notificationsModal');
+  if (modal) modal.classList.remove('hidden');
+}
+
+function closeNotificationModal() {
+  const modal = document.getElementById('notificationsModal');
+  if (modal) modal.classList.add('hidden');
+}
+
+async function dismissNotification(notifId) {
+  try {
+    const res = await fetch('/api/v2/notifications/dismiss', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: notifId })
+    });
+    const data = await res.json();
+    if (data.success) {
+      await fetchNotifications();
+    }
+  } catch (err) {
+    console.error(err);
+  }
+}
+
 
