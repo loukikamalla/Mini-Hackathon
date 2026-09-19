@@ -403,6 +403,15 @@ function updateUIForRole() {
     }
   }
 
+  const intakeBtn = document.getElementById('inwardIntakeBtn');
+  if (intakeBtn) {
+    if (isOfficer) {
+      intakeBtn.classList.add('hidden');
+    } else {
+      intakeBtn.classList.remove('hidden');
+    }
+  }
+
   if (!isOfficer) {
     const c1 = document.getElementById('card1Title');
     if (c1) c1.innerText = 'Mill Inward Paddy';
@@ -412,6 +421,15 @@ function updateUIForRole() {
     if (c3) c3.innerText = 'Active Flagged Batches';
     const c4 = document.getElementById('card4Title');
     if (c4) c4.innerText = 'Accrued Subsidy Claim (@ ₹25/Qtl)';
+  } else {
+    const c1 = document.getElementById('card1Title');
+    if (c1) c1.innerText = 'Total Paddy Intake';
+    const c2 = document.getElementById('card2Title');
+    if (c2) c2.innerText = 'Statutory 67% CMR Out-Turn';
+    const c3 = document.getElementById('card3Title');
+    if (c3) c3.innerText = 'Flagged Discrepancies';
+    const c4 = document.getElementById('card4Title');
+    if (c4) c4.innerText = 'Statutory Milling Remuneration';
   }
 }
 
