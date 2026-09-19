@@ -300,7 +300,16 @@ function renderStatutoryHub() {
 }
 
 function submitMillerClaim() {
-  alert('Statutory claim and 67% CMR delivery schedule submitted to Warangal District Civil Supplies Office for review & JRC issuance!');
+  const container = document.getElementById('statutoryDecisionContainer');
+  if (container) {
+    const btn = container.querySelector('button');
+    if (btn) {
+      btn.disabled = true;
+      btn.className = "px-5 py-2.5 bg-emerald-800 text-emerald-100 font-bold text-sm rounded-lg shadow transition flex items-center gap-2 cursor-default";
+      btn.innerHTML = `<span>✓ Claim Submitted to DCSO</span>`;
+    }
+  }
+  showToast('Submitted Successfully!', 'Statutory Milling Remuneration Claim & 67% CMR delivery schedule submitted to Warangal DCSO.', 'success');
 }
 
 async function executeDCSOGovernance(action) {
@@ -337,8 +346,9 @@ async function executeDCSOGovernance(action) {
       renderStatutoryHub();
       if (action === 'APPROVE') {
         openJrcModal();
+        showToast('Approval Issued!', 'Statutory JRC & PFMS Subsidy Clearance generated successfully.', 'success');
       } else {
-        alert(data.message);
+        showToast(action === 'REJECT' ? 'Consignment Rejected' : 'Correction Notice Dispatched', data.message, action === 'REJECT' ? 'error' : 'warning');
       }
     }
   } catch (err) {
@@ -578,6 +588,7 @@ async function submitDisputeResolution(actionType = 'APPROVE_RECALIBRATION') {
       await fetchProcurementRecords();
       await fetchSettlementSummary();
       await fetchNotifications();
+      showToast('Updated Successfully!', data.message, 'success');
     }
   } catch (err) {
     console.error(err);
@@ -763,6 +774,57 @@ async function dismissNotification(notifId) {
   } catch (err) {
     console.error(err);
   }
+}
+
+// 11. CUSTOM IN-APP TOAST NOTIFICATION (REPLACES BROWSER ALERTS)
+function showToast(title, message, type = 'success') {
+  const container = document.getElementById('toastContainer');
+  if (!container) return;
+
+  const toast = document.createElement('div');
+  toast.className = `pointer-events-auto transform transition-all duration-300 ease-out translate-y-2 opacity-0 flex items-start gap-3 p-4 rounded-xl shadow-2xl border ${
+    type === 'success' ? 'bg-[#012B1B] text-white border-emerald-500' :
+    type === 'error' ? 'bg-rose-950 text-white border-rose-500' :
+    'bg-amber-950 text-white border-amber-500'
+  }`;
+
+  const icon = type === 'success' ? '✓' : type === 'error' ? '✕' : '⚠️';
+  const iconBg = type === 'success' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/40' :
+                 type === 'error' ? 'bg-rose-500/20 text-rose-300 border border-rose-400/40' :
+                 'bg-amber-500/20 text-amber-300 border border-amber-400/40';
+
+  toast.innerHTML = `
+    <div class="w-7 h-7 rounded-lg ${iconBg} flex items-center justify-center font-bold text-sm shrink-0 mt-0.5">
+      ${icon}
+    </div>
+    <div class="flex-1 pr-2">
+      <div class="font-black text-sm text-slate-50">${title}</div>
+      ${message ? `<div class="text-xs text-slate-200 mt-0.5 leading-relaxed">${message}</div>` : ''}
+    </div>
+    <button class="text-slate-400 hover:text-white text-base font-bold shrink-0 leading-none mt-0.5 transition">✕</button>
+  `;
+
+  const closeBtn = toast.querySelector('button');
+  closeBtn.onclick = () => {
+    toast.classList.add('opacity-0', 'translate-y-2');
+    setTimeout(() => toast.remove(), 300);
+  };
+
+  container.appendChild(toast);
+
+  // Trigger smooth enter animation
+  requestAnimationFrame(() => {
+    toast.classList.remove('translate-y-2', 'opacity-0');
+    toast.classList.add('translate-y-0', 'opacity-100');
+  });
+
+  // Auto-dismiss after 4 seconds
+  setTimeout(() => {
+    if (toast.parentElement) {
+      toast.classList.add('opacity-0', 'translate-y-2');
+      setTimeout(() => toast.remove(), 300);
+    }
+  }, 4000);
 }
 
 
