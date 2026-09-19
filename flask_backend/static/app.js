@@ -148,6 +148,7 @@ function renderTable(records) {
       <td class="py-3.5 px-3.5">
         <div class="font-bold text-slate-900 font-sans">${r.farmerName}</div>
         <div class="text-xs text-slate-500 font-mono">${r.farmerAadhaar || 'XXXX-XXXX-9812'}</div>
+        <div class="text-[11px] font-bold text-emerald-800 mt-0.5">${r.paddyVariety || 'BPT-5204 (Sona Masoori)'}</div>
       </td>
       <td class="py-3.5 px-3 text-right text-slate-700">${r.govtNetKg.toLocaleString()} kg</td>
       <td class="py-3.5 px-3 text-right font-bold ${isMatch ? 'text-emerald-800' : 'text-amber-800'}">${r.millNetKg.toLocaleString()} kg</td>
